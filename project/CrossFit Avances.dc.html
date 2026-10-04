@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-42e68e48-9b62-41ce-9ec3-ee884b468039/styles.css">
+<script src="_ds/organic-42e68e48-9b62-41ce-9ec3-ee884b468039/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;500;600;700&display=swap">
+<style>body{margin:0;background:var(--color-neutral-300);font-family:var(--font-body);color:var(--color-text)}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent-800)}button{font-family:inherit}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;box-sizing:border-box">
+<div data-screen-label="Teléfono" style="position:relative;width:390px;height:844px;flex:none;background:var(--color-bg);border:10px solid var(--color-text);border-radius:56px;overflow:hidden;box-shadow:var(--shadow-lg)">
+
+<div style="position:absolute;top:0;left:0;right:0;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;font-weight:600;font-size:15px;z-index:5;pointer-events:none">
+<span>9:41</span>
+<div style="width:110px;height:30px;border-radius:999px;background:var(--color-text);position:absolute;left:50%;top:8px;transform:translateX(-50%)"></div>
+<span style="display:flex;gap:5px;align-items:center"><span style="width:18px;height:10px;border-radius:3px;border:2px solid var(--color-text);display:inline-block"></span></span>
+</div>
+
+<sc-if value="{{ isWelcome1 }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="01 Bienvenida" style="position:absolute;inset:0;display:flex;flex-direction:column;padding:64px 28px 40px;box-sizing:border-box;overflow:hidden">
+<div style="position:absolute;width:300px;height:300px;border-radius:50%;background:var(--color-accent-2-300);top:70px;right:-110px"></div>
+<div style="position:absolute;width:170px;height:170px;border-radius:50%;background:var(--color-accent);top:230px;right:70px;display:flex;align-items:center;justify-content:center;color:var(--color-bg)"><svg width="88" height="88" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></div>
+<div style="position:absolute;top:150px;right:40px;width:64px;height:64px;border-radius:50%;background:var(--color-bg);color:var(--color-accent-2-700);display:flex;align-items:center;justify-content:center;transform:rotate(-30deg)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></div>
+<div style="position:absolute;width:64px;height:64px;border-radius:50%;background:var(--color-accent-200);top:120px;left:40px;display:flex;align-items:center;justify-content:center;color:var(--color-accent-700)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></div>
+<div style="position:absolute;width:110px;height:110px;border-radius:50%;border:12px solid var(--color-text);top:290px;left:-30px;box-sizing:border-box"></div>
+<div style="flex:1"></div>
+<div style="position:relative;display:flex;flex-direction:column;gap:var(--space-4)">
+<span class="tag tag-accent-2" style="align-self:flex-start">PRonto · tu diario de box</span>
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:48px;line-height:1.02;margin:0;text-wrap:pretty">Cada marca<br>cuenta.</h1>
+<p style="margin:0;font-size:17px;line-height:1.5;max-width:290px;color:var(--color-neutral-800)">CrossFit, Hyrox, Metcon, GAP, Bar Mastery: anota tus marcas, mira cómo creces y deja que te recordemos ir al box (con cariño).</p>
+<div style="display:flex;gap:6px;margin:var(--space-2) 0">
+<span style="width:24px;height:8px;border-radius:999px;background:var(--color-text)"></span>
+<span style="width:8px;height:8px;border-radius:999px;background:var(--color-neutral-400)"></span>
+</div>
+<button class="btn btn-primary btn-block" onClick="{{ toStep2 }}" style="height:56px;font-size:17px">Empezar</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isWelcome2 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="02 Perfil" style="position:absolute;inset:0;display:flex;flex-direction:column;padding:64px 28px 40px;box-sizing:border-box;gap:var(--space-6);overflow:auto">
+<button onClick="{{ toStep1 }}" style="align-self:flex-start;width:44px;height:44px;border-radius:50%;border:none;background:var(--color-surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text)" style-hover="background:var(--color-accent-200)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+<h2 style="font-family:var(--font-heading);font-weight:400;font-size:34px;line-height:1.08;margin:0">Cuéntanos<br>de ti</h2>
+<div class="field" style="display:flex;flex-direction:column;gap:var(--space-2)">
+<label style="font-weight:600;font-size:14px">¿Cómo te llamamos?</label>
+<input class="input" placeholder="Tu nombre" value="{{ nameInput }}" onChange="{{ onName }}" style="height:52px;font-size:17px">
+</div>
+<div style="display:flex;flex-direction:column;gap:var(--space-3)">
+<span style="font-weight:600;font-size:14px">¿Qué entrenas?</span>
+<div style="display:flex;flex-wrap:wrap;gap:var(--space-2)">
+<sc-for list="{{ goals }}" as="g" hint-placeholder-count="5">
+<button onClick="{{ g.onClick }}" style="height:44px;padding:0 18px;border-radius:999px;border:2px solid {{ g.border }};background:{{ g.bg }};color:{{ g.fg }};font-size:15px;font-weight:600;cursor:pointer;transition:all .15s">{{ g.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:var(--space-3)">
+<span style="font-weight:600;font-size:14px">Días de box por semana</span>
+<div style="display:flex;gap:var(--space-2)">
+<sc-for list="{{ freqs }}" as="f" hint-placeholder-count="5">
+<button onClick="{{ f.onClick }}" style="width:52px;height:52px;border-radius:50%;border:none;background:{{ f.bg }};color:{{ f.fg }};font-family:var(--font-heading);font-size:20px;cursor:pointer;transition:all .15s">{{ f.n }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:var(--space-3)">
+<span style="font-weight:600;font-size:14px">¿Cargas en kilos o libras?</span>
+<div style="display:flex;padding:4px;border-radius:999px;background:var(--color-surface);gap:4px;align-self:flex-start">
+<sc-for list="{{ unitOpts }}" as="u" hint-placeholder-count="2">
+<button onClick="{{ u.onClick }}" style="height:44px;min-width:64px;padding:0 16px;border-radius:999px;border:none;background:{{ u.bg }};color:{{ u.fg }};font-weight:700;font-size:15px;cursor:pointer;transition:all .15s">{{ u.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="flex:1"></div>
+<button class="btn btn-primary btn-block" onClick="{{ finishOnboarding }}" style="height:56px;font-size:17px;flex:none">¡Vamos al box!</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="03 Inicio" style="position:absolute;inset:0;overflow-y:auto;padding:60px 22px 120px;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;overflow-x:hidden;align-content:start;gap:var(--space-6)">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<span style="font-size:14px;color:var(--color-neutral-700);font-weight:500">Domingo, 4 de octubre</span>
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:32px;margin:0;line-height:1.1">{{ greeting }}</h1>
+</div>
+<div style="width:48px;height:48px;border-radius:50%;background:var(--color-accent-2);color:var(--color-bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:20px;flex:none">{{ initial }}</div>
+</div>
+
+<div style="background:var(--color-text);color:var(--color-bg);border-radius:var(--radius-lg);padding:22px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+<div style="position:absolute;width:160px;height:160px;border-radius:50%;background:var(--color-accent);right:-50px;top:-60px;opacity:.9"></div>
+<div style="display:flex;align-items:center;gap:14px;position:relative">
+<div style="width:64px;height:64px;border-radius:50%;background:var(--color-bg);color:var(--color-accent-600);display:flex;align-items:center;justify-content:center;flex:none"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></div>
+<div style="display:flex;flex-direction:column">
+<span style="font-family:var(--font-heading);font-size:30px;line-height:1">{{ weekDone }} de {{ freq }}</span>
+<span style="font-size:15px;color:var(--color-neutral-300)">entrenos esta semana · {{ streakMsg }}</span>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;position:relative">
+<sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+<button onClick="{{ d.onClick }}" title="Marcar entreno" style="display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;color:inherit;cursor:pointer;padding:0">
+<span style="font-size:12px;font-weight:600;color:var(--color-neutral-400)">{{ d.l }}</span>
+<span style="width:36px;height:36px;border-radius:50%;background:{{ d.bg }};border:2px solid {{ d.border }};box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:var(--color-text);transition:all .2s">{{ d.mark }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:var(--space-3)">
+<div style="display:flex;align-items:baseline;justify-content:space-between">
+<h2 style="font-family:var(--font-heading);font-weight:400;font-size:24px;margin:0;display:flex;align-items:center;gap:8px"><span style="color:var(--color-accent)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></span>Mis marcas</h2>
+<span style="font-size:14px;color:var(--color-neutral-700)">Toca para actualizar</span>
+</div>
+<div style="display:flex;gap:var(--space-2);overflow-x:auto;margin:0 -22px;padding:0 22px 4px;scrollbar-width:none">
+<sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+<button onClick="{{ f.onClick }}" style="flex:none;height:40px;padding:0 16px;border-radius:999px;border:2px solid {{ f.border }};background:{{ f.bg }};color:{{ f.fg }};font-weight:600;font-size:14px;cursor:pointer;transition:all .15s">{{ f.label }}</button>
+</sc-for>
+</div>
+<sc-if value="{{ noPrs }}" hint-placeholder-val="{{ false }}">
+<div style="padding:22px;border-radius:var(--radius-lg);border:2px dashed var(--color-neutral-400);font-size:15px;color:var(--color-neutral-800)"><span style="display:flex;align-items:center;gap:10px"><span style="color:var(--color-accent)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></span>Aún no hay marcas aquí. Toca + y estrena la primera.</span></div>
+</sc-if>
+<sc-for list="{{ prs }}" as="p" hint-placeholder-count="4">
+<button onClick="{{ p.onClick }}" style="display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--radius-lg);border:none;background:var(--color-surface);text-align:left;cursor:pointer;color:var(--color-text);transition:background .15s" style-hover="background:var(--color-accent-200)" style-active="background:var(--color-accent-300)">
+<div style="width:44px;height:44px;border-radius:50%;background:{{ p.iconBg }};color:{{ p.iconFg }};display:flex;align-items:center;justify-content:center;flex:none">
+<sc-if value="{{ p.isTime }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4"></path><path d="M12 14l3-3"></path><circle cx="12" cy="14" r="8"></circle></svg></sc-if>
+<sc-if value="{{ p.isLoad }}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></sc-if>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0">
+<span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:{{ p.discColor }}">{{ p.disc }}</span>
+<span style="font-weight:600;font-size:16px">{{ p.name }}</span>
+<span style="font-size:13px;color:var(--color-neutral-700)">{{ p.date }}</span>
+</div>
+<div style="display:flex;align-items:flex-end;gap:3px;height:30px">
+<sc-for list="{{ p.bars }}" as="b" hint-placeholder-count="5">
+<span style="width:6px;border-radius:999px;height:{{ b.h }};background:{{ b.bg }}"></span>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;min-width:76px">
+<span style="font-family:var(--font-heading);font-size:24px;line-height:1">{{ p.val }}<span style="font-family:var(--font-body);font-size:13px;font-weight:600;margin-left:3px">{{ p.unit }}</span></span>
+<span style="font-size:12px;font-weight:700;color:var(--color-accent-2-700)">{{ p.delta }}</span>
+</div>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRem }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="04 Recordatorios" style="position:absolute;inset:0;overflow-y:auto;padding:60px 22px 120px;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;overflow-x:hidden;align-content:start;gap:var(--space-6)">
+<div style="display:flex;flex-direction:column;gap:6px">
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:32px;margin:0;line-height:1.1">Recordatorios</h1>
+<p style="margin:0;font-size:16px;color:var(--color-neutral-800)">Un empujoncito, nunca un sermón.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:var(--space-3)">
+<sc-for list="{{ reminders }}" as="r" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:14px;padding:18px;border-radius:var(--radius-lg);background:var(--color-surface);opacity:{{ r.op }};transition:opacity .2s">
+<div style="width:48px;height:48px;border-radius:50%;background:{{ r.dot }};flex:none;display:flex;align-items:center;justify-content:center;color:var(--color-bg);font-family:var(--font-heading);font-size:15px">{{ r.time }}</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:3px;min-width:0">
+<span style="font-weight:600;font-size:16px">{{ r.title }}</span>
+<span style="font-size:13px;color:var(--color-neutral-700)">{{ r.sub }}</span>
+</div>
+<button onClick="{{ r.onToggle }}" aria-label="Activar" style="width:54px;height:32px;border-radius:999px;border:none;background:{{ r.track }};position:relative;cursor:pointer;flex:none;transition:background .2s;padding:0">
+<span style="position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:var(--color-bg);box-shadow:var(--shadow-sm);transform:translateX({{ r.knob }});transition:transform .2s"></span>
+</button>
+</div>
+</sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:var(--space-3);padding:20px;border-radius:var(--radius-lg);border:2px dashed var(--color-neutral-400)">
+<span style="font-weight:600;font-size:16px">Nuevo recordatorio</span>
+<div style="display:flex;flex-wrap:wrap;gap:var(--space-2)">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+<button onClick="{{ d.onClick }}" style="width:40px;height:40px;border-radius:50%;border:none;background:{{ d.bg }};color:{{ d.fg }};font-weight:700;font-size:14px;cursor:pointer;transition:all .15s">{{ d.l }}</button>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:var(--space-3)">
+<button onClick="{{ hourMinus }}" class="btn btn-secondary btn-icon" aria-label="Menos" style="width:44px;height:44px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M5 12h14"></path></svg></button>
+<span style="font-family:var(--font-heading);font-size:28px;min-width:84px;text-align:center">{{ newHour }}</span>
+<button onClick="{{ hourPlus }}" class="btn btn-secondary btn-icon" aria-label="Más" style="width:44px;height:44px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+<div style="flex:1"></div>
+<button onClick="{{ addReminder }}" class="btn btn-primary" style="height:44px">Agregar</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSk }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="05 Skills" style="position:absolute;inset:0;overflow-y:auto;padding:60px 22px 120px;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;overflow-x:hidden;align-content:start;gap:var(--space-6)">
+<div style="display:flex;flex-direction:column;gap:6px">
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:32px;margin:0;line-height:1.1">Skills</h1>
+<p style="margin:0;font-size:16px;color:var(--color-neutral-800)">Lo que ya sale y lo que viene. Toca un punto para cambiar el nivel.</p>
+</div>
+<div style="display:flex;align-items:center;gap:16px;padding:20px;border-radius:var(--radius-lg);background:var(--color-accent-2-200)">
+<div style="width:72px;height:72px;border-radius:50%;background:conic-gradient(var(--color-accent-2-700) {{ skPct }}, var(--color-accent-2-300) 0);display:flex;align-items:center;justify-content:center;flex:none">
+<div style="width:52px;height:52px;border-radius:50%;background:var(--color-accent-2-200);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:20px;color:var(--color-accent-2-900)">{{ skDone }}</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">
+<span style="font-family:var(--font-heading);font-size:20px;line-height:1.15;color:var(--color-accent-2-900)">{{ skDone }} de {{ skTotal }} logradas</span>
+<span style="font-size:14px;color:var(--color-accent-2-800)">{{ skNext }}</span>
+</div>
+</div>
+<div style="display:flex;gap:var(--space-2);overflow-x:auto;margin:0 -22px;padding:0 22px 4px;scrollbar-width:none">
+<sc-for list="{{ skFilters }}" as="f" hint-placeholder-count="5">
+<button onClick="{{ f.onClick }}" style="flex:none;height:40px;padding:0 16px;border-radius:999px;border:2px solid {{ f.border }};background:{{ f.bg }};color:{{ f.fg }};font-weight:600;font-size:14px;cursor:pointer;transition:all .15s">{{ f.label }}</button>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:var(--space-3)">
+<sc-for list="{{ skills }}" as="k" hint-placeholder-count="5">
+<div style="display:flex;flex-direction:column;gap:12px;padding:16px 18px;border-radius:var(--radius-lg);background:var(--color-surface)">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+<div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+<span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:{{ k.discColor }}">{{ k.disc }}</span>
+<span style="font-weight:600;font-size:16px">{{ k.name }}</span>
+</div>
+<span style="flex:none;padding:5px 12px;border-radius:999px;font-size:13px;font-weight:700;background:{{ k.tagBg }};color:{{ k.tagFg }}">{{ k.stageLabel }}</span>
+</div>
+<div style="display:flex;align-items:center;gap:0">
+<sc-for list="{{ k.steps }}" as="st" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;flex:{{ st.flex }}">
+<sc-if value="{{ st.line }}" hint-placeholder-val="{{ false }}"><span style="flex:1;height:4px;border-radius:999px;background:{{ st.lineBg }};margin:0 2px"></span></sc-if>
+<button onClick="{{ st.onClick }}" title="{{ st.title }}" style="width:28px;height:28px;border-radius:50%;border:3px solid {{ st.border }};background:{{ st.bg }};box-sizing:border-box;cursor:pointer;flex:none;padding:0;transition:all .2s" style-hover="transform:scale(1.12)"></button>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:var(--space-2);align-items:center">
+<input class="input" placeholder="Nueva skill, p. ej. Pistol squat" value="{{ newSkill }}" onChange="{{ onNewSkill }}" style="flex:1;min-width:0;height:48px;font-size:15px">
+<button onClick="{{ addSkill }}" class="btn btn-primary" style="height:48px;flex:none">Agregar</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isGr }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="06 Grupo" style="position:absolute;inset:0;overflow-y:auto;padding:60px 22px 120px;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;overflow-x:hidden;align-content:start;gap:var(--space-6)">
+<div style="display:flex;flex-direction:column;gap:6px">
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:32px;margin:0;line-height:1.1">Mi grupo</h1>
+<p style="margin:0;font-size:16px;color:var(--color-neutral-800)">Los logros de tu gente del box. Solo ven lo tuyo quienes aceptan.</p>
+</div>
+<div style="display:flex;gap:14px;overflow-x:auto;margin:-8px -22px 0;padding:8px 22px 8px;scrollbar-width:none">
+<sc-for list="{{ grMembers }}" as="m" hint-placeholder-count="5">
+<button onClick="{{ m.onClick }}" style="flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;color:var(--color-text);width:60px">
+<span style="width:56px;height:56px;border-radius:50%;background:{{ m.color }};color:var(--color-bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:20px;box-shadow:0 0 0 3px var(--color-bg), 0 0 0 {{ m.ring }} var(--color-text);transition:box-shadow .15s">{{ m.initial }}</span>
+<span style="font-size:13px;font-weight:600;white-space:nowrap">{{ m.name }}</span>
+</button>
+</sc-for>
+</div>
+<sc-for list="{{ grIncoming }}" as="r" hint-placeholder-count="1">
+<div style="display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:var(--radius-lg);background:var(--color-accent-200)">
+<div style="display:flex;align-items:center;gap:12px">
+<span style="width:44px;height:44px;border-radius:50%;background:var(--color-accent-700);color:var(--color-bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:18px;flex:none">{{ r.initial }}</span>
+<span style="font-size:15px;color:var(--color-accent-900)"><strong>{{ r.name }}</strong> quiere sumarte a su grupo y ver tus logros.</span>
+</div>
+<div style="display:flex;gap:var(--space-2)">
+<button onClick="{{ r.accept }}" class="btn btn-primary" style="flex:1;height:44px">Aceptar</button>
+<button onClick="{{ r.reject }}" class="btn btn-secondary" style="flex:1;height:44px">Ahora no</button>
+</div>
+</div>
+</sc-for>
+<div style="display:flex;flex-direction:column;gap:var(--space-3);padding:20px;border-radius:var(--radius-lg);border:2px dashed var(--color-neutral-400)">
+<span style="font-weight:600;font-size:16px">Invitar al grupo</span>
+<div style="display:flex;gap:var(--space-2)">
+<input class="input" placeholder="Nombre o @usuario" value="{{ inviteName }}" onChange="{{ onInvite }}" style="flex:1;min-width:0;height:48px;font-size:15px">
+<button onClick="{{ sendInvite }}" class="btn btn-primary" style="height:48px;flex:none">Enviar</button>
+</div>
+<sc-for list="{{ grPending }}" as="p" hint-placeholder-count="0">
+<div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--color-neutral-800)">
+<span style="width:10px;height:10px;border-radius:50%;background:var(--color-accent);flex:none"></span>
+<span style="flex:1">Solicitud enviada a <strong>{{ p.name }}</strong></span>
+<span style="font-weight:600;color:var(--color-neutral-700)">Esperando…</span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:var(--space-3)">
+<h2 style="font-family:var(--font-heading);font-weight:400;font-size:24px;margin:0">{{ grFeedTitle }}</h2>
+<sc-for list="{{ grFeed }}" as="f" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;gap:10px;padding:16px 18px;border-radius:var(--radius-lg);background:var(--color-surface)">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="width:36px;height:36px;border-radius:50%;background:{{ f.color }};color:var(--color-bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:15px;flex:none">{{ f.initial }}</span>
+<div style="flex:1;display:flex;flex-direction:column;min-width:0">
+<span style="font-weight:700;font-size:15px">{{ f.who }}</span>
+<span style="font-size:12px;color:var(--color-neutral-700)">{{ f.ago }}</span>
+</div>
+<span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:{{ f.discColor }}">{{ f.disc }}</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+<div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+<span style="font-size:14px;color:var(--color-neutral-800)">{{ f.kindLabel }}</span>
+<span style="font-weight:600;font-size:16px">{{ f.what }}</span>
+<span style="font-family:var(--font-heading);font-size:26px;line-height:1.1;color:{{ f.valColor }}">{{ f.val }}</span>
+</div>
+<button onClick="{{ f.onCheer }}" style="flex:none;display:flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;border:2px solid {{ f.cheerBorder }};background:{{ f.cheerBg }};color:{{ f.cheerFg }};font-weight:700;font-size:14px;cursor:pointer;transition:all .15s"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>{{ f.cheers }}</button>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDet }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="07 Detalle de marca" style="position:absolute;inset:0;overflow-y:auto;padding:60px 22px 120px;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;overflow-x:hidden;align-content:start;gap:var(--space-6)">
+<div style="display:flex;align-items:center;gap:12px">
+<button onClick="{{ goHome }}" aria-label="Volver" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--color-surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text);flex:none" style-hover="background:var(--color-accent-200)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+<div style="display:flex;flex-direction:column;min-width:0">
+<span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:{{ det.discColor }}">{{ det.disc }}</span>
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:28px;margin:0;line-height:1.1">{{ det.name }}</h1>
+</div>
+</div>
+<div style="background:var(--color-text);color:var(--color-bg);border-radius:var(--radius-lg);padding:22px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden">
+<div style="position:absolute;width:140px;height:140px;border-radius:50%;background:var(--color-accent-2);right:-40px;bottom:-60px"></div>
+<span style="font-size:14px;color:var(--color-neutral-300);position:relative">{{ det.bestLabel }}</span>
+<span style="font-family:var(--font-heading);font-size:56px;line-height:1;position:relative">{{ det.best }}<span style="font-family:var(--font-body);font-size:18px;font-weight:600;margin-left:6px">{{ det.unit }}</span></span>
+<span style="font-size:15px;font-weight:600;color:var(--color-accent-2-300);position:relative">{{ det.delta }}</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:var(--radius-lg);background:var(--color-surface)">
+<span style="font-weight:600;font-size:15px">Progreso</span>
+<div style="display:flex;align-items:flex-end;gap:10px;height:150px">
+<sc-for list="{{ det.bars }}" as="b" hint-placeholder-count="5">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%;min-width:0">
+<span style="font-size:12px;font-weight:700;color:{{ b.fg }}">{{ b.label }}</span>
+<span style="width:100%;max-width:34px;border-radius:999px;height:{{ b.h }};background:{{ b.bg }}"></span>
+<span style="font-size:11px;color:var(--color-neutral-700);white-space:nowrap">{{ b.date }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:var(--space-3)">
+<h2 style="font-family:var(--font-heading);font-weight:400;font-size:22px;margin:0">Historial</h2>
+<sc-for list="{{ det.log }}" as="e" hint-placeholder-count="4">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);background:var(--color-surface)">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
+<span style="font-weight:600;font-size:15px">{{ e.date }}</span>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{ e.tags }}" as="t" hint-placeholder-count="2"><span style="padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</span></sc-for>
+</div>
+<sc-if value="{{ e.hasNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:var(--color-neutral-800);font-style:italic">“{{ e.note }}”</span></sc-if>
+</div>
+<span style="font-family:var(--font-heading);font-size:22px;flex:none">{{ e.val }}<span style="font-family:var(--font-body);font-size:12px;font-weight:600;margin-left:3px">{{ e.unit }}</span></span>
+</div>
+</sc-for>
+</div>
+<button onClick="{{ det.register }}" class="btn btn-primary btn-block" style="height:56px;font-size:17px">Registrar nuevo intento</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:16px;right:16px;bottom:22px;height:72px;border-radius:999px;background:var(--color-text);display:flex;align-items:center;justify-content:space-between;padding:0 10px;box-shadow:var(--shadow-lg);z-index:6">
+<button onClick="{{ goHome }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:{{ homeColor }};font-size:12px;font-weight:600;width:58px;height:56px;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Inicio</button>
+<button onClick="{{ goSk }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:{{ skColor }};font-size:12px;font-weight:600;width:58px;height:56px;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>Skills</button>
+<button onClick="{{ openNew }}" aria-label="Registrar marca" style="width:60px;height:60px;border-radius:50%;border:none;background:var(--color-accent);color:var(--color-bg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,transform .15s" style-hover="background:var(--color-accent-600)" style-active="transform:scale(.94)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+<button onClick="{{ goGr }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:{{ grColor }};font-size:12px;font-weight:600;width:58px;height:56px;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Grupo</button>
+<button onClick="{{ goRem }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:{{ remColor }};font-size:12px;font-weight:600;width:58px;height:56px;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>Avisos</button>
+</div>
+</sc-if>
+
+<div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:var(--color-text);opacity:{{ backOp }};pointer-events:{{ backPE }};transition:opacity .25s;z-index:7"></div>
+<div data-screen-label="05 Registrar marca" style="position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow-y:auto;scrollbar-width:none;background:var(--color-bg);border-radius:36px 36px 0 0;padding:14px 24px 34px;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;gap:var(--space-4);transform:translateY({{ sheetY }});transition:transform .32s cubic-bezier(.2,.9,.3,1);z-index:8">
+<span style="width:44px;height:5px;border-radius:999px;background:var(--color-neutral-400);justify-self:center"></span>
+<div style="display:flex;align-items:center;justify-content:space-between">
+<h2 style="font-family:var(--font-heading);font-weight:400;font-size:26px;margin:0;display:flex;align-items:center;gap:10px"><span style="width:40px;height:40px;border-radius:50%;background:var(--color-accent);color:var(--color-bg);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></span>Registrar marca</h2>
+<button onClick="{{ closeSheet }}" aria-label="Cerrar" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--color-surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text)" style-hover="background:var(--color-accent-200)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+</div>
+<div style="display:flex;gap:var(--space-2);overflow-x:auto;margin:0 -24px;padding:0 24px 2px;scrollbar-width:none">
+<sc-for list="{{ sheetDiscs }}" as="d" hint-placeholder-count="5">
+<button onClick="{{ d.onClick }}" style="flex:none;height:36px;padding:0 14px;border-radius:999px;border:2px solid {{ d.border }};background:{{ d.bg }};color:{{ d.fg }};font-weight:700;font-size:13px;cursor:pointer">{{ d.label }}</button>
+</sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:var(--space-2)">
+<sc-for list="{{ movs }}" as="m" hint-placeholder-count="5">
+<button onClick="{{ m.onClick }}" style="height:40px;padding:0 16px;border-radius:999px;border:none;background:{{ m.bg }};color:{{ m.fg }};font-weight:600;font-size:14px;cursor:pointer;transition:all .15s">{{ m.name }}</button>
+</sc-for>
+<button onClick="{{ toggleNewMov }}" style="height:40px;padding:0 16px;border-radius:999px;border:2px dashed var(--color-neutral-500);background:transparent;color:var(--color-text);font-weight:700;font-size:14px;cursor:pointer" style-hover="background:var(--color-accent-100)">+ Nuevo</button>
+</div>
+<sc-if value="{{ showNewMov }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:var(--radius-md);background:var(--color-surface)">
+<input class="input" placeholder="Nombre, p. ej. Thruster" value="{{ newMovName }}" onChange="{{ onNewMovName }}" style="height:46px;font-size:15px">
+<div style="display:flex;gap:var(--space-2);flex-wrap:wrap"><sc-for list="{{ newMovTypes }}" as="t" hint-placeholder-count="3">
+<button onClick="{{ t.onClick }}" style="flex:none;height:38px;padding:0 14px;border-radius:999px;border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }};font-weight:700;font-size:14px;cursor:pointer;transition:all .15s">{{ t.label }}</button>
+</sc-for></div>
+<button onClick="{{ createMov }}" class="btn btn-primary" style="height:44px">Crear en {{ sheetDiscLabel }}</button>
+</div>
+</sc-if>
+<sc-if value="{{ isWeight }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<span style="font-size:14px;font-weight:600;color:var(--color-neutral-800)">Peso en</span>
+<div style="display:flex;padding:4px;border-radius:999px;background:var(--color-surface);gap:4px;align-self:flex-start">
+<sc-for list="{{ unitOpts }}" as="u" hint-placeholder-count="2">
+<button onClick="{{ u.onClick }}" style="height:36px;min-width:64px;padding:0 16px;border-radius:999px;border:none;background:{{ u.bg }};color:{{ u.fg }};font-weight:700;font-size:15px;cursor:pointer;transition:all .15s">{{ u.label }}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<div style="display:flex;align-items:center;gap:12px;padding:18px;border-radius:var(--radius-lg);background:var(--color-surface)">
+<button onClick="{{ minus }}" aria-label="Menos" style="width:56px;height:56px;border-radius:50%;flex:none;border:none;background:var(--color-bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text)" style-hover="background:var(--color-accent-200)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M5 12h14"></path></svg></button>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0">
+<div style="display:flex;align-items:baseline;justify-content:center;gap:4px;width:100%">
+<input value="{{ draftVal }}" onChange="{{ onDraftText }}" onBlur="{{ commitDraft }}" onFocus="{{ focusDraft }}" inputMode="decimal" aria-label="Valor" style="flex:1;min-width:0;width:100%;border:none;border-bottom:3px dashed var(--color-neutral-400);background:transparent;font-family:var(--font-heading);font-size:38px;line-height:1.1;text-align:center;color:var(--color-text);padding:0;outline:none" style-focus="border-bottom-color:var(--color-accent)">
+<span style="font-size:18px;font-weight:600">{{ draftUnit }}</span>
+</div>
+<span style="font-size:12px;color:var(--color-neutral-700)">{{ draftFmtHint }}</span>
+<span style="font-size:13px;font-weight:600;color:{{ hintColor }}">{{ draftHint }}</span>
+</div>
+<button onClick="{{ plus }}" aria-label="Más" style="width:56px;height:56px;border-radius:50%;flex:none;border:none;background:var(--color-accent);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-bg)" style-hover="background:var(--color-accent-600)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+</div>
+<sc-if value="{{ isWeight }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600;color:var(--color-neutral-800)">Repeticiones</span><div style="display:flex;gap:var(--space-2);flex-wrap:wrap"><sc-for list="{{ schemes }}" as="sc" hint-placeholder-count="3">
+<button onClick="{{ sc.onClick }}" style="flex:none;height:38px;padding:0 14px;border-radius:999px;border:2px solid {{ sc.border }};background:{{ sc.bg }};color:{{ sc.fg }};font-weight:700;font-size:14px;cursor:pointer;transition:all .15s">{{ sc.label }}</button>
+</sc-for></div></div>
+</sc-if>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600;color:var(--color-neutral-800)">Fecha</span>
+<div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap"><sc-for list="{{ dateOpts }}" as="dt" hint-placeholder-count="3">
+<button onClick="{{ dt.onClick }}" style="flex:none;height:38px;padding:0 14px;border-radius:999px;border:2px solid {{ dt.border }};background:{{ dt.bg }};color:{{ dt.fg }};font-weight:700;font-size:14px;cursor:pointer;transition:all .15s">{{ dt.label }}</button>
+</sc-for>
+<input type="date" value="{{ dateISO }}" onChange="{{ onDate }}" max="2026-10-04" style="height:38px;padding:0 12px;border-radius:999px;border:2px solid var(--color-neutral-400);background:transparent;font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--color-text)">
+</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600;color:var(--color-neutral-800)">Modalidad</span><div style="display:flex;gap:var(--space-2)"><sc-for list="{{ modes }}" as="md" hint-placeholder-count="3">
+<button onClick="{{ md.onClick }}" style="flex:none;height:38px;padding:0 14px;border-radius:999px;border:2px solid {{ md.border }};background:{{ md.bg }};color:{{ md.fg }};font-weight:700;font-size:14px;cursor:pointer;transition:all .15s">{{ md.label }}</button>
+</sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600;color:var(--color-neutral-800)">Nota (opcional)</span>
+<textarea class="input" rows="2" placeholder="¿Cómo te sentiste? Técnica, cinturón, rodilleras…" value="{{ note }}" onChange="{{ onNote }}" style="border-radius:var(--radius-md);padding:12px 16px;font-family:var(--font-body);font-size:15px;resize:none;height:auto;min-height:64px"></textarea>
+</div>
+<button class="btn btn-primary btn-block" onClick="{{ save }}" style="height:56px;font-size:17px">Guardar</button>
+</div>
+
+<div style="position:absolute;left:22px;right:22px;top:58px;padding:16px 18px;border-radius:var(--radius-lg);background:var(--color-accent-2);color:var(--color-bg);display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-lg);z-index:9;transform:translateY({{ toastY }});opacity:{{ toastOp }};transition:transform .4s cubic-bezier(.2,1.4,.4,1),opacity .25s;pointer-events:none">
+<span style="width:40px;height:40px;border-radius:50%;background:var(--color-bg);color:var(--color-accent-2-700);display:flex;align-items:center;justify-content:center;flex:none;font-family:var(--font-heading);font-size:20px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></span>
+<div style="display:flex;flex-direction:column">
+<span style="font-family:var(--font-heading);font-size:19px">{{ toastTitle }}</span>
+<span style="font-size:14px">{{ toastText }}</span>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;unidades&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;kg&quot;,&quot;lb&quot;],&quot;default&quot;:&quot;kg&quot;,&quot;tsType&quot;:&quot;'kg'|'lb'&quot;},&quot;celebrar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;pantallaInicial&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;bienvenida&quot;,&quot;inicio&quot;,&quot;recordatorios&quot;],&quot;default&quot;:&quot;bienvenida&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  DISCS = [
+    { id: 'cf', label: 'CrossFit', color: 'var(--color-accent-700)' },
+    { id: 'hx', label: 'Hyrox', color: 'var(--color-accent-2-700)' },
+    { id: 'mc', label: 'Metcon', color: 'var(--color-accent-800)' },
+    { id: 'gap', label: 'GAP', color: 'var(--color-accent-2-800)' },
+    { id: 'bm', label: 'Bar Mastery', color: 'var(--color-neutral-800)' }
+  ];
+  state = (() => {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('cfAvances5') || 'null'); } catch (e) {}
+    const p0 = this.props.pantallaInicial;
+    return Object.assign({
+      screen: p0 === 'inicio' ? 'home' : p0 === 'recordatorios' ? 'rem' : 'w1',
+      name: 'Ana', goals: ['cf', 'hx', 'gap', 'bm'], freq: 4,
+      done: [true, true, false, true, false, false, false],
+      prs: [
+        { id: 'sq', disc: 'cf', name: 'Back squat', type: 'kg', hist: [95, 100, 100, 105, 110], date: '28 sep' },
+        { id: 'cl', disc: 'cf', name: 'Clean', type: 'kg', hist: [60, 65, 67.5, 70, 72.5], date: '14 sep' },
+        { id: 'fr', disc: 'cf', name: 'Fran', type: 'time', better: 'down', hist: [372, 355, 341, 330, 318], date: '20 sep' },
+        { id: 'hxs', disc: 'hx', name: 'Simulacro completo', type: 'time', better: 'down', hist: [5400, 5210, 5040, 4890, 4720], date: '27 sep' },
+        { id: 'ski', disc: 'hx', name: 'SkiErg 1000 m', type: 'time', better: 'down', hist: [262, 255, 251, 246, 240], date: '24 sep' },
+        { id: 'wb', disc: 'hx', name: '100 wall balls', type: 'time', better: 'down', hist: [430, 412, 400, 391, 383], date: '17 sep' },
+        { id: 'cin', disc: 'mc', name: 'AMRAP 20′ Cindy', type: 'reps', unitLabel: 'rondas', hist: [14, 15, 15, 16, 17], date: '22 sep' },
+        { id: 'bk', disc: 'mc', name: 'Assault bike 50 cal', type: 'time', better: 'down', hist: [205, 198, 190, 186, 181], date: '15 sep' },
+        { id: 'ht', disc: 'gap', name: 'Hip thrust', type: 'kg', hist: [70, 80, 85, 90, 100], date: '30 sep' },
+        { id: 'pl', disc: 'gap', name: 'Plancha', type: 'time', better: 'up', hist: [60, 75, 90, 100, 120], date: '30 sep' },
+        { id: 'pu', disc: 'bm', name: 'Dominadas estrictas', type: 'reps', hist: [4, 5, 6, 7, 8], date: '26 sep' },
+        { id: 'mu', disc: 'bm', name: 'Muscle-up en barra', type: 'reps', hist: [0, 1, 1, 2, 3], date: '19 sep' },
+        { id: 't2b', disc: 'bm', name: 'Toes to bar seguidos', type: 'reps', hist: [8, 10, 12, 12, 15], date: '12 sep' }
+      ],
+      skills: [
+        { id: 'du', disc: 'cf', name: 'Double unders', stage: 3 },
+        { id: 'hspu', disc: 'cf', name: 'Handstand push-up', stage: 1 },
+        { id: 'rc', disc: 'cf', name: 'Rope climb', stage: 3 },
+        { id: 'hsw', disc: 'cf', name: 'Handstand walk', stage: 1 },
+        { id: 'rmu', disc: 'cf', name: 'Muscle-up en anillas', stage: 0 },
+        { id: 'kpu', disc: 'bm', name: 'Kipping pull-up', stage: 4 },
+        { id: 'bfu', disc: 'bm', name: 'Butterfly pull-up', stage: 1 },
+        { id: 'bmu', disc: 'bm', name: 'Bar muscle-up', stage: 3 },
+        { id: 'fl', disc: 'bm', name: 'Front lever', stage: 0 },
+        { id: 'ps', disc: 'gap', name: 'Pistol squat', stage: 2 },
+        { id: 'sb', disc: 'hx', name: 'Sled push sin parar', stage: 2 }
+      ],
+      members: [
+        { id: 'lu', name: 'Luis', color: 'var(--color-accent)' },
+        { id: 'mj', name: 'Majo', color: 'var(--color-accent-2)' },
+        { id: 'pa', name: 'Pato', color: 'var(--color-neutral-700)' },
+        { id: 'da', name: 'Dani', color: 'var(--color-accent-700)' }
+      ],
+      incoming: [{ id: 'ca', name: 'Caro' }],
+      pending: [],
+      feed: [
+        { id: 1, who: 'mj', kind: 'pr', disc: 'hx', what: 'Simulacro completo', type: 'time', value: 4510, ago: 'Hace 2 h', cheers: 3, cheered: false },
+        { id: 2, who: 'lu', kind: 'pr', disc: 'cf', what: 'Back squat', type: 'kg', value: 140, ago: 'Hace 5 h', cheers: 5, cheered: true },
+        { id: 3, who: 'pa', kind: 'skill', disc: 'bm', what: 'Bar muscle-up', stage: '¡Logrado!', ago: 'Ayer', cheers: 8, cheered: false },
+        { id: 4, who: 'da', kind: 'pr', disc: 'gap', what: 'Hip thrust', type: 'kg', value: 120, ago: 'Ayer', cheers: 2, cheered: false },
+        { id: 5, who: 'lu', kind: 'pr', disc: 'mc', what: 'AMRAP 20′ Cindy', type: 'reps', unitLabel: 'rondas', value: 21, ago: 'Hace 2 días', cheers: 4, cheered: false },
+        { id: 6, who: 'mj', kind: 'skill', disc: 'cf', what: 'Double unders', stage: 'Dominado', ago: 'Hace 3 días', cheers: 6, cheered: true }
+      ],
+      reminders: [
+        { id: 1, title: 'CrossFit en el box', sub: 'Lun · Mié · Vie', time: '7:00', on: true },
+        { id: 2, title: 'Clase de Hyrox', sub: 'Mar · Jue', time: '19:00', on: true },
+        { id: 3, title: '¿Hubo marca hoy?', sub: 'Después de cada entreno', time: '20:30', on: true },
+        { id: 4, title: 'GAP + movilidad', sub: 'Sábado', time: '10:00', on: false }
+      ]
+    }, saved || {}, { sheet: false, sel: 'sq', sheetDisc: 'cf', draft: 110, toast: false, filter: 'all', detId: null, draftText: null, showNewMov: false, newMovName: '', newMovType: 'kg', scheme: '1RM', dateISO: '2026-10-04', mode: 'RX', note: '', skFilter: 'all', newSkill: '', grFilter: 'all', inviteName: '', newDays: [0, 2, 4], newHour: 7 });
+  })();
+
+  componentDidUpdate() {
+    const { screen, name, goals, freq, done, prs, reminders, skills, units, members, incoming, pending, feed } = this.state;
+    try { localStorage.setItem('cfAvances5', JSON.stringify({ screen, name, goals, freq, done, prs, reminders, skills, units, members, incoming, feed })); } catch (e) {}
+  }
+
+  pr(id) { return this.state.prs.find(x => x.id === id); }
+  cur(id) { const p = this.pr(id); return p.hist.length ? p.hist[p.hist.length - 1] : (p.type === 'kg' ? 40 : p.type === 'time' ? 300 : 10); }
+  logOf(p) {
+    if (p.log) return p.log;
+    const SEED = ['12 may', '16 jun', '14 jul', '18 ago'];
+    return p.hist.map((v, i) => ({ v, date: i === p.hist.length - 1 ? p.date : SEED[i], scheme: p.type === 'kg' ? '1RM' : null, mode: 'RX', note: i === p.hist.length - 1 ? 'Salió limpio, con cinturón.' : '' }));
+  }
+  bestOf(p, scheme) {
+    const vs = this.logOf(p).filter(e => (e.scheme || null) === (scheme || null)).map(e => e.v);
+    if (!vs.length) return null;
+    return p.better === 'down' ? Math.min(...vs) : Math.max(...vs);
+  }
+  detVals(val, unitOf, gain, gainTxt, discOf, open) {
+    const p = this.pr(this.state.detId);
+    if (!p) return { name: '', disc: '', bars: [], log: [] };
+    const d = discOf(p.disc) || { label: '', color: 'inherit' };
+    const log = this.logOf(p);
+    const main = p.type === 'kg' ? '1RM' : null;
+    const best = this.bestOf(p, main);
+    const first = log.find(e => (e.scheme || null) === main);
+    const delta = best != null && first ? gain(p, first.v, best) : 0;
+    const mainLog = log.filter(e => (e.scheme || null) === main).slice(-6);
+    const sc = mainLog.map(e => p.better === 'down' ? -e.v : e.v);
+    const mn = Math.min(...sc), mx = Math.max(...sc);
+    return {
+      name: p.name, disc: d.label, discColor: d.color, unit: unitOf(p),
+      bestLabel: p.type === 'kg' ? 'Mejor 1RM' : p.better === 'down' ? 'Mejor tiempo' : 'Mejor marca',
+      best: best == null ? '—' : val(p, best),
+      delta: delta > 0 ? `${gainTxt(p, delta)} desde ${first.date}` : 'Tu primer registro',
+      bars: mainLog.map((e, i) => ({ label: val(p, e.v), date: e.date, h: `${mx === mn ? 60 : 18 + 60 * (sc[i] - mn) / (mx - mn)}%`,
+        bg: e.v === best ? 'var(--color-accent)' : 'var(--color-neutral-400)', fg: e.v === best ? 'var(--color-accent-800)' : 'var(--color-neutral-800)' })),
+      log: [...log].reverse().map(e => ({
+        date: e.date, val: val(p, e.v), unit: unitOf(p), note: e.note, hasNote: !!e.note,
+        tags: [
+          ...(e.v === this.bestOf(p, e.scheme) ? [{ label: 'Récord', bg: 'var(--color-accent-2)', fg: 'var(--color-bg)' }] : []),
+          ...(e.scheme ? [{ label: e.scheme, bg: 'var(--color-bg)', fg: 'var(--color-text)' }] : []),
+          { label: e.mode || 'RX', bg: e.mode === 'Escalado' ? 'var(--color-accent-200)' : 'var(--color-bg)', fg: e.mode === 'Escalado' ? 'var(--color-accent-800)' : 'var(--color-text)' }
+        ]
+      })),
+      register: open(p.id)
+    };
+  }
+
+  skillVals(shownDiscs, pill, discOf, celebrate) {
+    const s = this.state;
+    const STAGES = ['Por empezar', 'Practicando', 'Con escala', '¡Logrado!', 'Dominado'];
+    const mine = (s.skills || []).filter(k => shownDiscs.some(d => d.id === k.disc));
+    const list = mine.filter(k => s.skFilter === 'all' || k.disc === s.skFilter);
+    const done = mine.filter(k => k.stage >= 3).length;
+    const next = mine.filter(k => k.stage === 2)[0] || mine.filter(k => k.stage === 1)[0];
+    const setStage = (k, i) => () => {
+      const reached = i >= 3 && k.stage < 3;
+      this.setState(st => ({ skills: st.skills.map(x => x.id === k.id ? { ...x, stage: i } : x) }));
+      if (reached) {
+        this.setState({ toast: true, toastTitle: celebrate ? '¡Skill desbloqueada!' : 'Skill lograda', toastText: `${k.name}. Eso no se olvida.` });
+        clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: false }), 2600);
+      }
+    };
+    return {
+      skDone: done, skTotal: mine.length,
+      skPct: `${mine.length ? Math.round(100 * done / mine.length) : 0}%`,
+      skNext: next ? `La que viene: ${next.name}` : '¡Vas por todas!',
+      skFilters: [pill(s.skFilter === 'all', () => this.setState({ skFilter: 'all' }), 'Todas'), ...shownDiscs.map(d => pill(s.skFilter === d.id, () => this.setState({ skFilter: d.id }), d.label))],
+      skills: list.map(k => {
+        const d = discOf(k.disc);
+        const got = k.stage >= 3;
+        return {
+          name: k.name, disc: d.label, discColor: d.color, stageLabel: STAGES[k.stage],
+          tagBg: got ? 'var(--color-accent-2)' : k.stage > 0 ? 'var(--color-accent-200)' : 'var(--color-bg)',
+          tagFg: got ? 'var(--color-bg)' : k.stage > 0 ? 'var(--color-accent-800)' : 'var(--color-neutral-800)',
+          steps: STAGES.map((label, i) => {
+            const on = i <= k.stage;
+            const col = got ? 'var(--color-accent-2)' : 'var(--color-accent)';
+            return { title: label, flex: i === 0 ? 'none' : '1', line: i > 0, lineBg: on ? col : 'var(--color-neutral-400)',
+              bg: on ? col : 'var(--color-bg)', border: on ? col : 'var(--color-neutral-400)', onClick: setStage(k, i) };
+          })
+        };
+      }),
+      newSkill: s.newSkill,
+      onNewSkill: e => this.setState({ newSkill: e.target.value }),
+      addSkill: () => {
+        const name = (s.newSkill || '').trim(); if (!name) return;
+        const disc = s.skFilter !== 'all' ? s.skFilter : (shownDiscs[0] || {}).id || 'cf';
+        this.setState(st => ({ newSkill: '', skills: [...st.skills, { id: 'k' + Date.now(), disc, name, stage: 0 }] }));
+      }
+    };
+  }
+
+  flash(title, text) {
+    this.setState({ toast: true, toastTitle: title, toastText: text });
+    clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: false }), 2600);
+  }
+
+  groupVals(discOf, val, unitOf, ink, bg) {
+    const s = this.state;
+    const COLORS = ['var(--color-accent)', 'var(--color-accent-2)', 'var(--color-neutral-700)', 'var(--color-accent-700)', 'var(--color-accent-2-700)'];
+    const me = { id: 'me', name: 'Tú', color: 'var(--color-text)' };
+    const all = [me, ...s.members];
+    const find = id => all.find(m => m.id === id) || { name: '?', color: 'var(--color-neutral-600)' };
+    const ini = n => (n.trim()[0] || '?').toUpperCase();
+    const feed = s.feed.filter(f => s.grFilter === 'all' || f.who === s.grFilter);
+    const fm = s.grFilter !== 'all' ? find(s.grFilter) : null;
+    return {
+      grMembers: [{ id: 'all', name: 'Todos', color: 'var(--color-accent-2-700)' }, ...all].map(m => ({
+        name: m.name, color: m.color, initial: m.id === 'all' ? '★' : ini(m.name),
+        ring: s.grFilter === m.id ? '6px' : '3px',
+        onClick: () => this.setState({ grFilter: m.id })
+      })).map((m, i) => ({ ...m, ring: m.ring === '3px' ? '0px' : m.ring })),
+      grIncoming: s.incoming.map(r => ({
+        name: r.name, initial: ini(r.name),
+        accept: () => {
+          this.setState(st => ({ incoming: st.incoming.filter(x => x.id !== r.id), members: [...st.members, { id: r.id, name: r.name, color: COLORS[st.members.length % COLORS.length] }],
+            feed: [...st.feed.slice(0, 1), { id: Date.now(), who: r.id, kind: 'pr', disc: 'cf', what: 'Peso muerto', type: 'kg', value: 110, ago: 'Hace 1 h', cheers: 1, cheered: false }, ...st.feed.slice(1)] }));
+          this.flash('¡Nuevo en el grupo!', `${r.name} ya ve tus logros y tú los suyos.`);
+        },
+        reject: () => this.setState(st => ({ incoming: st.incoming.filter(x => x.id !== r.id) }))
+      })),
+      inviteName: s.inviteName,
+      onInvite: e => this.setState({ inviteName: e.target.value }),
+      sendInvite: () => {
+        const name = (s.inviteName || '').trim().replace(/^@/, ''); if (!name) return;
+        const id = 'm' + Date.now();
+        this.setState(st => ({ inviteName: '', pending: [...st.pending, { id, name }] }));
+        this.flash('Solicitud enviada', `Le avisamos a ${name}.`);
+        setTimeout(() => {
+          this.setState(st => ({ pending: st.pending.filter(p => p.id !== id), members: [...st.members, { id, name, color: COLORS[st.members.length % COLORS.length] }],
+            feed: [{ id: Date.now(), who: id, kind: 'skill', disc: 'cf', what: 'Rope climb', stage: '¡Logrado!', ago: 'Hace 3 h', cheers: 0, cheered: false }, ...st.feed] }));
+          this.flash('¡Aceptó tu solicitud!', `${name} ya está en tu grupo.`);
+        }, 4000);
+      },
+      grPending: s.pending.map(p => ({ name: p.name })),
+      grFeedTitle: fm ? `Logros de ${fm.name}` : 'Logros del grupo',
+      grFeed: feed.map(f => {
+        const m = find(f.who), d = discOf(f.disc) || { label: '', color: ink };
+        const isPr = f.kind === 'pr';
+        return {
+          who: m.name, initial: m.id === 'me' ? 'Tú' : ini(m.name), color: m.color, ago: f.ago,
+          disc: d.label, discColor: d.color,
+          kindLabel: isPr ? 'Nuevo récord en' : 'Desbloqueó la skill',
+          what: f.what,
+          val: isPr ? `${val(f, f.value)} ${unitOf(f)}`.trim() : f.stage,
+          valColor: isPr ? 'var(--color-text)' : 'var(--color-accent-2-700)',
+          cheers: f.cheers,
+          cheerBg: f.cheered ? 'var(--color-accent)' : 'transparent',
+          cheerFg: f.cheered ? bg : 'var(--color-accent-800)',
+          cheerBorder: f.cheered ? 'var(--color-accent)' : 'var(--color-accent-300)',
+          onCheer: () => this.setState(st => ({ feed: st.feed.map(x => x.id === f.id ? { ...x, cheered: !x.cheered, cheers: x.cheers + (x.cheered ? -1 : 1) } : x) }))
+        };
+      })
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const lb = (s.units ?? this.props.unidades ?? 'kg') === 'lb';
+    const wu = lb ? 'lb' : 'kg';
+    const fmtKg = kg => lb ? String(Math.round(kg * 2.2046)) : (kg % 1 ? kg.toFixed(1).replace('.', ',') : String(kg));
+    const fmtT = sec => { sec = Math.round(sec); const hh = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), ss = String(sec % 60).padStart(2, '0'); return hh ? `${hh}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`; };
+    const fmtD = sec => { sec = Math.round(Math.abs(sec)); return sec < 60 ? `${sec} s` : fmtT(sec); };
+    const val = (p, v) => p.type === 'kg' ? fmtKg(v) : p.type === 'time' ? fmtT(v) : String(Math.round(v));
+    const unitOf = p => p.type === 'kg' ? wu : p.type === 'reps' ? (p.unitLabel || 'reps') : '';
+    const gain = (p, a, b) => (p.better === 'down' ? a - b : b - a);
+    const gainTxt = (p, g) => p.type === 'kg' ? `+${fmtKg(g)} ${wu}` : p.type === 'reps' ? `+${Math.round(g)} ${unitOf(p)}` : (p.better === 'down' ? `−${fmtD(g)}` : `+${fmtD(g)}`);
+    const stepOf = p => p.type === 'kg' ? (lb ? 5 / 2.2046 : 2.5) : p.type === 'reps' ? 1 : (p.hist[p.hist.length - 1] > 1800 ? 30 : 5);
+    const celebrate = this.props.celebrar ?? true;
+    const ink = 'var(--color-text)', bg = 'var(--color-bg)';
+    const discOf = id => this.DISCS.find(d => d.id === id);
+    const go = screen => () => this.setState({ screen });
+    const open = id => () => { const p = this.pr(id); this.setState({ sheet: true, sel: id, sheetDisc: p.disc, draft: this.cur(id), draftText: null, showNewMov: false, note: '', dateISO: '2026-10-04', scheme: '1RM', mode: 'RX' }); };
+    const selP = this.pr(s.sel) || s.prs[0];
+    const schemeKey = selP.type === 'kg' ? s.scheme : null;
+    const bestE = this.bestOf(selP, schemeKey);
+    const best = bestE == null ? null : bestE;
+    const g0 = best == null ? 1 : gain(selP, best, s.draft);
+    const g = best != null && selP.type === 'kg' && lb && Math.abs(Math.round(best * 2.2046) - Math.round(s.draft * 2.2046)) < 1 ? 0 : g0;
+    const parse = (p, t) => { t = String(t).trim().replace(',', '.'); if (!t) return null;
+      if (p.type === 'time') { const parts = t.split(':').map(Number); if (parts.some(isNaN)) return null; return parts.reduce((a, x) => a * 60 + x, 0); }
+      const n = Number(t); if (isNaN(n)) return null; return p.type === 'kg' && lb ? n / 2.2046 : n; };
+    const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const fmtDate = iso => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]}`; };
+    const sheetDisc = discOf(s.sheetDisc) || this.DISCS[0];
+    const weekDone = s.done.filter(Boolean).length;
+    const dayL = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+    const dayFull = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const myDiscs = this.DISCS.filter(d => s.goals.includes(d.id));
+    const shownDiscs = myDiscs.length ? myDiscs : this.DISCS;
+    const visible = s.prs.filter(p => shownDiscs.some(d => d.id === p.disc) && (s.filter === 'all' || p.disc === s.filter));
+    const pill = (on, onClick, label) => ({ label, onClick, bg: on ? ink : 'transparent', fg: on ? bg : ink, border: on ? ink : 'var(--color-neutral-400)' });
+    const firstOf = disc => s.prs.find(p => p.disc === disc);
+
+    return {
+      isWelcome1: s.screen === 'w1', isWelcome2: s.screen === 'w2',
+      isHome: s.screen === 'home', isRem: s.screen === 'rem',
+      showTabs: ['home', 'rem', 'sk', 'gr', 'det'].includes(s.screen), isDet: s.screen === 'det', det: this.detVals(val, unitOf, gain, gainTxt, discOf, open), isSk: s.screen === 'sk', goSk: go('sk'),
+      skColor: s.screen === 'sk' ? bg : 'var(--color-neutral-500)',
+      isGr: s.screen === 'gr', goGr: go('gr'), grColor: s.screen === 'gr' ? bg : 'var(--color-neutral-500)',
+      ...this.groupVals(discOf, val, unitOf, ink, bg),
+      ...this.skillVals(shownDiscs, pill, discOf, celebrate),
+      toStep1: go('w1'), toStep2: go('w2'),
+      nameInput: s.name, onName: e => this.setState({ name: e.target.value }),
+      finishOnboarding: () => this.setState({ screen: 'home', filter: 'all' }),
+      goals: this.DISCS.map(d => {
+        const on = s.goals.includes(d.id);
+        return pill(on, () => this.setState(st => ({ goals: on ? st.goals.filter(x => x !== d.id) : [...st.goals, d.id] })), d.label);
+      }),
+      freqs: [2, 3, 4, 5, 6].map(n => ({ n, bg: s.freq === n ? 'var(--color-accent)' : 'var(--color-surface)', fg: s.freq === n ? bg : ink, onClick: () => this.setState({ freq: n }) })),
+      greeting: `¡Hola, ${(s.name || '').trim() || 'atleta'}!`,
+      initial: ((s.name || '').trim()[0] || 'A').toUpperCase(),
+      weekDone, freq: s.freq,
+      streakMsg: weekDone >= s.freq ? '¡meta cumplida!' : `te faltan ${s.freq - weekDone}`,
+      week: dayL.map((l, i) => ({
+        l, bg: s.done[i] ? 'var(--color-accent-2-300)' : 'transparent',
+        border: s.done[i] ? 'var(--color-accent-2-300)' : (i === 6 ? 'var(--color-bg)' : 'var(--color-neutral-700)'),
+        mark: s.done[i] ? '✓' : '',
+        onClick: () => this.setState(st => ({ done: st.done.map((d, j) => j === i ? !d : d) }))
+      })),
+      filters: [pill(s.filter === 'all', () => this.setState({ filter: 'all' }), 'Todas'), ...shownDiscs.map(d => pill(s.filter === d.id, () => this.setState({ filter: d.id }), d.label))],
+      noPrs: visible.length === 0,
+      prs: visible.map(p => {
+        const h = p.hist.length ? p.hist : [this.cur(p.id)], last = h[h.length - 1];
+        const sc = p.better === 'down' ? h.map(v => -v) : h;
+        const min = Math.min(...sc), max = Math.max(...sc);
+        const d = gain(p, h[0], last);
+        const disc = discOf(p.disc);
+        return {
+          name: p.name, disc: disc.label, discColor: disc.color,
+          isTime: p.type === 'time', isLoad: p.type !== 'time',
+          iconBg: p.type === 'kg' ? 'var(--color-accent-200)' : p.type === 'time' ? 'var(--color-accent-2-200)' : 'var(--color-neutral-200)',
+          iconFg: p.type === 'kg' ? 'var(--color-accent-800)' : p.type === 'time' ? 'var(--color-accent-2-800)' : 'var(--color-neutral-800)', date: `Última · ${p.date}`,
+          val: val(p, last), unit: unitOf(p),
+          delta: d > 0 ? gainTxt(p, d) : 'Igual',
+          bars: sc.map((v, i) => ({ h: `${max === min ? 60 : 30 + 70 * (v - min) / (max - min)}%`, bg: i === h.length - 1 ? 'var(--color-accent)' : 'var(--color-neutral-400)' })),
+          onClick: () => this.setState({ screen: 'det', detId: p.id })
+        };
+      }),
+      goHome: go('home'), goRem: go('rem'),
+      homeColor: ['home', 'det'].includes(s.screen) ? bg : 'var(--color-neutral-500)',
+      remColor: s.screen === 'rem' ? bg : 'var(--color-neutral-500)',
+      openNew: () => { const f = s.filter !== 'all' ? firstOf(s.filter) : selP; open(f.id)(); },
+      sheetY: s.sheet ? '0%' : '110%', backOp: s.sheet ? 0.45 : 0, backPE: s.sheet ? 'auto' : 'none',
+      closeSheet: () => this.setState({ sheet: false }),
+      sheetDiscs: shownDiscs.map(d => pill(s.sheetDisc === d.id, () => { const f = firstOf(d.id); this.setState({ sheetDisc: d.id, sel: f.id, draft: this.cur(f.id) }); }, d.label)),
+      movs: s.prs.filter(p => p.disc === s.sheetDisc).map(p => ({ name: p.name, bg: p.id === s.sel ? 'var(--color-accent)' : 'var(--color-surface)', fg: p.id === s.sel ? bg : ink, onClick: () => this.setState({ sel: p.id, draft: this.cur(p.id) }) })),
+      isWeight: selP.type === 'kg',
+      unitOpts: ['kg', 'lb'].map(u => ({ label: u, bg: (lb ? 'lb' : 'kg') === u ? ink : 'transparent', fg: (lb ? 'lb' : 'kg') === u ? bg : ink,
+        onClick: () => this.setState({ units: u }) })),
+      draftVal: s.draftText ?? val(selP, s.draft), draftUnit: unitOf(selP),
+      draftFmtHint: selP.type === 'time' ? 'Toca para escribir · m:ss' : 'Toca el número para escribirlo',
+      onDraftText: e => { const t = e.target.value; const v = parse(selP, t); this.setState(v == null ? { draftText: t } : { draftText: t, draft: v }); },
+      focusDraft: e => { const el = e.target; setTimeout(() => el.select && el.select(), 0); },
+      commitDraft: () => this.setState({ draftText: null }),
+      toggleNewMov: () => this.setState(st => ({ showNewMov: !st.showNewMov })),
+      newMovName: s.newMovName, onNewMovName: e => this.setState({ newMovName: e.target.value }),
+      sheetDiscLabel: sheetDisc.label,
+      newMovTypes: [['kg', 'Peso'], ['time', 'Tiempo'], ['reps', 'Reps']].map(([k, l]) => pill(s.newMovType === k, () => this.setState({ newMovType: k }), l)),
+      createMov: () => {
+        const name = (s.newMovName || '').trim(); if (!name) return;
+        const id = 'u' + Date.now(); const type = s.newMovType;
+        const start = type === 'kg' ? 40 : type === 'time' ? 300 : 10;
+        this.setState(st => ({ prs: [...st.prs, { id, disc: st.sheetDisc, name, type, better: type === 'time' ? 'down' : undefined, hist: [], log: [], date: '—' }], sel: id, draft: start, draftText: null, showNewMov: false, newMovName: '' }));
+      },
+      schemes: ['1RM', '3RM', '5RM', '10RM'].map(k => pill(s.scheme === k, () => this.setState({ scheme: k }), k)),
+      dateOpts: [['2026-10-04', 'Hoy'], ['2026-10-03', 'Ayer']].map(([iso, l]) => pill(s.dateISO === iso, () => this.setState({ dateISO: iso }), l)),
+      dateISO: s.dateISO, onDate: e => e.target.value && this.setState({ dateISO: e.target.value }),
+      modes: ['RX', 'Escalado'].map(k => pill(s.mode === k, () => this.setState({ mode: k }), k)),
+      note: s.note, onNote: e => this.setState({ note: e.target.value }),
+      draftHint: best == null ? `¡Primer registro${schemeKey ? ' de ' + schemeKey : ''}!` : g > 0.01 ? (selP.better === 'down' ? `¡${fmtD(g)} más rápido que tu récord!` : `¡${gainTxt(selP, g)} sobre tu récord!`) : (g < -0.01 ? `Récord actual: ${val(selP, best)} ${unitOf(selP)}` : 'Igual a tu récord'),
+      hintColor: g > 0.01 ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)',
+      minus: () => this.setState(st => ({ draftText: null, draft: Math.max(0, st.draft - stepOf(selP)) })),
+      plus: () => this.setState(st => ({ draftText: null, draft: st.draft + stepOf(selP) })),
+      save: () => {
+        const isPR = g > 0.01;
+        const v = Math.round(s.draft * 10) / 10;
+        const entry = { v, date: fmtDate(s.dateISO), scheme: schemeKey, mode: s.mode, note: (s.note || '').trim() };
+        const main = selP.type !== 'kg' || schemeKey === '1RM';
+        this.setState(st => ({
+          sheet: false, draftText: null,
+          prs: st.prs.map(x => x.id === st.sel ? { ...x, log: [...this.logOf(x), entry], ...(main ? { hist: [...x.hist.slice(-4), v], date: entry.date } : {}) } : x),
+          feed: isPR ? [{ id: Date.now(), who: 'me', kind: 'pr', disc: selP.disc, what: selP.name, type: selP.type, unitLabel: selP.unitLabel, value: Math.round(st.draft * 10) / 10, ago: 'Ahora', cheers: 0, cheered: false }, ...st.feed] : st.feed,
+          toast: true,
+          toastTitle: isPR ? (celebrate ? '¡Nuevo récord!' : 'Récord guardado') : 'Guardado',
+          toastText: isPR ? (best == null ? `${selP.name}${schemeKey ? ' ' + schemeKey : ''}: ${val(selP, v)} ${unitOf(selP)}. ¡Primera marca!` : `${selP.name}${schemeKey && schemeKey !== '1RM' ? ' ' + schemeKey : ''}: ${gainTxt(selP, g)}. ¡Qué bárbaro!`) : `${selP.name}: ${val(selP, s.draft)} ${unitOf(selP)}. Constancia es avance.`
+        }));
+        clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: false }), 2600);
+      },
+      toastY: s.toast ? '0px' : '-160px', toastOp: s.toast ? 1 : 0,
+      toastTitle: s.toastTitle || '', toastText: s.toastText || '',
+      reminders: s.reminders.map((r, i) => ({
+        ...r, op: r.on ? 1 : 0.6,
+        dot: ['var(--color-accent)', 'var(--color-accent-2)', 'var(--color-neutral-700)'][i % 3],
+        track: r.on ? 'var(--color-accent-2)' : 'var(--color-neutral-400)', knob: r.on ? '22px' : '0px',
+        onToggle: () => this.setState(st => ({ reminders: st.reminders.map(x => x.id === r.id ? { ...x, on: !x.on } : x) }))
+      })),
+      days: dayL.map((l, i) => {
+        const on = s.newDays.includes(i);
+        return { l, bg: on ? 'var(--color-accent)' : 'var(--color-surface)', fg: on ? bg : ink,
+          onClick: () => this.setState(st => ({ newDays: on ? st.newDays.filter(x => x !== i) : [...st.newDays, i].sort() })) };
+      }),
+      newHour: `${s.newHour}:00`,
+      hourMinus: () => this.setState(st => ({ newHour: (st.newHour + 23) % 24 })),
+      hourPlus: () => this.setState(st => ({ newHour: (st.newHour + 1) % 24 })),
+      addReminder: () => this.setState(st => ({
+        reminders: [...st.reminders, { id: Date.now(), title: 'Entreno extra', sub: st.newDays.length ? st.newDays.map(i => dayFull[i]).join(' · ') : 'Sin días', time: `${st.newHour}:00`, on: true }]
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
