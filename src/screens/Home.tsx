@@ -1,6 +1,6 @@
 import { Icon } from '../components/Icon';
 import { discOf } from '../data';
-import { initialOf, logOf, longToday } from '../format';
+import { bestOf, entriesOf, initialOf, logOf, longToday, mainSchemeOf, todayIndex } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 
 const DAY_L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -11,6 +11,7 @@ export function Home() {
   const shown = useShownDiscs();
   const weekDone = data.done.filter(Boolean).length;
   const name = (data.name || '').trim();
+  const today = todayIndex();
   // Only marks with at least one attempt show up; the rest is just the catalog the record sheet offers.
   const visible = data.prs.filter(p => logOf(p).length > 0 && shown.some(d => d.id === p.disc) && (homeFilter === 'all' || p.disc === homeFilter));
 
@@ -21,7 +22,7 @@ export function Home() {
           <span style={{ fontSize: 14, color: 'var(--color-neutral-700)', fontWeight: 500 }}>{longToday()}</span>
           <h1 className="title" style={{ fontSize: 32 }}>¡Hola, {name || 'atleta'}!</h1>
         </div>
-        <div className="flex-center" style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-accent-2-700)', color: 'var(--color-bg)', fontFamily: 'var(--font-heading)', fontSize: 20, flex: 'none' }} aria-hidden="true">{initialOf(name, 'A')}</div>
+        <button className="flex-center avatar-btn" onClick={() => set(() => ({ screen: 'w2' }))} aria-label="Tu perfil y ajustes">{initialOf(name, 'A')}</button>
       </div>
 
       <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden' }}>
@@ -39,10 +40,10 @@ export function Home() {
           {DAY_L.map((l, i) => {
             const on = data.done[i];
             return (
-              <button key={i} aria-label={`${DAY_LONG[i]}: entrené`} aria-pressed={on} onClick={() => set(d => ({ done: d.done.map((x, j) => j === i ? !x : x) }))}
+              <button key={i} aria-label={`${DAY_LONG[i]}${i === today ? ' (hoy)' : ''}: entrené`} aria-pressed={on} onClick={() => set(d => ({ done: d.done.map((x, j) => j === i ? !x : x) }))}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, minWidth: 44 }}>
                 <span aria-hidden="true" style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-neutral-400)' }}>{l}</span>
-                <span className="flex-center" style={{ width: 36, height: 36, borderRadius: '50%', background: on ? 'var(--color-accent-2-300)' : 'transparent', border: `2px solid ${on ? 'var(--color-accent-2-300)' : i === 6 ? 'var(--color-bg)' : 'var(--color-neutral-500)'}`, boxSizing: 'border-box', color: 'var(--color-text)', transition: 'background-color .2s, border-color .2s' }}>{on && <Icon name="check" size={18} />}</span>
+                <span className="flex-center" style={{ width: 36, height: 36, borderRadius: '50%', background: on ? 'var(--color-accent-2-300)' : 'transparent', border: `2px solid ${on ? 'var(--color-accent-2-300)' : i === today ? 'var(--color-bg)' : 'var(--color-neutral-500)'}`, boxSizing: 'border-box', color: 'var(--color-text)', transition: 'background-color .2s, border-color .2s' }}>{on && <Icon name="check" size={18} />}</span>
               </button>
             );
           })}
@@ -52,7 +53,6 @@ export function Home() {
       <div className="stack-3">
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
           <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ color: 'var(--color-accent)' }}><Icon name="dumbbell" size={22} /></span>Mis marcas</h2>
-          <span style={{ fontSize: 14, color: 'var(--color-neutral-700)' }}>Toca para actualizar</span>
         </div>
         <div className="chip-row">
           <button className="pill" onClick={() => setHomeFilter('all')} aria-pressed={homeFilter === 'all'} style={pillStyle(homeFilter === 'all')}>Todas</button>
@@ -64,12 +64,16 @@ export function Home() {
           </div>
         )}
         {visible.map(p => {
-          const log = logOf(p);
-          const h = p.hist.length ? p.hist : log.slice(-5).map(e => e.v);
-          const last = h[h.length - 1];
+          // The card shows the record (same number as the detail), judged on one scheme so dates and values match.
+          const scheme = mainSchemeOf(p);
+          const entries = entriesOf(p, scheme);
+          const best = bestOf(p, scheme) ?? 0;
+          const recordAt = [...entries].reverse().find(e => e.v === best) ?? entries[entries.length - 1];
+          const h = entries.slice(-5).map(e => e.v);
           const sc = p.better === 'down' ? h.map(v => -v) : h;
           const min = Math.min(...sc), max = Math.max(...sc);
-          const delta = fmt.gain(p, h[0], last);
+          const delta = fmt.gain(p, entries[0].v, best);
+          const badge = entries.length === 1 ? 'Primera' : delta > 0 ? fmt.gainTxt(p, delta) : `${entries.length} intentos`;
           const disc = discOf(p.disc);
           const tint = p.type === 'kg' ? 'accent' : p.type === 'time' ? 'accent-2' : 'neutral';
           return (
@@ -78,18 +82,18 @@ export function Home() {
                 <Icon name={p.type === 'time' ? 'timer' : 'dumbbell'} size={20} />
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-                <span className="kicker" style={{ color: disc.color }}>{disc.label}</span>
+                {homeFilter === 'all' && <span className="kicker" style={{ color: disc.color }}>{disc.label}</span>}
                 <span style={{ fontWeight: 600, fontSize: 16 }}>{p.name}</span>
-                <span className="muted-13">Última · {log[log.length - 1].date}</span>
+                <span className="muted-13">Récord{scheme && scheme !== '1RM' ? ` ${scheme}` : ''} · {recordAt.date}</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30 }}>
+              <div aria-hidden="true" style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30 }}>
                 {sc.map((v, i) => (
-                  <span key={i} style={{ width: 6, borderRadius: 999, height: `${max === min ? 60 : 30 + 70 * (v - min) / (max - min)}%`, background: i === h.length - 1 ? 'var(--color-accent)' : 'var(--color-neutral-400)' }} />
+                  <span key={i} style={{ width: 6, borderRadius: 999, height: `${max === min ? 60 : 30 + 70 * (v - min) / (max - min)}%`, background: h[i] === best ? 'var(--color-accent)' : 'var(--color-neutral-400)' }} />
                 ))}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 76 }}>
-                <span style={{ fontFamily: 'var(--font-heading)', fontSize: 24, lineHeight: 1 }}>{fmt.val(p, last)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, marginLeft: 3 }}>{fmt.unitOf(p)}</span></span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-accent-2-700)' }}>{h.length === 1 ? 'Primera' : delta > 0 ? fmt.gainTxt(p, delta) : 'Igual'}</span>
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: 24, lineHeight: 1 }}>{fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, marginLeft: 3 }}>{fmt.unitOf(p)}</span></span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-accent-2-700)' }}>{badge}</span>
               </div>
             </button>
           );

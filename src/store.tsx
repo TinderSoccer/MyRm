@@ -12,6 +12,8 @@ function load(): AppData {
   try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* private mode or corrupt */ }
   const data = { ...base, ...(saved || {}) };
   data.outgoing ??= [];
+  // Saves from before the flag existed: anyone past the welcome screens has onboarded.
+  if (saved && saved.onboarded == null) data.onboarded = data.screen !== 'w1' && data.screen !== 'w2';
   if (data.screen === 'det') data.screen = 'home';
   // The week strip starts empty every Monday.
   if (data.weekStart !== week) data.done = [false, false, false, false, false, false, false];

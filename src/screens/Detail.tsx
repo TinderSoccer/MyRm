@@ -1,21 +1,38 @@
+import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
-import { discOf } from '../data';
-import { bestOf, logOf } from '../format';
+import { discOf, type Pr } from '../data';
+import { bestOf, entriesOf, logOf, mainSchemeOf, withLog } from '../format';
 import { useStore } from '../store';
 
 export function Detail() {
-  const { data, set, fmt, detId, openSheet } = useStore();
+  const { data, set, fmt, detId, openSheet, flash } = useStore();
   const p = data.prs.find(x => x.id === detId);
   const goHome = () => set(() => ({ screen: 'home' }));
   if (!p) return null;
 
   const d = discOf(p.disc);
   const log = logOf(p);
-  const main = p.type === 'kg' ? '1RM' : null;
+  const main = mainSchemeOf(p);
   const best = bestOf(p, main);
-  const first = log.find(e => (e.scheme || null) === main);
+  const mainEntries = entriesOf(p, main);
+  const first = mainEntries[0];
   const delta = best != null && first ? fmt.gain(p, first.v, best) : 0;
-  const mainLog = log.filter(e => (e.scheme || null) === main).slice(-6);
+  const mainLog = mainEntries.slice(-6);
+  const custom = p.id.startsWith('u');
+
+  const update = (fn: (x: Pr) => Pr) => set(d => ({ prs: d.prs.map(x => x.id === p.id ? fn(x) : x) }));
+  // Index into the log as stored (the list below shows it newest first).
+  const removeEntry = (at: number) => {
+    const next = log.filter((_, i) => i !== at);
+    update(x => withLog(x, next));
+    if (!next.length) goHome();
+    flash('Registro borrado', `${p.name}: quedan ${next.length} ${next.length === 1 ? 'registro' : 'registros'}.`);
+  };
+  const removeAll = () => {
+    if (custom) set(d => ({ prs: d.prs.filter(x => x.id !== p.id), screen: 'home' }));
+    else { update(x => withLog(x, [])); goHome(); }
+    flash(custom ? 'Movimiento borrado' : 'Historial borrado', p.name);
+  };
   const sc = mainLog.map(e => p.better === 'down' ? -e.v : e.v);
   const mn = Math.min(...sc), mx = Math.max(...sc);
   const unit = fmt.unitOf(p);
@@ -33,13 +50,13 @@ export function Detail() {
       <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 4, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', width: 140, height: 140, borderRadius: '50%', background: 'var(--color-accent-2)', right: -40, bottom: -60 }} />
         <span style={{ fontSize: 14, color: 'var(--color-neutral-300)', position: 'relative' }}>
-          {p.type === 'kg' ? 'Mejor 1RM' : p.better === 'down' ? 'Mejor tiempo' : 'Mejor marca'}
+          {p.type === 'kg' ? `Mejor ${main}` : p.better === 'down' ? 'Mejor tiempo' : 'Mejor marca'}
         </span>
         <span style={{ fontFamily: 'var(--font-heading)', fontSize: 56, lineHeight: 1, position: 'relative' }}>
           {best == null ? '—' : fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 18, fontWeight: 600, marginLeft: 6 }}>{unit}</span>
         </span>
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-accent-2-300)', position: 'relative' }}>
-          {delta > 0 && first ? `${fmt.gainTxt(p, delta)} desde ${first.date}` : 'Tu primer registro'}
+          {mainEntries.length <= 1 ? 'Tu primer registro' : delta > 0 ? `${fmt.gainTxt(p, delta)} desde ${first.date}` : `Sin mejora desde ${first.date}`}
         </span>
       </div>
 
@@ -63,7 +80,7 @@ export function Detail() {
 
       <div className="stack-3">
         <h2 className="section-title" style={{ fontSize: 22 }}>Historial</h2>
-        {[...log].reverse().map((e, i) => {
+        {log.map((e, at) => ({ e, at })).reverse().map(({ e, at }) => {
           const scaled = e.mode === 'Escalado';
           const tags = [
             ...(e.v === bestOf(p, e.scheme) ? [{ label: 'Récord', bg: 'var(--color-accent-2-700)', fg: 'var(--color-bg)' }] : []),
@@ -71,7 +88,7 @@ export function Detail() {
             { label: e.mode || 'RX', bg: scaled ? 'var(--color-accent-200)' : 'var(--color-bg)', fg: scaled ? 'var(--color-accent-800)' : 'var(--color-text)' }
           ];
           return (
-            <div key={i} className="surface" style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px' }}>
+            <div key={at} className="surface" style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
                 <span style={{ fontWeight: 600, fontSize: 15 }}>{e.date}</span>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -79,12 +96,18 @@ export function Detail() {
                 </div>
                 {e.note && <span style={{ fontSize: 14, color: 'var(--color-neutral-800)', fontStyle: 'italic' }}>“{e.note}”</span>}
               </div>
-              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 22, flex: 'none' }}>{fmt.val(p, e.v)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{unit}</span></span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flex: 'none' }}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 22 }}>{fmt.val(p, e.v)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{unit}</span></span>
+                <DeleteButton label="Borrar" what={`el registro del ${e.date}`} onDelete={() => removeEntry(at)} />
+              </div>
             </div>
           );
         })}
       </div>
       <button onClick={() => openSheet({ prId: p.id })} className="btn btn-primary btn-block" style={{ height: 56, fontSize: 17 }}>Registrar nuevo intento</button>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <DeleteButton label={custom ? 'Borrar este movimiento' : 'Borrar todo el historial'} what={custom ? `el movimiento ${p.name}` : `todo el historial de ${p.name}`} onDelete={removeAll} />
+      </div>
     </div>
   );
 }

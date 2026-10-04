@@ -76,3 +76,41 @@ export function currentOf(p: Pr): number {
 }
 
 export const initialOf = (name: string, fallback = '?') => ((name || '').trim()[0] || fallback).toUpperCase();
+
+/** The scheme a mark is judged by: 1RM for weights (or the latest scheme if there's no 1RM yet), none otherwise. */
+export function mainSchemeOf(p: Pr): string | null {
+  if (p.type !== 'kg') return null;
+  const log = logOf(p);
+  if (!log.length || log.some(e => e.scheme === '1RM')) return '1RM';
+  return log[log.length - 1].scheme ?? '1RM';
+}
+
+/** Entries of one scheme, in the order they were logged. */
+export const entriesOf = (p: Pr, scheme: string | null) => logOf(p).filter(e => (e.scheme || null) === (scheme || null));
+
+/** Recomputes the derived fields (mini-chart history, last date) after the log changes. */
+export function withLog(p: Pr, log: LogEntry[]): Pr {
+  const main = log.filter(e => (e.scheme || null) === (p.type === 'kg' ? '1RM' : null));
+  return { ...p, log, hist: main.slice(-5).map(e => e.v), date: main.length ? main[main.length - 1].date : '—' };
+}
+
+/** "Ahora", "Hace 5 min", "Hace 3 h", "Ayer", "Hace 4 días", then a short date. */
+export function timeAgo(ts: number) {
+  const min = Math.floor((Date.now() - ts) / 60000);
+  if (min < 1) return 'Ahora';
+  if (min < 60) return `Hace ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `Hace ${h} h`;
+  const days = Math.floor(h / 24);
+  if (days === 1) return 'Ayer';
+  if (days < 7) return `Hace ${days} días`;
+  return shortDate(isoOf(new Date(ts)));
+}
+
+/** Index (Mon=0..Sun=6) of a date inside the week starting at weekStart, or -1 when it falls outside. */
+export function weekIndexOf(iso: string, weekStart: string) {
+  const days = Math.round((new Date(iso + 'T12:00').getTime() - new Date(weekStart + 'T12:00').getTime()) / 86400000);
+  return days >= 0 && days < 7 ? days : -1;
+}
+
+export const todayIndex = () => (new Date().getDay() + 6) % 7;

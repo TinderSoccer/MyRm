@@ -87,6 +87,14 @@ button { font-family: inherit; }
 }
 .round-btn:hover { background: var(--color-accent-200); }
 
+/* — profile avatar on Home — */
+.avatar-btn {
+  width: 48px; height: 48px; border-radius: 50%; border: none; flex: none; cursor: pointer;
+  background: var(--color-accent-2-700); color: var(--color-bg); font-family: var(--font-heading); font-size: 20px;
+  transition: background-color .15s;
+}
+.avatar-btn:hover { background: var(--color-accent-2-800); }
+
 /* — list cards — */
 .pr-card {
   display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--radius-lg); border: none;
@@ -147,6 +155,20 @@ button { font-family: inherit; }
 .draft-input:focus { border-bottom-color: var(--color-accent); }
 .new-mov { height: 40px; padding: 0 16px; border-radius: 999px; border: 2px dashed var(--color-neutral-600); background: transparent; color: var(--color-text); font-weight: 700; font-size: 14px; cursor: pointer; }
 .new-mov:hover { background: var(--color-accent-100); }
+
+/* — "Más detalles" disclosure in the record sheet: the summary shows the defaults that will be saved — */
+.more-toggle {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 16px; border-radius: 999px; border: none;
+  background: var(--color-surface); color: var(--color-text); font-weight: 600; font-size: 14px; cursor: pointer; text-align: left;
+}
+.more-toggle:hover { background: var(--color-accent-200); }
+.more-sum { flex: 1; min-width: 0; text-align: right; color: var(--color-neutral-700); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* — two-step delete: first tap arms, second confirms — */
+.del-btn { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid transparent; background: transparent; color: var(--color-neutral-700); font-weight: 600; font-size: 13px; cursor: pointer; position: relative; }
+.del-btn::after { content: ''; position: absolute; inset: -4px; }
+.del-btn:hover { color: var(--color-accent-800); }
+.del-btn[data-armed='true'] { border-color: var(--color-accent-700); color: var(--color-accent-800); background: var(--color-accent-100); }
 
 /* — toast — */
 .toast {

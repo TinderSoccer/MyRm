@@ -20,7 +20,8 @@ export interface Pr {
   log?: LogEntry[];
 }
 
-export interface Skill { id: string; disc: DiscId; name: string; stage: number }
+/** `tracked`: the user is working on it. Untracked skills are just the catalog offered when adding one. */
+export interface Skill { id: string; disc: DiscId; name: string; stage: number; tracked?: boolean }
 export interface Member { id: string; name: string; color: string }
 export interface Invite { id: string; name: string }
 
@@ -35,6 +36,8 @@ export interface FeedItem {
   value?: number;
   stage?: string;
   ago: string;
+  /** When it happened (ms). Older items only carry the `ago` label. */
+  at?: number;
   cheers: number;
   cheered: boolean;
 }
@@ -44,6 +47,8 @@ export interface Reminder { id: number; title: string; sub: string; time: string
 
 export interface AppData {
   screen: Screen;
+  /** False until the welcome + profile flow is finished once. */
+  onboarded: boolean;
   name: string;
   goals: DiscId[];
   freq: number;
@@ -83,6 +88,7 @@ export function seedData(weekStart: string): AppData {
     ({ id, disc, name, type, ...(type === 'time' ? { better: 'down' as const } : {}), ...extra, hist: [], log: [], date: '—' });
   return {
     screen: 'w1',
+    onboarded: false,
     name: '', goals: [], freq: 4,
     done: [false, false, false, false, false, false, false],
     weekStart,

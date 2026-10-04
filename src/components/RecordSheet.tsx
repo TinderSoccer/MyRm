@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
-import { UnitToggle } from '../screens/Welcome';
 import { discOf, type DiscId, type PrType } from '../data';
-import { bestOf, currentOf, logOf, shortDate, todayISO, yesterdayISO } from '../format';
+import { bestOf, currentOf, logOf, shortDate, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 
 const SCHEMES = ['1RM', '3RM', '5RM', '10RM'];
@@ -26,6 +25,7 @@ export function RecordSheet() {
   const [dateISO, setDateISO] = useState(todayISO());
   const [mode, setMode] = useState('RX');
   const [note, setNote] = useState('');
+  const [more, setMore] = useState(false);
 
   const firstOf = (disc: DiscId) => data.prs.find(p => p.disc === disc);
   const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); setDraft(currentOf(p)); setDraftText(null); } };
@@ -37,7 +37,7 @@ export function RecordSheet() {
       || (sheet.disc && firstOf(sheet.disc))
       || data.prs.find(p => p.id === sel) || data.prs[0];
     if (target) { setSel(target.id); setSheetDisc(target.disc); setDraft(currentOf(target)); }
-    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX');
+    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX'); setMore(false);
   }, [sheet]);
 
   // Modal focus: move into the sheet on open, close on Escape, hand focus back to whatever opened it.
@@ -60,6 +60,7 @@ export function RecordSheet() {
   const g = best != null && isWeight && fmt.sameShown(best, draft) ? 0 : g0;
   const unit = fmt.unitOf(selP);
   const sheetDiscLabel = discOf(sheetDisc).label;
+  const dateLabel = dateISO === todayISO() ? 'Hoy' : dateISO === yesterdayISO() ? 'Ayer' : shortDate(dateISO);
 
   const hint = best == null
     ? `¡Primer registro${schemeKey ? ' de ' + schemeKey : ''}!`
@@ -87,10 +88,12 @@ export function RecordSheet() {
     const isPR = g > 0.01;
     const v = Math.round(draft * 10) / 10;
     const entry = { v, date: shortDate(dateISO), scheme: schemeKey, mode, note: note.trim() };
-    const main = !isWeight || schemeKey === '1RM';
+    // Logging a mark means you trained that day.
+    const day = weekIndexOf(dateISO, data.weekStart);
     set(d => ({
-      prs: d.prs.map(x => x.id === selP.id ? { ...x, log: [...logOf(x), entry], ...(main ? { hist: [...x.hist.slice(-4), v], date: entry.date } : {}) } : x),
-      feed: isPR ? [{ id: Date.now(), who: 'me', kind: 'pr' as const, disc: selP.disc, what: selP.name, type: selP.type, unitLabel: selP.unitLabel, value: v, ago: 'Ahora', cheers: 0, cheered: false }, ...d.feed] : d.feed
+      prs: d.prs.map(x => x.id === selP.id ? withLog(x, [...logOf(x), entry]) : x),
+      done: day >= 0 ? d.done.map((x, i) => x || i === day) : d.done,
+      feed: isPR ? [{ id: Date.now(), who: 'me', kind: 'pr' as const, disc: selP.disc, what: selP.name, type: selP.type, unitLabel: selP.unitLabel, value: v, ago: 'Ahora', at: Date.now(), cheers: 0, cheered: false }, ...d.feed] : d.feed
     }));
     closeSheet();
     setDraftText(null);
@@ -143,13 +146,6 @@ export function RecordSheet() {
           </div>
         )}
 
-        {isWeight && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <span className="field-label">Peso en</span>
-            <UnitToggle height={36} />
-          </div>
-        )}
-
         <div className="surface" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 18 }}>
           <button className="stepper-btn stepper-minus" aria-label="Menos" onClick={() => { setDraftText(null); setDraft(v => Math.max(0, v - step)); }}><Icon name="minus" size={22} /></button>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 0 }}>
@@ -160,12 +156,19 @@ export function RecordSheet() {
                 onBlur={() => setDraftText(null)} />
               {unit && <span style={{ fontSize: 18, fontWeight: 600 }}>{unit}</span>}
             </div>
-            <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>{selP.type === 'time' ? 'Toca para escribir · m:ss' : 'Toca el número para escribirlo'}</span>
+            {selP.type === 'time' && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Formato m:ss</span>}
             <span style={{ fontSize: 13, fontWeight: 600, color: g > 0.01 ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
           </div>
           <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => v + step); }}><Icon name="plus" size={22} /></button>
         </div>
 
+        <button className="more-toggle" aria-expanded={more} aria-controls="sheet-more" onClick={() => setMore(v => !v)}>
+          <span>Más detalles</span>
+          <span className="more-sum">{[schemeKey, dateLabel, mode, note.trim() && 'Con nota'].filter(Boolean).join(' · ')}</span>
+          <span aria-hidden="true" style={{ display: 'flex', transform: `rotate(${more ? 90 : -90}deg)`, transition: 'transform .2s' }}><Icon name="chevronLeft" size={18} /></span>
+        </button>
+
+        {more && <div id="sheet-more" style={{ display: 'grid', gap: 'var(--space-4)' }}>
         {isWeight && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span className="field-label">Repeticiones</span>
@@ -196,6 +199,7 @@ export function RecordSheet() {
           <textarea id="sheet-note" className="input" rows={2} placeholder="¿Cómo te sentiste? Técnica, cinturón, rodilleras…" value={note} onChange={e => setNote(e.target.value)}
             style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 15, resize: 'none', height: 'auto', minHeight: 64 }} />
         </div>
+        </div>}
         <button className="btn btn-primary btn-block" onClick={save} style={{ height: 56, fontSize: 17 }}>Guardar</button>
       </div>
     </>

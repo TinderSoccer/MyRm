@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
 import { MEMBER_COLORS, discOf, type FeedItem, type Invite, type Member } from '../data';
-import { initialOf } from '../format';
+import { initialOf, timeAgo } from '../format';
 import { useStore } from '../store';
 
 const ME: Member = { id: 'me', name: 'Tú', color: 'var(--color-text)' };
@@ -104,7 +104,7 @@ export function Group() {
                 <span className="flex-center" style={{ width: 36, height: 36, borderRadius: '50%', background: m.color, color: 'var(--color-bg)', fontFamily: 'var(--font-heading)', fontSize: 15, flex: 'none' }}>{m.id === 'me' ? 'Tú' : initialOf(m.name)}</span>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                   <span style={{ fontWeight: 700, fontSize: 15 }}>{m.name}</span>
-                  <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>{f.ago}</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>{f.at ? timeAgo(f.at) : f.ago}</span>
                 </div>
                 <span className="kicker" style={{ color: d.color }}>{d.label}</span>
               </div>

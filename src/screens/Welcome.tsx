@@ -1,4 +1,5 @@
 import { Icon } from '../components/Icon';
+import { Switch } from '../components/Switch';
 import { DISCS } from '../data';
 import { pillStyle, useStore } from '../store';
 
@@ -20,10 +21,6 @@ export function Welcome() {
         <p style={{ margin: 0, fontSize: 17, lineHeight: 1.5, maxWidth: 290, color: 'var(--color-neutral-800)' }}>
           CrossFit, Hyrox, Metcon, GAP, Bar Mastery: anota tus marcas, mira cómo creces y deja que te recordemos ir al box (con cariño).
         </p>
-        <div style={{ display: 'flex', gap: 6, margin: 'var(--space-2) 0' }}>
-          <span style={{ width: 24, height: 8, borderRadius: 999, background: 'var(--color-text)' }} />
-          <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--color-neutral-400)' }} />
-        </div>
         <button className="btn btn-primary btn-block" onClick={() => set(() => ({ screen: 'w2' }))} style={{ height: 56, fontSize: 17 }}>Empezar</button>
       </div>
     </div>
@@ -35,13 +32,16 @@ const group = { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' 
 
 export function Profile() {
   const { data, set, setHomeFilter } = useStore();
+  // The same screen is the second onboarding step and, afterwards, the profile/settings reached from Home's avatar.
+  const settings = data.onboarded;
+  const finish = () => { setHomeFilter('all'); set(() => ({ screen: 'home', onboarded: true })); };
   const toggleGoal = (id: typeof DISCS[number]['id']) =>
     set(d => ({ goals: d.goals.includes(id) ? d.goals.filter(x => x !== id) : [...d.goals, id] }));
 
   return (
     <div data-screen-label="02 Perfil" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 'calc(var(--top) + 16px) 28px calc(40px + var(--bottom))', boxSizing: 'border-box', gap: 'var(--space-6)', overflow: 'auto' }}>
-      <button className="round-btn" aria-label="Volver" onClick={() => set(() => ({ screen: 'w1' }))} style={{ alignSelf: 'flex-start' }}><Icon name="chevronLeft" size={20} /></button>
-      <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 34, lineHeight: 1.08, margin: 0 }}>Cuéntanos<br />de ti</h1>
+      <button className="round-btn" aria-label="Volver" onClick={() => settings ? finish() : set(() => ({ screen: 'w1' }))} style={{ alignSelf: 'flex-start' }}><Icon name="chevronLeft" size={20} /></button>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 34, lineHeight: 1.08, margin: 0 }}>{settings ? 'Tu perfil' : <>Cuéntanos<br />de ti</>}</h1>
       <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
         <label htmlFor="name" style={{ ...label, color: 'var(--color-text)', marginBottom: 0 }}>¿Cómo te llamamos?</label>
         <input id="name" className="input" placeholder="Tu nombre" value={data.name} onChange={e => set(() => ({ name: e.target.value }))} style={{ height: 52, fontSize: 17 }} />
@@ -69,8 +69,17 @@ export function Profile() {
         <span id="units-l" style={label}>¿Cargas en kilos o libras?</span>
         <UnitToggle height={44} />
       </div>
+      {settings && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={label}>Celebrar mis récords</span>
+            <span className="muted-13">Mensajes con más fiesta al superar una marca.</span>
+          </div>
+          <Switch on={data.celebrate} label="Celebrar mis récords" onToggle={() => set(d => ({ celebrate: !d.celebrate }))} />
+        </div>
+      )}
       <div style={{ flex: 1 }} />
-      <button className="btn btn-primary btn-block" onClick={() => { setHomeFilter('all'); set(() => ({ screen: 'home' })); }} style={{ height: 56, fontSize: 17, flex: 'none' }}>¡Vamos al box!</button>
+      <button className="btn btn-primary btn-block" onClick={finish} style={{ height: 56, fontSize: 17, flex: 'none' }}>{settings ? 'Listo' : '¡Vamos al box!'}</button>
     </div>
   );
 }
