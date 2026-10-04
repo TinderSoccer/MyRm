@@ -88,8 +88,11 @@ export function mainSchemeOf(p: Pr): string | null {
 /** Entries of one scheme, in the order they were logged. */
 export const entriesOf = (p: Pr, scheme: string | null) => logOf(p).filter(e => (e.scheme || null) === (scheme || null));
 
-/** Recomputes the derived fields (mini-chart history, last date) after the log changes. */
-export function withLog(p: Pr, log: LogEntry[]): Pr {
+/** Recomputes the derived fields (mini-chart history, last date) after the log changes.
+ *  The log is kept in date order, so a mark entered late for an earlier day lands in its place.
+ *  Undated (older) entries sort first and keep their logged order; the sort is stable. */
+export function withLog(p: Pr, entries: LogEntry[]): Pr {
+  const log = [...entries].sort((a, b) => (a.iso ?? '').localeCompare(b.iso ?? ''));
   const main = log.filter(e => (e.scheme || null) === (p.type === 'kg' ? '1RM' : null));
   return { ...p, log, hist: main.slice(-5).map(e => e.v), date: main.length ? main[main.length - 1].date : '—' };
 }

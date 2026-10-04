@@ -87,7 +87,7 @@ export function RecordSheet() {
   const save = () => {
     const isPR = g > 0.01;
     const v = Math.round(draft * 10) / 10;
-    const entry = { v, date: shortDate(dateISO), scheme: schemeKey, mode, note: note.trim() };
+    const entry = { v, date: shortDate(dateISO), iso: dateISO, scheme: schemeKey, mode, note: note.trim() };
     // Logging a mark means you trained that day.
     const day = weekIndexOf(dateISO, data.weekStart);
     set(d => ({

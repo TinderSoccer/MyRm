@@ -5,7 +5,8 @@ export type Units = 'kg' | 'lb';
 
 export interface Disc { id: DiscId; label: string; color: string }
 
-export interface LogEntry { v: number; date: string; scheme: string | null; mode: string; note: string }
+/** `iso` (YYYY-MM-DD) orders the history; entries saved before it existed only have the short `date` label. */
+export interface LogEntry { v: number; date: string; scheme: string | null; mode: string; note: string; iso?: string }
 
 export interface Pr {
   id: string;
