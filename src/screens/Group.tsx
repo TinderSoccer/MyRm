@@ -6,17 +6,13 @@ import { useStore } from '../store';
 
 const ME: Member = { id: 'me', name: 'Tú', color: 'var(--color-text)' };
 
-// There is no backend yet: an invite you send is "accepted" after a few seconds, as in the prototype.
-const ACCEPT_DELAY = 4000;
-
 export function Group() {
   const { data, set, fmt, flash } = useStore();
   const [filter, setFilter] = useState('all');
   const [inviteName, setInviteName] = useState('');
-  const [pending, setPending] = useState<Invite[]>([]);
 
   const all = [ME, ...data.members];
-  const find = (id: string) => all.find(m => m.id === id) ?? { id, name: '?', color: 'var(--color-neutral-600)' };
+  const find = (id: string) => all.find(m => m.id === id) ?? { id, name: '?', color: 'var(--color-neutral-700)' };
   const feed = data.feed.filter(f => filter === 'all' || f.who === filter);
   const focus = filter !== 'all' ? find(filter) : null;
   const circles = [{ id: 'all', name: 'Todos', color: 'var(--color-accent-2-700)' }, ...all];
@@ -30,21 +26,15 @@ export function Group() {
   };
   const reject = (r: Invite) => set(d => ({ incoming: d.incoming.filter(x => x.id !== r.id) }));
 
+  // There is no shared backend yet, so an invite is only noted here; nothing is sent and nobody "accepts" on their own.
   const send = () => {
     const name = inviteName.trim().replace(/^@/, '');
     if (!name) return;
-    const id = 'm' + Date.now();
     setInviteName('');
-    setPending(p => [...p, { id, name }]);
-    flash('Solicitud enviada', `Le avisamos a ${name}.`);
-    window.setTimeout(() => {
-      setPending(p => p.filter(x => x.id !== id));
-      set(d => ({
-        members: [...d.members, { id, name, color: MEMBER_COLORS[d.members.length % MEMBER_COLORS.length] }]
-      }));
-      flash('¡Aceptó tu solicitud!', `${name} ya está en tu grupo.`);
-    }, ACCEPT_DELAY);
+    set(d => ({ outgoing: [...d.outgoing, { id: 'm' + Date.now(), name }] }));
+    flash('Invitación anotada', `${name} queda en tu lista de pendientes.`);
   };
+  const cancel = (r: Invite) => set(d => ({ outgoing: d.outgoing.filter(x => x.id !== r.id) }));
 
   const cheer = (id: FeedItem['id']) => set(d => ({ feed: d.feed.map(x => x.id === id ? { ...x, cheered: !x.cheered, cheers: x.cheers + (x.cheered ? -1 : 1) } : x) }));
 
@@ -61,7 +51,7 @@ export function Group() {
             style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--color-text)', width: 60 }}>
             <span className="flex-center" style={{ width: 56, height: 56, borderRadius: '50%', background: m.color, color: 'var(--color-bg)', fontFamily: 'var(--font-heading)', fontSize: 20,
               boxShadow: `0 0 0 3px var(--color-bg), 0 0 0 ${filter === m.id ? '6px' : '0px'} var(--color-text)`, transition: 'box-shadow .15s' }}>
-              {m.id === 'all' ? '★' : initialOf(m.name)}
+              {m.id === 'all' ? <Icon name="users" size={24} /> : initialOf(m.name)}
             </span>
             <span style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>{m.name}</span>
           </button>
@@ -82,17 +72,18 @@ export function Group() {
       ))}
 
       <div className="dashed">
-        <span className="label-600">Invitar al grupo</span>
+        <label htmlFor="invite" className="label-600">Invitar al grupo</label>
+        <p className="note">Por ahora las invitaciones no salen de tu teléfono: el grupo compartido todavía no está disponible.</p>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <input className="input" placeholder="Nombre o @usuario" value={inviteName} onChange={e => setInviteName(e.target.value)}
+          <input id="invite" className="input" placeholder="Nombre o @usuario" value={inviteName} onChange={e => setInviteName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 15 }} />
-          <button onClick={send} className="btn btn-primary" style={{ height: 48, flex: 'none' }}>Enviar</button>
+          <button onClick={send} className="btn btn-primary" style={{ height: 48, flex: 'none' }}>Anotar</button>
         </div>
-        {pending.map(p => (
+        {data.outgoing.map(p => (
           <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: 'var(--color-neutral-800)' }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--color-accent)', flex: 'none' }} />
-            <span style={{ flex: 1 }}>Solicitud enviada a <strong>{p.name}</strong></span>
-            <span style={{ fontWeight: 600, color: 'var(--color-neutral-700)' }}>Esperando…</span>
+            <span style={{ flex: 1, minWidth: 0 }}><strong>{p.name}</strong> · pendiente</span>
+            <button className="round-btn" onClick={() => cancel(p)} aria-label={`Quitar invitación a ${p.name}`}><Icon name="x" size={16} /></button>
           </div>
         ))}
       </div>
@@ -100,7 +91,7 @@ export function Group() {
       <div className="stack-3">
         <h2 className="section-title">{focus ? `Logros de ${focus.name}` : 'Logros del grupo'}</h2>
         {feed.length === 0 && (
-          <div style={{ padding: 22, borderRadius: 'var(--radius-lg)', border: '2px dashed var(--color-neutral-400)', fontSize: 15, color: 'var(--color-neutral-800)' }}>
+          <div className="empty">
             {focus ? 'Todavía no hay logros por aquí.' : 'Aún no hay logros. Cuando tú o tu grupo superen una marca, aparecerá aquí.'}
           </div>
         )}
@@ -125,10 +116,10 @@ export function Group() {
                     {isPr ? `${fmt.val(f, f.value ?? 0)} ${fmt.unitOf(f)}`.trim() : f.stage}
                   </span>
                 </div>
-                <button onClick={() => cheer(f.id)} aria-pressed={f.cheered} aria-label="Felicitar"
+                <button onClick={() => cheer(f.id)} aria-pressed={f.cheered} aria-label={`Felicitar a ${m.name} (${f.cheers})`}
                   style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 6, height: 40, padding: '0 14px', borderRadius: 999,
-                    border: `2px solid ${f.cheered ? 'var(--color-accent)' : 'var(--color-accent-300)'}`, background: f.cheered ? 'var(--color-accent)' : 'transparent',
-                    color: f.cheered ? 'var(--color-bg)' : 'var(--color-accent-800)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all .15s' }}>
+                    border: `2px solid ${f.cheered ? 'var(--color-accent)' : 'var(--color-accent-600)'}`, background: f.cheered ? 'var(--color-accent)' : 'transparent',
+                    color: f.cheered ? 'var(--color-on-accent)' : 'var(--color-accent-800)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'background-color .15s, color .15s, border-color .15s' }}>
                   <Icon name="flame" size={18} />{f.cheers}
                 </button>
               </div>

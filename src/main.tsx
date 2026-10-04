@@ -12,3 +12,8 @@ createRoot(document.getElementById('root')!).render(
     </StoreProvider>
   </StrictMode>
 );
+
+// Offline shell + notifications. Dev skips it so Vite's hot reload isn't served from cache.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => { /* offline support is a bonus */ }); });
+}

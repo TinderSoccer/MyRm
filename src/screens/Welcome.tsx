@@ -41,32 +41,32 @@ export function Profile() {
   return (
     <div data-screen-label="02 Perfil" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 'calc(var(--top) + 16px) 28px calc(40px + var(--bottom))', boxSizing: 'border-box', gap: 'var(--space-6)', overflow: 'auto' }}>
       <button className="round-btn" aria-label="Volver" onClick={() => set(() => ({ screen: 'w1' }))} style={{ alignSelf: 'flex-start' }}><Icon name="chevronLeft" size={20} /></button>
-      <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 34, lineHeight: 1.08, margin: 0 }}>Cuéntanos<br />de ti</h2>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 34, lineHeight: 1.08, margin: 0 }}>Cuéntanos<br />de ti</h1>
       <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
         <label htmlFor="name" style={{ ...label, color: 'var(--color-text)', marginBottom: 0 }}>¿Cómo te llamamos?</label>
         <input id="name" className="input" placeholder="Tu nombre" value={data.name} onChange={e => set(() => ({ name: e.target.value }))} style={{ height: 52, fontSize: 17 }} />
       </div>
-      <div style={group}>
-        <span style={label}>¿Qué entrenas?</span>
+      <div style={group} role="group" aria-labelledby="goals-l">
+        <span id="goals-l" style={label}>¿Qué entrenas?</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
           {DISCS.map(d => (
-            <button key={d.id} className="pill" onClick={() => toggleGoal(d.id)} style={{ height: 44, padding: '0 18px', fontSize: 15, ...pillStyle(data.goals.includes(d.id)) }}>{d.label}</button>
+            <button key={d.id} className="pill" onClick={() => toggleGoal(d.id)} aria-pressed={data.goals.includes(d.id)} style={{ height: 44, padding: '0 18px', fontSize: 15, ...pillStyle(data.goals.includes(d.id)) }}>{d.label}</button>
           ))}
         </div>
       </div>
-      <div style={group}>
-        <span style={label}>Días de box por semana</span>
+      <div style={group} role="group" aria-labelledby="freq-l">
+        <span id="freq-l" style={label}>Días de box por semana</span>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           {[2, 3, 4, 5, 6].map(n => {
             const on = data.freq === n;
             return (
-              <button key={n} onClick={() => set(() => ({ freq: n }))} style={{ width: 52, height: 52, borderRadius: '50%', border: 'none', background: on ? 'var(--color-accent)' : 'var(--color-surface)', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontFamily: 'var(--font-heading)', fontSize: 20, cursor: 'pointer', transition: 'all .15s' }}>{n}</button>
+              <button key={n} className="chip" aria-pressed={on} onClick={() => set(() => ({ freq: n }))} style={{ width: 52, height: 52, padding: 0, borderRadius: '50%', fontFamily: 'var(--font-heading)', fontSize: 20 }}>{n}</button>
             );
           })}
         </div>
       </div>
-      <div style={group}>
-        <span style={label}>¿Cargas en kilos o libras?</span>
+      <div style={group} role="group" aria-labelledby="units-l">
+        <span id="units-l" style={label}>¿Cargas en kilos o libras?</span>
         <UnitToggle height={44} />
       </div>
       <div style={{ flex: 1 }} />
@@ -82,7 +82,7 @@ export function UnitToggle({ height }: { height: number }) {
       {(['kg', 'lb'] as const).map(u => {
         const on = data.units === u;
         return (
-          <button key={u} onClick={() => set(() => ({ units: u }))} style={{ height, minWidth: 64, padding: '0 16px', borderRadius: 999, border: 'none', background: on ? 'var(--color-text)' : 'transparent', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontWeight: 700, fontSize: 15, cursor: 'pointer', transition: 'all .15s' }}>{u}</button>
+          <button key={u} aria-pressed={on} onClick={() => set(() => ({ units: u }))} style={{ height, minWidth: 64, padding: '0 16px', borderRadius: 999, border: 'none', background: on ? 'var(--color-text)' : 'transparent', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontWeight: 700, fontSize: 15, cursor: 'pointer', transition: 'background-color .15s, color .15s' }}>{u}</button>
         );
       })}
     </div>

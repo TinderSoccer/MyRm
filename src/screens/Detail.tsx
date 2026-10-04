@@ -44,7 +44,7 @@ export function Detail() {
       </div>
 
       {mainLog.length > 0 && (
-        <div className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18 }}>
+        <div className="surface" role="img" aria-label={`Progreso: ${mainLog.map(e => `${e.date}, ${fmt.val(p, e.v)} ${unit}`).join('; ')}`} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18 }}>
           <span style={{ fontWeight: 600, fontSize: 15 }}>Progreso</span>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 150 }}>
             {mainLog.map((e, i) => {
@@ -66,7 +66,7 @@ export function Detail() {
         {[...log].reverse().map((e, i) => {
           const scaled = e.mode === 'Escalado';
           const tags = [
-            ...(e.v === bestOf(p, e.scheme) ? [{ label: 'Récord', bg: 'var(--color-accent-2)', fg: 'var(--color-bg)' }] : []),
+            ...(e.v === bestOf(p, e.scheme) ? [{ label: 'Récord', bg: 'var(--color-accent-2-700)', fg: 'var(--color-bg)' }] : []),
             ...(e.scheme ? [{ label: e.scheme, bg: 'var(--color-bg)', fg: 'var(--color-text)' }] : []),
             { label: e.mode || 'RX', bg: scaled ? 'var(--color-accent-200)' : 'var(--color-bg)', fg: scaled ? 'var(--color-accent-800)' : 'var(--color-text)' }
           ];

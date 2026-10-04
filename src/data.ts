@@ -39,7 +39,8 @@ export interface FeedItem {
   cheered: boolean;
 }
 
-export interface Reminder { id: number; title: string; sub: string; time: string; on: boolean }
+/** `days` are Mon=0..Sun=6; reminders saved before it existed only carry `sub`. */
+export interface Reminder { id: number; title: string; sub: string; time: string; on: boolean; days?: number[] }
 
 export interface AppData {
   screen: Screen;
@@ -55,6 +56,8 @@ export interface AppData {
   skills: Skill[];
   members: Member[];
   incoming: Invite[];
+  /** Invites the user wrote down; there is no shared backend yet, so they stay on this phone. */
+  outgoing: Invite[];
   feed: FeedItem[];
   reminders: Reminder[];
 }
@@ -71,7 +74,8 @@ export const discOf = (id: DiscId) => DISCS.find(d => d.id === id) ?? DISCS[0];
 
 export const STAGES = ['Por empezar', 'Practicando', 'Con escala', '¡Logrado!', 'Dominado'];
 
-export const MEMBER_COLORS = ['var(--color-accent)', 'var(--color-accent-2)', 'var(--color-neutral-700)', 'var(--color-accent-700)', 'var(--color-accent-2-700)'];
+// Dark enough for cream initials to clear 4.5:1.
+export const MEMBER_COLORS = ['var(--color-accent-700)', 'var(--color-accent-2-700)', 'var(--color-neutral-700)', 'var(--color-accent-800)', 'var(--color-accent-2-800)'];
 
 /** A fresh install: no marks, no group, no reminders — only a catalog of common movements and skills to pick from. */
 export function seedData(weekStart: string): AppData {
@@ -120,6 +124,7 @@ export function seedData(weekStart: string): AppData {
     ],
     members: [],
     incoming: [],
+    outgoing: [],
     feed: [],
     reminders: []
   };

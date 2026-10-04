@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DISCS, seedData, type AppData, type DiscId } from './data';
 import { makeFormat, weekStartISO, type Format } from './format';
+import { fireDueReminders } from './reminders';
 
 const KEY = 'myrm.v2';
 
@@ -10,6 +11,7 @@ function load(): AppData {
   let saved: Partial<AppData> | null = null;
   try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* private mode or corrupt */ }
   const data = { ...base, ...(saved || {}) };
+  data.outgoing ??= [];
   if (data.screen === 'det') data.screen = 'home';
   // The week strip starts empty every Monday.
   if (data.weekStart !== week) data.done = [false, false, false, false, false, false, false];
@@ -43,10 +45,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [sheet, setSheet] = useState<SheetRequest | null>(null);
   const [homeFilter, setHomeFilter] = useState<DiscId | 'all'>('all');
   const timer = useRef<number | undefined>(undefined);
+  const latest = useRef(data);
+  latest.current = data;
 
+  // Save shortly after edits settle (typing a name shouldn't write on every key), and always before the page hides.
   useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { /* storage full or blocked */ }
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(latest.current)); } catch { /* storage full or blocked */ } };
+    const t = window.setTimeout(save, 300);
+    const onHide = () => { if (document.visibilityState === 'hidden') save(); };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', save);
+    return () => { clearTimeout(t); document.removeEventListener('visibilitychange', onHide); window.removeEventListener('pagehide', save); };
   }, [data]);
+
+  // A clock for things that depend on the time while the app stays open: the Monday reset and due reminders.
+  useEffect(() => {
+    const tick = () => {
+      const week = weekStartISO();
+      if (latest.current.weekStart !== week) setData(d => ({ ...d, weekStart: week, done: d.done.map(() => false) }));
+      fireDueReminders(latest.current.reminders);
+    };
+    tick();
+    const id = window.setInterval(tick, 30_000);
+    document.addEventListener('visibilitychange', tick);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick); };
+  }, []);
 
   const set = useCallback((fn: (d: AppData) => Partial<AppData>) => setData(d => ({ ...d, ...fn(d) })), []);
   const flash = useCallback((title: string, text: string) => {
@@ -83,6 +106,6 @@ export function pillStyle(on: boolean) {
   return {
     background: on ? 'var(--color-text)' : 'transparent',
     color: on ? 'var(--color-bg)' : 'var(--color-text)',
-    borderColor: on ? 'var(--color-text)' : 'var(--color-neutral-400)'
+    borderColor: on ? 'var(--color-text)' : 'var(--color-neutral-600)'
   };
 }

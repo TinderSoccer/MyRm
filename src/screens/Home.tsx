@@ -4,6 +4,7 @@ import { initialOf, logOf, longToday } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 
 const DAY_L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DAY_LONG = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 export function Home() {
   const { data, set, fmt, openDetail, homeFilter, setHomeFilter } = useStore();
@@ -20,7 +21,7 @@ export function Home() {
           <span style={{ fontSize: 14, color: 'var(--color-neutral-700)', fontWeight: 500 }}>{longToday()}</span>
           <h1 className="title" style={{ fontSize: 32 }}>¡Hola, {name || 'atleta'}!</h1>
         </div>
-        <div className="flex-center" style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-accent-2)', color: 'var(--color-bg)', fontFamily: 'var(--font-heading)', fontSize: 20, flex: 'none' }}>{initialOf(name, 'A')}</div>
+        <div className="flex-center" style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-accent-2-700)', color: 'var(--color-bg)', fontFamily: 'var(--font-heading)', fontSize: 20, flex: 'none' }} aria-hidden="true">{initialOf(name, 'A')}</div>
       </div>
 
       <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden' }}>
@@ -38,10 +39,10 @@ export function Home() {
           {DAY_L.map((l, i) => {
             const on = data.done[i];
             return (
-              <button key={i} title="Marcar entreno" aria-pressed={on} onClick={() => set(d => ({ done: d.done.map((x, j) => j === i ? !x : x) }))}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-neutral-400)' }}>{l}</span>
-                <span className="flex-center" style={{ width: 36, height: 36, borderRadius: '50%', background: on ? 'var(--color-accent-2-300)' : 'transparent', border: `2px solid ${on ? 'var(--color-accent-2-300)' : i === 6 ? 'var(--color-bg)' : 'var(--color-neutral-700)'}`, boxSizing: 'border-box', color: 'var(--color-text)', transition: 'all .2s' }}>{on ? '✓' : ''}</span>
+              <button key={i} aria-label={`${DAY_LONG[i]}: entrené`} aria-pressed={on} onClick={() => set(d => ({ done: d.done.map((x, j) => j === i ? !x : x) }))}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, minWidth: 44 }}>
+                <span aria-hidden="true" style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-neutral-400)' }}>{l}</span>
+                <span className="flex-center" style={{ width: 36, height: 36, borderRadius: '50%', background: on ? 'var(--color-accent-2-300)' : 'transparent', border: `2px solid ${on ? 'var(--color-accent-2-300)' : i === 6 ? 'var(--color-bg)' : 'var(--color-neutral-500)'}`, boxSizing: 'border-box', color: 'var(--color-text)', transition: 'background-color .2s, border-color .2s' }}>{on && <Icon name="check" size={18} />}</span>
               </button>
             );
           })}
@@ -54,11 +55,11 @@ export function Home() {
           <span style={{ fontSize: 14, color: 'var(--color-neutral-700)' }}>Toca para actualizar</span>
         </div>
         <div className="chip-row">
-          <button className="pill" onClick={() => setHomeFilter('all')} style={pillStyle(homeFilter === 'all')}>Todas</button>
-          {shown.map(d => <button key={d.id} className="pill" onClick={() => setHomeFilter(d.id)} style={pillStyle(homeFilter === d.id)}>{d.label}</button>)}
+          <button className="pill" onClick={() => setHomeFilter('all')} aria-pressed={homeFilter === 'all'} style={pillStyle(homeFilter === 'all')}>Todas</button>
+          {shown.map(d => <button key={d.id} className="pill" onClick={() => setHomeFilter(d.id)} aria-pressed={homeFilter === d.id} style={pillStyle(homeFilter === d.id)}>{d.label}</button>)}
         </div>
         {visible.length === 0 && (
-          <div style={{ padding: 22, borderRadius: 'var(--radius-lg)', border: '2px dashed var(--color-neutral-400)', fontSize: 15, color: 'var(--color-neutral-800)' }}>
+          <div className="empty">
             <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span style={{ color: 'var(--color-accent)' }}><Icon name="dumbbell" size={22} /></span>Aún no hay marcas aquí. Toca + y estrena la primera.</span>
           </div>
         )}

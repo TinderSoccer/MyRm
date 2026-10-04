@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T22:57:33.550855+00:00",
+  "title": "Design System: MyRm",
+  "extensions": {
+    "colorMeta": {
+      "pr-terracotta": {
+        "role": "primary",
+        "displayName": "Terracota de PR",
+        "tonalRamp": [
+          "#402310",
+          "#643312",
+          "#8c491a",
+          "#b2622d",
+          "#d67f48",
+          "#f6a06b",
+          "#ffc6a5",
+          "#ffe1d0",
+          "#fff2eb"
+        ]
+      },
+      "pr-terracotta-light": {
+        "role": "primary",
+        "displayName": "Terracota clara (hover)",
+        "tonalRamp": [
+          "#402310",
+          "#643312",
+          "#8c491a",
+          "#b2622d",
+          "#d67f48",
+          "#f6a06b",
+          "#ffc6a5",
+          "#ffe1d0",
+          "#fff2eb"
+        ]
+      },
+      "pr-terracotta-deep": {
+        "role": "primary",
+        "displayName": "Terracota profunda",
+        "tonalRamp": [
+          "#402310",
+          "#643312",
+          "#8c491a",
+          "#b2622d",
+          "#d67f48",
+          "#f6a06b",
+          "#ffc6a5",
+          "#ffe1d0",
+          "#fff2eb"
+        ]
+      },
+      "progress-olive": {
+        "role": "secondary",
+        "displayName": "Oliva de progreso",
+        "tonalRamp": [
+          "#272e1b",
+          "#3d472b",
+          "#56633f",
+          "#728157",
+          "#8fa073",
+          "#aebf92",
+          "#ccdbb2",
+          "#e1eecc",
+          "#f0fae1"
+        ]
+      },
+      "progress-olive-deep": {
+        "role": "secondary",
+        "displayName": "Oliva profunda",
+        "tonalRamp": [
+          "#272e1b",
+          "#3d472b",
+          "#56633f",
+          "#728157",
+          "#8fa073",
+          "#aebf92",
+          "#ccdbb2",
+          "#e1eecc",
+          "#f0fae1"
+        ]
+      },
+      "progress-olive-mist": {
+        "role": "secondary",
+        "displayName": "Niebla oliva",
+        "tonalRamp": [
+          "#272e1b",
+          "#3d472b",
+          "#56633f",
+          "#728157",
+          "#8fa073",
+          "#aebf92",
+          "#ccdbb2",
+          "#e1eecc",
+          "#f0fae1"
+        ]
+      },
+      "chalk-cream": {
+        "role": "neutral",
+        "displayName": "Crema de tiza",
+        "tonalRamp": [
+          "#2e2b25",
+          "#474238",
+          "#645c50",
+          "#82796a",
+          "#a19786",
+          "#c0b6a5",
+          "#dcd3c4",
+          "#eee7db",
+          "#f9f4ed"
+        ]
+      },
+      "worn-plywood": {
+        "role": "neutral",
+        "displayName": "Madera gastada",
+        "tonalRamp": [
+          "#2e2b25",
+          "#474238",
+          "#645c50",
+          "#82796a",
+          "#a19786",
+          "#c0b6a5",
+          "#dcd3c4",
+          "#eee7db",
+          "#f9f4ed"
+        ]
+      },
+      "board-ink": {
+        "role": "neutral",
+        "displayName": "Tinta de pizarra",
+        "tonalRamp": [
+          "#2e2b25",
+          "#474238",
+          "#645c50",
+          "#82796a",
+          "#a19786",
+          "#c0b6a5",
+          "#dcd3c4",
+          "#eee7db",
+          "#f9f4ed"
+        ]
+      },
+      "pencil-gray": {
+        "role": "neutral",
+        "displayName": "Lápiz",
+        "tonalRamp": [
+          "#2e2b25",
+          "#474238",
+          "#645c50",
+          "#82796a",
+          "#a19786",
+          "#c0b6a5",
+          "#dcd3c4",
+          "#eee7db",
+          "#f9f4ed"
+        ]
+      },
+      "dust-line": {
+        "role": "neutral",
+        "displayName": "Polvo",
+        "tonalRamp": [
+          "#2e2b25",
+          "#474238",
+          "#645c50",
+          "#82796a",
+          "#a19786",
+          "#c0b6a5",
+          "#dcd3c4",
+          "#eee7db",
+          "#f9f4ed"
+        ]
+      },
+      "dust-line-strong": {
+        "role": "neutral",
+        "displayName": "Polvo marcado",
+        "tonalRamp": [
+          "#2e2b25",
+          "#474238",
+          "#645c50",
+          "#82796a",
+          "#a19786",
+          "#c0b6a5",
+          "#dcd3c4",
+          "#eee7db",
+          "#f9f4ed"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Solo la bienvenida."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título de cada pantalla."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Secciones y la hoja."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Toda marca: 24–56px, unidad en Figtree."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Ledes y estados vacíos."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Nombres, campos, botones de píldora."
+      },
+      "kicker": {
+        "displayName": "Kicker",
+        "purpose": "Disciplina, en mayúsculas y en su color."
+      }
+    },
+    "shadows": [
+      {
+        "name": "float",
+        "value": "0 12px 32px color-mix(in srgb, #2e2b25 22%, transparent)",
+        "purpose": "Tabbar, toast y marco del teléfono."
+      },
+      {
+        "name": "knob",
+        "value": "0 1px 2px color-mix(in srgb, #2e2b25 14%, transparent)",
+        "purpose": "Perilla del switch."
+      }
+    ],
+    "motion": [
+      {
+        "name": "sheet",
+        "value": "transform .32s cubic-bezier(.2, .9, .3, 1)",
+        "purpose": "Hoja inferior; fundido de .2s con movimiento reducido."
+      },
+      {
+        "name": "toast",
+        "value": "transform .45s cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Toast de celebración, sin rebote."
+      },
+      {
+        "name": "state",
+        "value": "background-color .15s, color .15s, border-color .15s",
+        "purpose": "Cambio de estado de chips y botones."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "device-frame",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "CTA de pantalla: terracota con texto en tinta.",
+      "html": "<button class=\"ds-btn-primary\">Guardar</button>",
+      "css": ".ds-btn-primary{height:56px;padding:0 32px;border:none;border-radius:999px;background:var(--color-accent,#c67139);color:var(--color-text,#201e1d);font-family:Caprasimo,system-ui,sans-serif;font-size:17px;cursor:pointer;transition:background-color .15s}.ds-btn-primary:hover{background:#d67f48}.ds-btn-primary:active{background:#f6a06b}.ds-btn-primary:focus-visible{outline:2px solid #c67139;outline-offset:2px}"
+    },
+    {
+      "name": "Filter Pill",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "Filtro delineado; elegido se rellena de tinta.",
+      "html": "<div style=\"display:flex;gap:8px\"><button class=\"ds-pill\" aria-pressed=\"true\">Todas</button><button class=\"ds-pill\" aria-pressed=\"false\">CrossFit</button></div>",
+      "css": ".ds-pill{height:40px;padding:0 16px;border-radius:999px;border:2px solid #82796a;background:transparent;color:#201e1d;font-family:Figtree,system-ui,sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s}.ds-pill[aria-pressed=true]{background:#201e1d;border-color:#201e1d;color:#f5ead8}.ds-pill:hover{filter:brightness(.96)}.ds-pill:focus-visible{outline:2px solid #c67139;outline-offset:2px}"
+    },
+    {
+      "name": "Choice Chip",
+      "kind": "chip",
+      "refersTo": "chip-choice-selected",
+      "description": "Elección rellena: madera → terracota.",
+      "html": "<div style=\"display:flex;gap:8px\"><button class=\"ds-chip\" aria-pressed=\"true\">Back squat</button><button class=\"ds-chip\" aria-pressed=\"false\">Clean</button></div>",
+      "css": ".ds-chip{height:40px;padding:0 16px;border-radius:999px;border:none;font-family:Figtree,system-ui,sans-serif;font-weight:600;font-size:14px;cursor:pointer;background:#ebddc5;color:#201e1d;transition:background-color .15s}.ds-chip[aria-pressed=true]{background:#c67139}.ds-chip:focus-visible{outline:2px solid #c67139;outline-offset:2px}"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo en píldora de madera.",
+      "html": "<input class=\"ds-input\" placeholder=\"Nombre o @usuario\">",
+      "css": ".ds-input{height:48px;padding:0 16px;border-radius:999px;border:1px solid color-mix(in srgb,#201e1d 16%,transparent);background:#ebddc5;color:#201e1d;caret-color:#c67139;font-family:Figtree,system-ui,sans-serif;font-size:15px}.ds-input:hover{border-color:color-mix(in srgb,#201e1d 45%,transparent)}.ds-input:focus-visible{outline:none;border-color:#c67139}"
+    },
+    {
+      "name": "PR Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Fila de marca: ícono, nombre, mini barras y número en Caprasimo.",
+      "html": "<button class=\"ds-pr\"><span class=\"ds-pr-ico\">●</span><span class=\"ds-pr-main\"><span class=\"ds-pr-k\">CROSSFIT</span><b>Back squat</b><small>Última · 1 oct</small></span><span class=\"ds-pr-v\">100<small>kg</small></span></button>",
+      "css": ".ds-pr{display:flex;align-items:center;gap:14px;width:320px;padding:16px 18px;border:none;border-radius:28px;background:#ebddc5;color:#201e1d;text-align:left;font-family:Figtree,system-ui,sans-serif;cursor:pointer;transition:background-color .15s}.ds-pr:hover{background:#ffe1d0}.ds-pr-ico{width:44px;height:44px;border-radius:50%;background:#ffe1d0;color:#643312;display:flex;align-items:center;justify-content:center;flex:none}.ds-pr-main{flex:1;display:flex;flex-direction:column;gap:2px}.ds-pr-k{font-size:11px;font-weight:700;letter-spacing:.04em;color:#8c491a}.ds-pr-main small{font-size:13px;color:#645c50}.ds-pr-v{font-family:Caprasimo,system-ui,sans-serif;font-size:24px}.ds-pr-v small{font-family:Figtree,system-ui,sans-serif;font-size:13px;font-weight:600;margin-left:3px}"
+    },
+    {
+      "name": "Board Summary",
+      "kind": "custom",
+      "refersTo": "card-board",
+      "description": "La pizarra: resumen oscuro con un círculo de color que se sale del borde.",
+      "html": "<div class=\"ds-board\"><span class=\"ds-board-dot\"></span><small>Mejor 1RM</small><strong>100<em>kg</em></strong><span class=\"ds-board-gain\">+10 kg desde 1 sep</span></div>",
+      "css": ".ds-board{position:relative;overflow:hidden;width:320px;padding:22px;border-radius:28px;background:#201e1d;color:#f5ead8;display:flex;flex-direction:column;gap:4px;font-family:Figtree,system-ui,sans-serif}.ds-board-dot{position:absolute;width:140px;height:140px;border-radius:50%;background:#7a8a5e;right:-40px;bottom:-60px}.ds-board small{position:relative;font-size:14px;color:#dcd3c4}.ds-board strong{position:relative;font-family:Caprasimo,system-ui,sans-serif;font-weight:400;font-size:56px;line-height:1}.ds-board em{font-style:normal;font-family:Figtree,system-ui,sans-serif;font-size:18px;font-weight:600;margin-left:6px}.ds-board-gain{position:relative;font-weight:600;color:#ccdbb2}"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "refersTo": "tabbar",
+      "description": "Píldora de tinta flotante con FAB terracota central.",
+      "html": "<nav class=\"ds-tabbar\"><button class=\"ds-tab\" aria-current=\"page\">Inicio</button><button class=\"ds-tab\">Skills</button><button class=\"ds-fab\" aria-label=\"Registrar marca\">+</button><button class=\"ds-tab\">Grupo</button><button class=\"ds-tab\">Avisos</button></nav>",
+      "css": ".ds-tabbar{display:flex;align-items:center;justify-content:space-between;width:358px;height:72px;padding:0 10px;border-radius:999px;background:#201e1d;box-shadow:0 12px 32px color-mix(in srgb,#2e2b25 22%,transparent)}.ds-tab{width:58px;height:56px;background:none;border:none;color:#a19786;font-family:Figtree,system-ui,sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:color .15s}.ds-tab[aria-current=page]{color:#f5ead8}.ds-fab{width:60px;height:60px;border-radius:50%;border:none;background:#c67139;color:#201e1d;font-size:30px;cursor:pointer;transition:background-color .15s,transform .15s}.ds-fab:hover{background:#d67f48}.ds-fab:active{transform:scale(.94)}"
+    },
+    {
+      "name": "Celebration Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Toast oliva profunda, cae con ease-out exponencial.",
+      "html": "<div class=\"ds-toast\" role=\"status\"><strong>¡Nuevo récord!</strong><span>Back squat: +5 kg. ¡Qué bárbaro!</span></div>",
+      "css": ".ds-toast{width:320px;padding:16px 18px;border-radius:28px;background:#56633f;color:#f5ead8;display:flex;flex-direction:column;box-shadow:0 12px 32px color-mix(in srgb,#2e2b25 22%,transparent);font-family:Figtree,system-ui,sans-serif}.ds-toast strong{font-family:Caprasimo,system-ui,sans-serif;font-weight:400;font-size:19px}.ds-toast span{font-size:14px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La pizarra del box",
+    "overview": "MyRm se ve como la pizarra de tiza donde el box anota los récords del día: fondo crema como de tiza, tinta casi negra para lo importante, naranja terracota cuando alguien supera una marca y verde oliva para lo que avanza. Cálida y de comunidad, no clínica ni de gimnasio de cadena. Los números mandan: una marca se lee de un vistazo, grande y con la tipografía más gorda del sistema.\n\nLa densidad es baja y la interfaz se siente táctil y amable: píldoras gordas, esquinas muy redondas, nada afilado. La app empuja sin regañar; el tono visual nunca es de alerta ni de culpa. La bandeja oscura (`card-board`) es la \"pizarra\" de cada pantalla: el resumen de la semana en Inicio y la mejor marca en el Detalle.\n\nEs una app de teléfono primero. En pantallas de 600px o más se presenta dentro de un marco de teléfono de 390×844, no como un layout de escritorio.",
+    "keyCharacteristics": [
+      "Crema + tinta + terracota + oliva; ningún otro tono de marca.",
+      "Caprasimo para títulos y para cada número que importa; Figtree para todo lo demás.",
+      "Todo lo que se toca es una píldora o un círculo, de 44px o más.",
+      "Plano por defecto: la profundidad viene del contraste tonal, y la sombra queda para lo que flota."
+    ],
+    "rules": [
+      {
+        "name": "The Ink-on-Terracotta Rule",
+        "body": "Sobre terracota el texto va en tinta (4.6:1). La crema sobre terracota da 3.0:1 y queda prohibida para texto.",
+        "section": "colors"
+      },
+      {
+        "name": "The Deep-Fill Rule",
+        "body": "Cuando un relleno lleva texto crema encima (avatares, hora del recordatorio, toast, etiquetas), se usa el paso 700 u 800 de la rampa, nunca el tono base.",
+        "section": "colors"
+      },
+      {
+        "name": "The Control-Edge Rule",
+        "body": "Todo borde o relleno que comunique estado (pill sin elegir, punto de skill, input de fecha) usa `neutral-600` o un tono más oscuro para mantener 3:1 sobre el fondo. `neutral-400` es solo decorativo.",
+        "section": "colors"
+      },
+      {
+        "name": "The Number-Is-the-Hero Rule",
+        "body": "Toda marca se muestra en Caprasimo, con la unidad más chica y en Figtree. Un número de marca nunca va en el cuerpo de texto.",
+        "section": "typography"
+      },
+      {
+        "name": "The Float-Only Rule",
+        "body": "Una tarjeta nunca lleva sombra. Si algo necesita destacar, cambia de tono (madera → tinta), no de elevación.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** poner texto en tinta sobre terracota y crema sobre los pasos 700–800 de cualquier rampa.",
+      "**Do** darle a cada control un área táctil de 44px o más; si el diseño lo pide más chico, extiende el área con un pseudo-elemento (`.hit`).",
+      "**Do** mostrar cada marca en Caprasimo con la unidad más chica en Figtree.",
+      "**Do** usar íconos Lucide con trazo de 2.75 para todo ícono, incluidos el check y \"Todos\".",
+      "**Do** marcar el estado elegido con `aria-pressed`, además del color.",
+      "**Do** escribir con voz cercana y alentadora (\"Constancia es avance\", \"Un empujoncito, nunca un sermón\")."
+    ],
+    "donts": [
+      "**Don't** poner texto crema sobre terracota u oliva base: no llega a 4.5:1.",
+      "**Don't** usar `neutral-400` como el único borde de un control.",
+      "**Don't** usar emoji ni glifos Unicode (✓, ★) como íconos.",
+      "**Don't** usar easings con rebote ni animar con `transition: all`.",
+      "**Don't** poner sombra en las tarjetas.",
+      "**Don't** mostrar una función como si funcionara cuando no funciona (invitaciones aceptadas solas, avisos que nunca suenan)."
+    ]
+  }
+}

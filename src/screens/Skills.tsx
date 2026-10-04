@@ -42,14 +42,15 @@ export function Skills() {
         </div>
       </div>
       <div className="chip-row">
-        <button className="pill" onClick={() => setFilter('all')} style={pillStyle(filter === 'all')}>Todas</button>
-        {shown.map(d => <button key={d.id} className="pill" onClick={() => setFilter(d.id)} style={pillStyle(filter === d.id)}>{d.label}</button>)}
+        <button className="pill" onClick={() => setFilter('all')} aria-pressed={filter === 'all'} style={pillStyle(filter === 'all')}>Todas</button>
+        {shown.map(d => <button key={d.id} className="pill" onClick={() => setFilter(d.id)} aria-pressed={filter === d.id} style={pillStyle(filter === d.id)}>{d.label}</button>)}
       </div>
       <div className="stack-3">
         {list.map(k => {
           const d = discOf(k.disc);
           const got = k.stage >= 3;
-          const col = got ? 'var(--color-accent-2)' : 'var(--color-accent)';
+          // Fills and track must hold 3:1 against the surface to read as state.
+          const col = got ? 'var(--color-accent-2-700)' : 'var(--color-accent-600)';
           return (
             <div key={k.id} className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
@@ -58,7 +59,7 @@ export function Skills() {
                   <span className="label-600">{k.name}</span>
                 </div>
                 <span style={{ flex: 'none', padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700,
-                  background: got ? 'var(--color-accent-2)' : k.stage > 0 ? 'var(--color-accent-200)' : 'var(--color-bg)',
+                  background: got ? 'var(--color-accent-2-700)' : k.stage > 0 ? 'var(--color-accent-200)' : 'var(--color-bg)',
                   color: got ? 'var(--color-bg)' : k.stage > 0 ? 'var(--color-accent-800)' : 'var(--color-neutral-800)' }}>{STAGES[k.stage]}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -66,9 +67,9 @@ export function Skills() {
                   const on = i <= k.stage;
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i === 0 ? 'none' : '1' }}>
-                      {i > 0 && <span style={{ flex: 1, height: 4, borderRadius: 999, background: on ? col : 'var(--color-neutral-400)', margin: '0 2px' }} />}
-                      <button className="step-dot" title={label} aria-label={`${k.name}: ${label}`} onClick={() => setStage(k, i)}
-                        style={{ background: on ? col : 'var(--color-bg)', borderColor: on ? col : 'var(--color-neutral-400)' }} />
+                      {i > 0 && <span style={{ flex: 1, height: 4, borderRadius: 999, background: on ? col : 'var(--color-neutral-400)', margin: '0 2px' }} aria-hidden="true" />}
+                      <button className="step-dot" title={label} aria-label={`${k.name}: ${label}`} aria-pressed={i === k.stage} onClick={() => setStage(k, i)}
+                        style={{ background: on ? col : 'var(--color-bg)', borderColor: on ? col : 'var(--color-neutral-600)' }} />
                     </div>
                   );
                 })}
@@ -78,7 +79,7 @@ export function Skills() {
         })}
       </div>
       <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-        <input className="input" placeholder="Nueva skill, p. ej. Pistol squat" value={newSkill} onChange={e => setNewSkill(e.target.value)}
+        <input className="input" aria-label="Nueva skill" placeholder="Nueva skill, p. ej. Pistol squat" value={newSkill} onChange={e => setNewSkill(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && add()} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 15 }} />
         <button onClick={add} className="btn btn-primary" style={{ height: 48, flex: 'none' }}>Agregar</button>
       </div>

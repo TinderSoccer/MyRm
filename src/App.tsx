@@ -10,7 +10,7 @@ import { Profile, Welcome } from './screens/Welcome';
 import { useStore } from './store';
 
 export function App() {
-  const { data } = useStore();
+  const { data, sheet } = useStore();
   const s = data.screen;
   return (
     <div className="stage">
@@ -20,6 +20,7 @@ export function App() {
           <div className="status-notch" />
           <span style={{ display: 'flex', gap: 5, alignItems: 'center' }}><span className="status-batt" /></span>
         </div>
+        <div className="app-layer" inert={sheet != null}>
         {s === 'w1' && <Welcome />}
         {s === 'w2' && <Profile />}
         {s === 'home' && <Home />}
@@ -28,6 +29,7 @@ export function App() {
         {s === 'gr' && <Group />}
         {s === 'det' && <Detail />}
         {s !== 'w1' && s !== 'w2' && <TabBar />}
+        </div>
         <RecordSheet />
         <Toast />
       </div>

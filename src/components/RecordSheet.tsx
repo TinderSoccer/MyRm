@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { UnitToggle } from '../screens/Welcome';
 import { discOf, type DiscId, type PrType } from '../data';
@@ -13,6 +13,7 @@ export function RecordSheet() {
   const { data, set, fmt, sheet, closeSheet, flash } = useStore();
   const shown = useShownDiscs();
   const open = sheet != null;
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
   const [sel, setSel] = useState(data.prs[0]?.id ?? '');
   const [sheetDisc, setSheetDisc] = useState<DiscId>(data.prs[0]?.disc ?? 'cf');
@@ -38,6 +39,16 @@ export function RecordSheet() {
     if (target) { setSel(target.id); setSheetDisc(target.disc); setDraft(currentOf(target)); }
     setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX');
   }, [sheet]);
+
+  // Modal focus: move into the sheet on open, close on Escape, hand focus back to whatever opened it.
+  useEffect(() => {
+    if (!open) return;
+    const opener = document.activeElement as HTMLElement | null;
+    titleRef.current?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeSheet(); };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); opener?.focus?.({ preventScroll: true }); };
+  }, [open, closeSheet]);
 
   const selP = data.prs.find(p => p.id === sel) ?? data.prs[0];
   if (!selP) return null;
@@ -95,12 +106,11 @@ export function RecordSheet() {
 
   return (
     <>
-      <div className="backdrop" onClick={closeSheet} style={{ opacity: open ? 0.45 : 0, pointerEvents: open ? 'auto' : 'none' }} />
-      <div className="sheet" data-screen-label="05 Registrar marca" role="dialog" aria-modal="true" aria-label="Registrar marca" inert={!open}
-        style={{ transform: `translateY(${open ? '0%' : '110%'})` }}>
+      <div className="backdrop" data-open={open} onClick={closeSheet} />
+      <div className="sheet" data-open={open} data-screen-label="05 Registrar marca" role="dialog" aria-modal="true" aria-labelledby="sheet-title" inert={!open}>
         <span style={{ width: 44, height: 5, borderRadius: 999, background: 'var(--color-neutral-400)', justifySelf: 'center' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 26, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h2 id="sheet-title" ref={titleRef} tabIndex={-1} style={{ outline: 'none', fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 26, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
             <span className="flex-center" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-accent)', color: 'var(--color-bg)' }}><Icon name="dumbbell" size={22} /></span>
             Registrar marca
           </h2>
@@ -109,7 +119,7 @@ export function RecordSheet() {
 
         <div className="chip-row">
           {shown.map(d => (
-            <button key={d.id} className="pill" onClick={() => chooseDisc(d.id)} style={{ height: 36, padding: '0 14px', fontWeight: 700, fontSize: 13, ...pillStyle(sheetDisc === d.id) }}>{d.label}</button>
+            <button key={d.id} className="pill" onClick={() => chooseDisc(d.id)} aria-pressed={sheetDisc === d.id} style={{ fontWeight: 700, ...pillStyle(sheetDisc === d.id) }}>{d.label}</button>
           ))}
         </div>
 
@@ -117,18 +127,17 @@ export function RecordSheet() {
           {data.prs.filter(p => p.disc === sheetDisc).map(p => {
             const on = p.id === sel;
             return (
-              <button key={p.id} onClick={() => pick(p.id)} aria-pressed={on}
-                style={{ height: 40, padding: '0 16px', borderRadius: 999, border: 'none', background: on ? 'var(--color-accent)' : 'var(--color-surface)', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontWeight: 600, fontSize: 14, cursor: 'pointer', transition: 'all .15s' }}>{p.name}</button>
+              <button key={p.id} className="chip hit" onClick={() => pick(p.id)} aria-pressed={on}>{p.name}</button>
             );
           })}
-          <button className="new-mov" onClick={() => setShowNewMov(v => !v)}>+ Nuevo</button>
+          <button className="new-mov hit" aria-expanded={showNewMov} onClick={() => setShowNewMov(v => !v)}>+ Nuevo</button>
         </div>
 
         {showNewMov && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--color-surface)' }}>
-            <input className="input" placeholder="Nombre, p. ej. Thruster" value={newMovName} onChange={e => setNewMovName(e.target.value)} style={{ height: 46, fontSize: 15 }} />
+            <input className="input" aria-label="Nombre del movimiento" placeholder="Nombre, p. ej. Thruster" value={newMovName} onChange={e => setNewMovName(e.target.value)} style={{ height: 46, fontSize: 15 }} />
             <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-              {NEW_TYPES.map(([k, l]) => <button key={k} className="pill-sm" onClick={() => setNewMovType(k)} style={pillStyle(newMovType === k)}>{l}</button>)}
+              {NEW_TYPES.map(([k, l]) => <button key={k} className="pill-sm" onClick={() => setNewMovType(k)} aria-pressed={newMovType === k} style={pillStyle(newMovType === k)}>{l}</button>)}
             </div>
             <button onClick={createMov} className="btn btn-primary" style={{ height: 44 }}>Crear en {sheetDiscLabel}</button>
           </div>
@@ -161,7 +170,7 @@ export function RecordSheet() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span className="field-label">Repeticiones</span>
             <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-              {SCHEMES.map(k => <button key={k} className="pill-sm" onClick={() => setScheme(k)} style={pillStyle(scheme === k)}>{k}</button>)}
+              {SCHEMES.map(k => <button key={k} className="pill-sm" onClick={() => setScheme(k)} aria-pressed={scheme === k} style={pillStyle(scheme === k)}>{k}</button>)}
             </div>
           </div>
         )}
@@ -169,22 +178,22 @@ export function RecordSheet() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span className="field-label">Fecha</span>
           <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
-            {[[todayISO(), 'Hoy'], [yesterdayISO(), 'Ayer']].map(([iso, l]) => <button key={l} className="pill-sm" onClick={() => setDateISO(iso)} style={pillStyle(dateISO === iso)}>{l}</button>)}
+            {[[todayISO(), 'Hoy'], [yesterdayISO(), 'Ayer']].map(([iso, l]) => <button key={l} className="pill-sm" onClick={() => setDateISO(iso)} aria-pressed={dateISO === iso} style={pillStyle(dateISO === iso)}>{l}</button>)}
             <input type="date" aria-label="Otra fecha" value={dateISO} max={todayISO()} onChange={e => e.target.value && setDateISO(e.target.value)}
-              style={{ height: 38, padding: '0 12px', borderRadius: 999, border: '2px solid var(--color-neutral-400)', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }} />
+              style={{ height: 44, padding: '0 12px', borderRadius: 999, border: '2px solid var(--color-neutral-600)', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }} />
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span className="field-label">Modalidad</span>
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            {MODES.map(k => <button key={k} className="pill-sm" onClick={() => setMode(k)} style={pillStyle(mode === k)}>{k}</button>)}
+            {MODES.map(k => <button key={k} className="pill-sm" onClick={() => setMode(k)} aria-pressed={mode === k} style={pillStyle(mode === k)}>{k}</button>)}
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <span className="field-label">Nota (opcional)</span>
-          <textarea className="input" rows={2} placeholder="¿Cómo te sentiste? Técnica, cinturón, rodilleras…" value={note} onChange={e => setNote(e.target.value)}
+          <label htmlFor="sheet-note" className="field-label">Nota (opcional)</label>
+          <textarea id="sheet-note" className="input" rows={2} placeholder="¿Cómo te sentiste? Técnica, cinturón, rodilleras…" value={note} onChange={e => setNote(e.target.value)}
             style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 15, resize: 'none', height: 'auto', minHeight: 64 }} />
         </div>
         <button className="btn btn-primary btn-block" onClick={save} style={{ height: 56, fontSize: 17 }}>Guardar</button>
