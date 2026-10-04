@@ -1,0 +1,194 @@
+import { useEffect, useState } from 'react';
+import { Icon } from './Icon';
+import { UnitToggle } from '../screens/Welcome';
+import { discOf, type DiscId, type PrType } from '../data';
+import { bestOf, currentOf, logOf, shortDate, todayISO, yesterdayISO } from '../format';
+import { pillStyle, useShownDiscs, useStore } from '../store';
+
+const SCHEMES = ['1RM', '3RM', '5RM', '10RM'];
+const MODES = ['RX', 'Escalado'];
+const NEW_TYPES: [PrType, string][] = [['kg', 'Peso'], ['time', 'Tiempo'], ['reps', 'Reps']];
+
+export function RecordSheet() {
+  const { data, set, fmt, sheet, closeSheet, flash } = useStore();
+  const shown = useShownDiscs();
+  const open = sheet != null;
+
+  const [sel, setSel] = useState(data.prs[0]?.id ?? '');
+  const [sheetDisc, setSheetDisc] = useState<DiscId>(data.prs[0]?.disc ?? 'cf');
+  const [draft, setDraft] = useState(0);
+  const [draftText, setDraftText] = useState<string | null>(null);
+  const [showNewMov, setShowNewMov] = useState(false);
+  const [newMovName, setNewMovName] = useState('');
+  const [newMovType, setNewMovType] = useState<PrType>('kg');
+  const [scheme, setScheme] = useState('1RM');
+  const [dateISO, setDateISO] = useState(todayISO());
+  const [mode, setMode] = useState('RX');
+  const [note, setNote] = useState('');
+
+  const firstOf = (disc: DiscId) => data.prs.find(p => p.disc === disc);
+  const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); setDraft(currentOf(p)); setDraftText(null); } };
+
+  // Every open starts a fresh attempt on the requested mark (or on the filtered discipline, or the last one used).
+  useEffect(() => {
+    if (!sheet) return;
+    const target = (sheet.prId && data.prs.find(p => p.id === sheet.prId))
+      || (sheet.disc && firstOf(sheet.disc))
+      || data.prs.find(p => p.id === sel) || data.prs[0];
+    if (target) { setSel(target.id); setSheetDisc(target.disc); setDraft(currentOf(target)); }
+    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX');
+  }, [sheet]);
+
+  const selP = data.prs.find(p => p.id === sel) ?? data.prs[0];
+  if (!selP) return null;
+
+  const isWeight = selP.type === 'kg';
+  const schemeKey = isWeight ? scheme : null;
+  const best = bestOf(selP, schemeKey);
+  const g0 = best == null ? 1 : fmt.gain(selP, best, draft);
+  const g = best != null && isWeight && fmt.sameShown(best, draft) ? 0 : g0;
+  const unit = fmt.unitOf(selP);
+  const sheetDiscLabel = discOf(sheetDisc).label;
+
+  const hint = best == null
+    ? `¡Primer registro${schemeKey ? ' de ' + schemeKey : ''}!`
+    : g > 0.01
+      ? (selP.better === 'down' ? `¡${fmt.fmtD(g)} más rápido que tu récord!` : `¡${fmt.gainTxt(selP, g)} sobre tu récord!`)
+      : g < -0.01 ? `Récord actual: ${fmt.val(selP, best)} ${unit}` : 'Igual a tu récord';
+
+  const chooseDisc = (id: DiscId) => {
+    setSheetDisc(id);
+    const f = firstOf(id);
+    if (f) pick(f.id); else setShowNewMov(true);
+  };
+
+  const createMov = () => {
+    const name = newMovName.trim();
+    if (!name) return;
+    const id = 'u' + Date.now();
+    const type = newMovType;
+    set(d => ({ prs: [...d.prs, { id, disc: sheetDisc, name, type, better: type === 'time' ? 'down' : undefined, hist: [], log: [], date: '—' }] }));
+    setSel(id); setDraft(type === 'kg' ? 40 : type === 'time' ? 300 : 10); setDraftText(null); setShowNewMov(false); setNewMovName('');
+  };
+
+  const step = fmt.stepOf(selP);
+  const save = () => {
+    const isPR = g > 0.01;
+    const v = Math.round(draft * 10) / 10;
+    const entry = { v, date: shortDate(dateISO), scheme: schemeKey, mode, note: note.trim() };
+    const main = !isWeight || schemeKey === '1RM';
+    set(d => ({
+      prs: d.prs.map(x => x.id === selP.id ? { ...x, log: [...logOf(x), entry], ...(main ? { hist: [...x.hist.slice(-4), v], date: entry.date } : {}) } : x),
+      feed: isPR ? [{ id: Date.now(), who: 'me', kind: 'pr' as const, disc: selP.disc, what: selP.name, type: selP.type, unitLabel: selP.unitLabel, value: v, ago: 'Ahora', cheers: 0, cheered: false }, ...d.feed] : d.feed
+    }));
+    closeSheet();
+    setDraftText(null);
+    flash(
+      isPR ? (data.celebrate ? '¡Nuevo récord!' : 'Récord guardado') : 'Guardado',
+      isPR
+        ? (best == null
+          ? `${selP.name}${schemeKey ? ' ' + schemeKey : ''}: ${fmt.val(selP, v)} ${unit}. ¡Primera marca!`
+          : `${selP.name}${schemeKey && schemeKey !== '1RM' ? ' ' + schemeKey : ''}: ${fmt.gainTxt(selP, g)}. ¡Qué bárbaro!`)
+        : `${selP.name}: ${fmt.val(selP, draft)} ${unit}. Constancia es avance.`
+    );
+  };
+
+  return (
+    <>
+      <div className="backdrop" onClick={closeSheet} style={{ opacity: open ? 0.45 : 0, pointerEvents: open ? 'auto' : 'none' }} />
+      <div className="sheet" data-screen-label="05 Registrar marca" role="dialog" aria-modal="true" aria-label="Registrar marca" inert={!open}
+        style={{ transform: `translateY(${open ? '0%' : '110%'})` }}>
+        <span style={{ width: 44, height: 5, borderRadius: 999, background: 'var(--color-neutral-400)', justifySelf: 'center' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 26, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span className="flex-center" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-accent)', color: 'var(--color-bg)' }}><Icon name="dumbbell" size={22} /></span>
+            Registrar marca
+          </h2>
+          <button className="round-btn" onClick={closeSheet} aria-label="Cerrar"><Icon name="x" size={18} /></button>
+        </div>
+
+        <div className="chip-row">
+          {shown.map(d => (
+            <button key={d.id} className="pill" onClick={() => chooseDisc(d.id)} style={{ height: 36, padding: '0 14px', fontWeight: 700, fontSize: 13, ...pillStyle(sheetDisc === d.id) }}>{d.label}</button>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          {data.prs.filter(p => p.disc === sheetDisc).map(p => {
+            const on = p.id === sel;
+            return (
+              <button key={p.id} onClick={() => pick(p.id)} aria-pressed={on}
+                style={{ height: 40, padding: '0 16px', borderRadius: 999, border: 'none', background: on ? 'var(--color-accent)' : 'var(--color-surface)', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontWeight: 600, fontSize: 14, cursor: 'pointer', transition: 'all .15s' }}>{p.name}</button>
+            );
+          })}
+          <button className="new-mov" onClick={() => setShowNewMov(v => !v)}>+ Nuevo</button>
+        </div>
+
+        {showNewMov && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--color-surface)' }}>
+            <input className="input" placeholder="Nombre, p. ej. Thruster" value={newMovName} onChange={e => setNewMovName(e.target.value)} style={{ height: 46, fontSize: 15 }} />
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              {NEW_TYPES.map(([k, l]) => <button key={k} className="pill-sm" onClick={() => setNewMovType(k)} style={pillStyle(newMovType === k)}>{l}</button>)}
+            </div>
+            <button onClick={createMov} className="btn btn-primary" style={{ height: 44 }}>Crear en {sheetDiscLabel}</button>
+          </div>
+        )}
+
+        {isWeight && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <span className="field-label">Peso en</span>
+            <UnitToggle height={36} />
+          </div>
+        )}
+
+        <div className="surface" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 18 }}>
+          <button className="stepper-btn stepper-minus" aria-label="Menos" onClick={() => { setDraftText(null); setDraft(v => Math.max(0, v - step)); }}><Icon name="minus" size={22} /></button>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4, width: '100%' }}>
+              <input className="draft-input" aria-label="Valor" inputMode="decimal" value={draftText ?? fmt.val(selP, draft)}
+                onChange={e => { const t = e.target.value; const v = fmt.parse(selP, t); setDraftText(t); if (v != null) setDraft(v); }}
+                onFocus={e => { const el = e.target; setTimeout(() => el.select(), 0); }}
+                onBlur={() => setDraftText(null)} />
+              {unit && <span style={{ fontSize: 18, fontWeight: 600 }}>{unit}</span>}
+            </div>
+            <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>{selP.type === 'time' ? 'Toca para escribir · m:ss' : 'Toca el número para escribirlo'}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: g > 0.01 ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
+          </div>
+          <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => v + step); }}><Icon name="plus" size={22} /></button>
+        </div>
+
+        {isWeight && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span className="field-label">Repeticiones</span>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              {SCHEMES.map(k => <button key={k} className="pill-sm" onClick={() => setScheme(k)} style={pillStyle(scheme === k)}>{k}</button>)}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span className="field-label">Fecha</span>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+            {[[todayISO(), 'Hoy'], [yesterdayISO(), 'Ayer']].map(([iso, l]) => <button key={l} className="pill-sm" onClick={() => setDateISO(iso)} style={pillStyle(dateISO === iso)}>{l}</button>)}
+            <input type="date" aria-label="Otra fecha" value={dateISO} max={todayISO()} onChange={e => e.target.value && setDateISO(e.target.value)}
+              style={{ height: 38, padding: '0 12px', borderRadius: 999, border: '2px solid var(--color-neutral-400)', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span className="field-label">Modalidad</span>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            {MODES.map(k => <button key={k} className="pill-sm" onClick={() => setMode(k)} style={pillStyle(mode === k)}>{k}</button>)}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span className="field-label">Nota (opcional)</span>
+          <textarea className="input" rows={2} placeholder="¿Cómo te sentiste? Técnica, cinturón, rodilleras…" value={note} onChange={e => setNote(e.target.value)}
+            style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 15, resize: 'none', height: 'auto', minHeight: 64 }} />
+        </div>
+        <button className="btn btn-primary btn-block" onClick={save} style={{ height: 56, fontSize: 17 }}>Guardar</button>
+      </div>
+    </>
+  );
+}

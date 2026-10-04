@@ -1,0 +1,90 @@
+import { Icon } from '../components/Icon';
+import { DISCS } from '../data';
+import { pillStyle, useStore } from '../store';
+
+const circle = { position: 'absolute', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' } as const;
+
+export function Welcome() {
+  const { set } = useStore();
+  return (
+    <div data-screen-label="01 Bienvenida" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 'calc(var(--top) + 16px) 28px calc(40px + var(--bottom))', boxSizing: 'border-box', overflow: 'hidden' }}>
+      <div style={{ ...circle, width: 300, height: 300, background: 'var(--color-accent-2-300)', top: 70, right: -110 }} />
+      <div style={{ ...circle, width: 170, height: 170, background: 'var(--color-accent)', top: 230, right: 70, color: 'var(--color-bg)' }}><Icon name="dumbbell" size={88} /></div>
+      <div style={{ ...circle, top: 150, right: 40, width: 64, height: 64, background: 'var(--color-bg)', color: 'var(--color-accent-2-700)', transform: 'rotate(-30deg)' }}><Icon name="dumbbell" size={34} /></div>
+      <div style={{ ...circle, width: 64, height: 64, background: 'var(--color-accent-200)', top: 120, left: 40, color: 'var(--color-accent-700)' }}><Icon name="dumbbell" size={30} /></div>
+      <div style={{ ...circle, width: 110, height: 110, border: '12px solid var(--color-text)', top: 290, left: -30, boxSizing: 'border-box' }} />
+      <div style={{ flex: 1 }} />
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <span className="tag tag-accent-2" style={{ alignSelf: 'flex-start' }}>PRonto · tu diario de box</span>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 48, lineHeight: 1.02, margin: 0, textWrap: 'pretty' }}>Cada marca<br />cuenta.</h1>
+        <p style={{ margin: 0, fontSize: 17, lineHeight: 1.5, maxWidth: 290, color: 'var(--color-neutral-800)' }}>
+          CrossFit, Hyrox, Metcon, GAP, Bar Mastery: anota tus marcas, mira cómo creces y deja que te recordemos ir al box (con cariño).
+        </p>
+        <div style={{ display: 'flex', gap: 6, margin: 'var(--space-2) 0' }}>
+          <span style={{ width: 24, height: 8, borderRadius: 999, background: 'var(--color-text)' }} />
+          <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--color-neutral-400)' }} />
+        </div>
+        <button className="btn btn-primary btn-block" onClick={() => set(() => ({ screen: 'w2' }))} style={{ height: 56, fontSize: 17 }}>Empezar</button>
+      </div>
+    </div>
+  );
+}
+
+const label = { fontWeight: 600, fontSize: 14 } as const;
+const group = { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' } as const;
+
+export function Profile() {
+  const { data, set, setHomeFilter } = useStore();
+  const toggleGoal = (id: typeof DISCS[number]['id']) =>
+    set(d => ({ goals: d.goals.includes(id) ? d.goals.filter(x => x !== id) : [...d.goals, id] }));
+
+  return (
+    <div data-screen-label="02 Perfil" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 'calc(var(--top) + 16px) 28px calc(40px + var(--bottom))', boxSizing: 'border-box', gap: 'var(--space-6)', overflow: 'auto' }}>
+      <button className="round-btn" aria-label="Volver" onClick={() => set(() => ({ screen: 'w1' }))} style={{ alignSelf: 'flex-start' }}><Icon name="chevronLeft" size={20} /></button>
+      <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 34, lineHeight: 1.08, margin: 0 }}>Cuéntanos<br />de ti</h2>
+      <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <label htmlFor="name" style={{ ...label, color: 'var(--color-text)', marginBottom: 0 }}>¿Cómo te llamamos?</label>
+        <input id="name" className="input" placeholder="Tu nombre" value={data.name} onChange={e => set(() => ({ name: e.target.value }))} style={{ height: 52, fontSize: 17 }} />
+      </div>
+      <div style={group}>
+        <span style={label}>¿Qué entrenas?</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          {DISCS.map(d => (
+            <button key={d.id} className="pill" onClick={() => toggleGoal(d.id)} style={{ height: 44, padding: '0 18px', fontSize: 15, ...pillStyle(data.goals.includes(d.id)) }}>{d.label}</button>
+          ))}
+        </div>
+      </div>
+      <div style={group}>
+        <span style={label}>Días de box por semana</span>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          {[2, 3, 4, 5, 6].map(n => {
+            const on = data.freq === n;
+            return (
+              <button key={n} onClick={() => set(() => ({ freq: n }))} style={{ width: 52, height: 52, borderRadius: '50%', border: 'none', background: on ? 'var(--color-accent)' : 'var(--color-surface)', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontFamily: 'var(--font-heading)', fontSize: 20, cursor: 'pointer', transition: 'all .15s' }}>{n}</button>
+            );
+          })}
+        </div>
+      </div>
+      <div style={group}>
+        <span style={label}>¿Cargas en kilos o libras?</span>
+        <UnitToggle height={44} />
+      </div>
+      <div style={{ flex: 1 }} />
+      <button className="btn btn-primary btn-block" onClick={() => { setHomeFilter('all'); set(() => ({ screen: 'home' })); }} style={{ height: 56, fontSize: 17, flex: 'none' }}>¡Vamos al box!</button>
+    </div>
+  );
+}
+
+export function UnitToggle({ height }: { height: number }) {
+  const { data, set } = useStore();
+  return (
+    <div style={{ display: 'flex', padding: 4, borderRadius: 999, background: 'var(--color-surface)', gap: 4, alignSelf: 'flex-start' }}>
+      {(['kg', 'lb'] as const).map(u => {
+        const on = data.units === u;
+        return (
+          <button key={u} onClick={() => set(() => ({ units: u }))} style={{ height, minWidth: 64, padding: '0 16px', borderRadius: 999, border: 'none', background: on ? 'var(--color-text)' : 'transparent', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontWeight: 700, fontSize: 15, cursor: 'pointer', transition: 'all .15s' }}>{u}</button>
+        );
+      })}
+    </div>
+  );
+}
