@@ -1,4 +1,4 @@
-# PRonto · tu diario de box
+# MyRm · tu diario de box
 
 Implementación de `project/CrossFit Avances.dc.html` (diseño exportado de Claude Design) como app web móvil instalable.
 
@@ -8,7 +8,7 @@ npm run dev      # desarrollo
 npm run build    # genera dist/ (estático; sirve en cualquier hosting)
 ```
 
-- **Stack:** React 19 + Vite + TypeScript, sin backend. Los datos se guardan en el navegador (`localStorage`, clave `pronto.v1`).
+- **Stack:** React 19 + Vite + TypeScript, sin backend. Los datos se guardan en el navegador (`localStorage`, clave `myrm.v1`).
 - **Estilo:** `src/styles/organic.css` es la hoja del sistema Organic sin cambios; `src/styles/app.css` agrega las clases de la app.
 - **Pantallas:** Bienvenida y perfil, Inicio (racha semanal + marcas), Detalle de marca, Skills, Grupo, Avisos y la hoja "Registrar marca".
 - En el teléfono ocupa toda la pantalla (respeta notch y barra inferior); en pantallas anchas se muestra dentro del marco de teléfono del diseño.

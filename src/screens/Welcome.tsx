@@ -15,7 +15,7 @@ export function Welcome() {
       <div style={{ ...circle, width: 110, height: 110, border: '12px solid var(--color-text)', top: 290, left: -30, boxSizing: 'border-box' }} />
       <div style={{ flex: 1 }} />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        <span className="tag tag-accent-2" style={{ alignSelf: 'flex-start' }}>PRonto · tu diario de box</span>
+        <span className="tag tag-accent-2" style={{ alignSelf: 'flex-start' }}>MyRm · tu diario de box</span>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 48, lineHeight: 1.02, margin: 0, textWrap: 'pretty' }}>Cada marca<br />cuenta.</h1>
         <p style={{ margin: 0, fontSize: 17, lineHeight: 1.5, maxWidth: 290, color: 'var(--color-neutral-800)' }}>
           CrossFit, Hyrox, Metcon, GAP, Bar Mastery: anota tus marcas, mira cómo creces y deja que te recordemos ir al box (con cariño).
