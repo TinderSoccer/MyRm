@@ -4,11 +4,14 @@ import './styles/organic.css';
 import './styles/app.css';
 import { App } from './App';
 import { StoreProvider } from './store';
+import { CloudProvider } from './cloud';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <StoreProvider>
-      <App />
+      <CloudProvider>
+        <App />
+      </CloudProvider>
     </StoreProvider>
   </StrictMode>
 );

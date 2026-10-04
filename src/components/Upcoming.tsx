@@ -1,21 +1,42 @@
 import { useState } from 'react';
 import { DeleteButton } from './DeleteButton';
 import { Icon } from './Icon';
-import type { EventKind, GroupEvent } from '../data';
+import type { EventKind } from '../data';
 import { countdown, dayOfMonth, daysUntil, longDate, monthShort, nextBirthdayISO, todayISO } from '../format';
 import { askNotify } from '../reminders';
-import { pillStyle, useStore } from '../store';
+import { pillStyle } from '../store';
 
 const KINDS: [EventKind, string][] = [['carrete', 'Carrete'], ['competencia', 'Competencia'], ['otro', 'Otro']];
 const KIND_LABEL: Record<EventKind, string> = { carrete: 'Carrete', competencia: 'Competencia', otro: 'Evento' };
 const SHOWN = 4;
 
-type Item =
-  | { key: string; iso: string; kind: 'event'; ev: GroupEvent }
-  | { key: string; iso: string; kind: 'birthday'; id: string; name: string };
+export interface UpEvent {
+  id: string; kind: EventKind; title: string; iso: string; time: string; place: string;
+  canDelete: boolean;
+  /** Shared group only: who said "Voy", and my own answer (null = not answered). */
+  rsvp?: { goingNames: string[]; mine: boolean | null };
+}
+export interface UpBirthday { id: string; name: string; md: string; canDelete: boolean }
+export interface NewEvent { kind: EventKind; title: string; iso: string; time: string; place: string }
+
+interface Props {
+  events: UpEvent[];
+  birthdays: UpBirthday[];
+  /** Names offered while typing a birthday. */
+  people: string[];
+  onAddEvent: (e: NewEvent) => Promise<string | null> | void;
+  onDeleteEvent: (id: string) => void;
+  onAddBirthday: (name: string, md: string) => void;
+  onDeleteBirthday: (id: string) => void;
+  onRsvp?: (id: string, going: boolean) => void;
+  /** Shown under the empty state: who will see what you add. */
+  scopeNote: string;
+}
+
+type Item = { key: string; iso: string } & ({ kind: 'event'; ev: UpEvent } | { kind: 'birthday'; bd: UpBirthday });
 
 /** Sends the plan out through the phone's share sheet, or WhatsApp where there is none. */
-async function share(e: GroupEvent) {
+async function share(e: UpEvent) {
   const text = [`${KIND_LABEL[e.kind]}: ${e.title}`, `${longDate(e.iso)}${e.time ? ` · ${e.time}` : ''}`, e.place, '¿Vamos?'].filter(Boolean).join('\n');
   try {
     if (navigator.share) { await navigator.share({ text }); return; }
@@ -23,9 +44,11 @@ async function share(e: GroupEvent) {
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
 }
 
+const namesLine = (names: string[]) =>
+  names.length <= 3 ? names.join(', ') : `${names.slice(0, 3).join(', ')} y ${names.length - 3} más`;
+
 /** Upcoming birthdays and get-togethers of the box crew, plus the form to add them. */
-export function Upcoming() {
-  const { data, set, flash } = useStore();
+export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent, onAddBirthday, onDeleteBirthday, onRsvp, scopeNote }: Props) {
   const [all, setAll] = useState(false);
   const [adding, setAdding] = useState<null | 'event' | 'birthday'>(null);
   const [kind, setKind] = useState<EventKind>('carrete');
@@ -34,26 +57,26 @@ export function Upcoming() {
   const [time, setTime] = useState('');
   const [place, setPlace] = useState('');
   const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const items: Item[] = [
-    ...data.events.filter(e => daysUntil(e.iso) >= 0).map(ev => ({ key: 'e' + ev.id, iso: ev.iso, kind: 'event' as const, ev })),
-    ...data.birthdays.map(b => ({ key: 'b' + b.id, iso: nextBirthdayISO(b.md), kind: 'birthday' as const, id: b.id, name: b.name }))
+    ...events.filter(e => daysUntil(e.iso) >= 0).map(ev => ({ key: 'e' + ev.id, iso: ev.iso, kind: 'event' as const, ev })),
+    ...birthdays.map(bd => ({ key: 'b' + bd.id, iso: nextBirthdayISO(bd.md), kind: 'birthday' as const, bd }))
   ].sort((a, b) => a.iso.localeCompare(b.iso));
   const visible = all ? items : items.slice(0, SHOWN);
-  // Names already in the group, offered while typing a birthday.
-  const people = [...new Set([...data.members, ...data.outgoing].map(m => m.name))];
 
-  const reset = () => { setAdding(null); setTitle(''); setIso(''); setTime(''); setPlace(''); setName(''); setKind('carrete'); };
-  const canSave = adding === 'event' ? !!title.trim() && !!iso : !!name.trim() && !!iso;
-  const save = () => {
+  const reset = () => { setAdding(null); setTitle(''); setIso(''); setTime(''); setPlace(''); setName(''); setKind('carrete'); setError(null); };
+  const canSave = !busy && (adding === 'event' ? !!title.trim() && !!iso : !!name.trim() && !!iso);
+  const save = async () => {
     if (!canSave) return;
-    const id = String(Date.now());
     if (adding === 'event') {
-      set(d => ({ events: [...d.events, { id, kind, title: title.trim(), iso, time, place: place.trim() }] }));
-      flash('Evento agendado', `${title.trim()}: ${countdown(iso).toLowerCase()}. Compártelo con tu gente.`);
+      setBusy(true);
+      const err = await onAddEvent({ kind, title: title.trim(), iso, time, place: place.trim() });
+      setBusy(false);
+      if (err) { setError(err); return; }
     } else {
-      set(d => ({ birthdays: [...d.birthdays, { id, name: name.trim(), md: iso.slice(5) }] }));
-      flash('Cumple guardado', `Te avisamos el día del cumple de ${name.trim()}.`);
+      onAddBirthday(name.trim(), iso.slice(5));
     }
     reset();
     askNotify();
@@ -63,33 +86,48 @@ export function Upcoming() {
     <div className="stack-3">
       <h2 className="section-title">Próximos</h2>
       {items.length === 0 && !adding && (
-        <div className="empty">Cumpleaños, carretes y competencias del box. Agrega el primero y te avisamos el día.</div>
+        <div className="empty">Cumpleaños, carretes y competencias del box. Agrega el primero y te avisamos el día. {scopeNote}</div>
       )}
       {visible.map(it => {
         const n = daysUntil(it.iso);
         const soon = n <= 1;
-        const head = it.kind === 'event' ? it.ev.title : `Cumple de ${it.name}`;
-        const sub = it.kind === 'event'
-          ? [KIND_LABEL[it.ev.kind], it.ev.time, it.ev.place].filter(Boolean).join(' · ')
-          : '';
+        const head = it.kind === 'event' ? it.ev.title : `Cumple de ${it.bd.name}`;
+        const sub = it.kind === 'event' ? [KIND_LABEL[it.ev.kind], it.ev.time, it.ev.place].filter(Boolean).join(' · ') : '';
+        const canDelete = it.kind === 'event' ? it.ev.canDelete : it.bd.canDelete;
+        const rsvp = it.kind === 'event' ? it.ev.rsvp : undefined;
         return (
-          <div key={it.key} className="surface upcoming">
-            <div className="date-chip" data-soon={soon}>
-              <span className="date-chip-day">{dayOfMonth(it.iso)}</span>
-              <span className="date-chip-month">{monthShort(it.iso)}</span>
+          <div key={it.key} className="surface upcoming-card">
+            <div className="upcoming">
+              <div className="date-chip" data-soon={soon}>
+                <span className="date-chip-day">{dayOfMonth(it.iso)}</span>
+                <span className="date-chip-month">{monthShort(it.iso)}</span>
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                <span className="label-600" style={{ overflowWrap: 'anywhere' }}>{head}</span>
+                {sub && <span className="muted-13">{sub}</span>}
+                <span style={{ fontSize: 13, fontWeight: 700, color: soon ? 'var(--color-accent-800)' : 'var(--color-neutral-800)' }}>{countdown(it.iso)}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flex: 'none' }}>
+                {it.kind === 'event' && (
+                  <button className="round-btn" onClick={() => share(it.ev)} aria-label={`Compartir ${it.ev.title}`}><Icon name="share" size={18} /></button>
+                )}
+                {canDelete && (
+                  <DeleteButton label="Borrar" what={head}
+                    onDelete={() => it.kind === 'event' ? onDeleteEvent(it.ev.id) : onDeleteBirthday(it.bd.id)} />
+                )}
+              </div>
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-              <span className="label-600" style={{ overflowWrap: 'anywhere' }}>{head}</span>
-              {sub && <span className="muted-13">{sub}</span>}
-              <span style={{ fontSize: 13, fontWeight: 700, color: soon ? 'var(--color-accent-800)' : 'var(--color-neutral-800)' }}>{countdown(it.iso)}</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flex: 'none' }}>
-              {it.kind === 'event' && (
-                <button className="round-btn" onClick={() => share(it.ev)} aria-label={`Compartir ${it.ev.title}`}><Icon name="share" size={18} /></button>
-              )}
-              <DeleteButton label="Borrar" what={head}
-                onDelete={() => set(d => it.kind === 'event' ? { events: d.events.filter(x => x.id !== it.ev.id) } : { birthdays: d.birthdays.filter(x => x.id !== it.id) })} />
-            </div>
+            {rsvp && onRsvp && it.kind === 'event' && (
+              <div className="rsvp">
+                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                  <button className="pill-sm" aria-pressed={rsvp.mine === true} style={pillStyle(rsvp.mine === true)} onClick={() => onRsvp(it.ev.id, true)}>
+                    Voy{rsvp.goingNames.length ? ` · ${rsvp.goingNames.length}` : ''}
+                  </button>
+                  <button className="pill-sm" aria-pressed={rsvp.mine === false} style={pillStyle(rsvp.mine === false)} onClick={() => onRsvp(it.ev.id, false)}>No voy</button>
+                </div>
+                <span className="muted-13">{rsvp.goingNames.length ? `Van: ${namesLine(rsvp.goingNames)}` : 'Nadie confirmó todavía'}</span>
+              </div>
+            )}
           </div>
         );
       })}
@@ -127,8 +165,9 @@ export function Upcoming() {
               <input id="bd-date" className="input field-date" type="date" value={iso} onChange={e => setIso(e.target.value)} />
             </>
           )}
+          {error && <p className="note" role="alert" style={{ color: 'var(--color-accent-800)' }}>{error}</p>}
           <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <button className="btn btn-primary" onClick={save} disabled={!canSave} style={{ flex: 1, height: 48 }}>Guardar</button>
+            <button className="btn btn-primary" onClick={save} disabled={!canSave} style={{ flex: 1, height: 48 }}>{busy ? 'Guardando…' : 'Guardar'}</button>
             <button className="btn btn-secondary" onClick={reset} style={{ flex: 1, height: 48 }}>Cancelar</button>
           </div>
         </div>

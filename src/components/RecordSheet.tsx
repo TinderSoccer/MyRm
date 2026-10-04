@@ -3,6 +3,7 @@ import { Icon } from './Icon';
 import { discOf, type DiscId, type PrType } from '../data';
 import { bestOf, currentOf, logOf, shortDate, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
+import { useCloud } from '../cloud';
 
 const SCHEMES = ['1RM', '3RM', '5RM', '10RM'];
 const MODES = ['RX', 'Escalado'];
@@ -11,6 +12,7 @@ const NEW_TYPES: [PrType, string][] = [['kg', 'Peso'], ['time', 'Tiempo'], ['rep
 export function RecordSheet() {
   const { data, set, fmt, sheet, closeSheet, flash } = useStore();
   const shown = useShownDiscs();
+  const cloud = useCloud();
   const open = sheet != null;
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -95,6 +97,8 @@ export function RecordSheet() {
       done: day >= 0 ? d.done.map((x, i) => x || i === day) : d.done,
       feed: isPR ? [{ id: Date.now(), who: 'me', kind: 'pr' as const, disc: selP.disc, what: selP.name, type: selP.type, unitLabel: selP.unitLabel, value: v, ago: 'Ahora', at: Date.now(), cheers: 0, cheered: false }, ...d.feed] : d.feed
     }));
+    // Records also go to the shared group, when there is one.
+    if (isPR) cloud.post({ kind: 'pr', disc: selP.disc, what: selP.name, type: selP.type, unit_label: selP.unitLabel ?? null, value: v });
     closeSheet();
     setDraftText(null);
     flash(

@@ -1,14 +1,28 @@
 import { useState } from 'react';
+import { FeedCard, MemberCircles } from '../components/GroupParts';
 import { Icon } from '../components/Icon';
-import { Upcoming } from '../components/Upcoming';
-import { MEMBER_COLORS, discOf, type FeedItem, type Invite, type Member } from '../data';
-import { initialOf, timeAgo } from '../format';
+import { Upcoming, type UpBirthday } from '../components/Upcoming';
+import { MEMBER_COLORS, type FeedItem, type Invite, type Member } from '../data';
+import { countdown, initialOf, timeAgo } from '../format';
 import { useStore } from '../store';
+
+/** Birthdays kept on this phone (both group modes use them). */
+export function useLocalBirthdays() {
+  const { data, set, flash } = useStore();
+  const birthdays: UpBirthday[] = data.birthdays.map(b => ({ ...b, canDelete: true }));
+  const addBirthday = (name: string, md: string) => {
+    set(d => ({ birthdays: [...d.birthdays, { id: String(Date.now()), name, md }] }));
+    flash('Cumple guardado', `Te avisamos el día del cumple de ${name}.`);
+  };
+  const deleteBirthday = (id: string) => set(d => ({ birthdays: d.birthdays.filter(x => x.id !== id) }));
+  return { birthdays, addBirthday, deleteBirthday };
+}
 
 const ME: Member = { id: 'me', name: 'Tú', color: 'var(--color-text)' };
 
 export function Group() {
   const { data, set, fmt, flash } = useStore();
+  const local = useLocalBirthdays();
   const [filter, setFilter] = useState('all');
   const [inviteName, setInviteName] = useState('');
 
@@ -46,18 +60,7 @@ export function Group() {
         <p className="lede">Los logros de tu gente del box. Solo ven lo tuyo quienes aceptan.</p>
       </div>
 
-      <div className="chip-row" style={{ gap: 14, margin: '-8px -22px 0', padding: '8px 22px' }}>
-        {circles.map(m => (
-          <button key={m.id} onClick={() => setFilter(m.id)} aria-pressed={filter === m.id}
-            style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--color-text)', width: 60 }}>
-            <span className="flex-center" style={{ width: 56, height: 56, borderRadius: '50%', background: m.color, color: 'var(--color-bg)', fontFamily: 'var(--font-heading)', fontSize: 20,
-              boxShadow: `0 0 0 3px var(--color-bg), 0 0 0 ${filter === m.id ? '6px' : '0px'} var(--color-text)`, transition: 'box-shadow .15s' }}>
-              {m.id === 'all' ? <Icon name="users" size={24} /> : initialOf(m.name)}
-            </span>
-            <span style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>{m.name}</span>
-          </button>
-        ))}
-      </div>
+      <MemberCircles circles={circles} filter={filter} setFilter={setFilter} />
 
       {data.incoming.map(r => (
         <div key={r.id} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18, borderRadius: 'var(--radius-lg)', background: 'var(--color-accent-200)' }}>
@@ -72,7 +75,18 @@ export function Group() {
         </div>
       ))}
 
-      <Upcoming />
+      <Upcoming
+        events={data.events.map(e => ({ ...e, canDelete: true }))}
+        birthdays={local.birthdays}
+        people={[...new Set([...data.members, ...data.outgoing].map(m => m.name))]}
+        onAddEvent={e => {
+          set(d => ({ events: [...d.events, { id: String(Date.now()), ...e }] }));
+          flash('Evento agendado', `${e.title}: ${countdown(e.iso).toLowerCase()}. Compártelo con tu gente.`);
+        }}
+        onDeleteEvent={id => set(d => ({ events: d.events.filter(x => x.id !== id) }))}
+        onAddBirthday={local.addBirthday}
+        onDeleteBirthday={local.deleteBirthday}
+        scopeNote="" />
 
       <div className="dashed">
         <label htmlFor="invite" className="label-600">Invitar al grupo</label>
@@ -99,34 +113,11 @@ export function Group() {
           </div>
         )}
         {feed.map(f => {
-          const m = find(f.who), d = discOf(f.disc);
-          const isPr = f.kind === 'pr';
+          const m = find(f.who);
           return (
-            <div key={f.id} className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '16px 18px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span className="flex-center" style={{ width: 36, height: 36, borderRadius: '50%', background: m.color, color: 'var(--color-bg)', fontFamily: 'var(--font-heading)', fontSize: 15, flex: 'none' }}>{m.id === 'me' ? 'Tú' : initialOf(m.name)}</span>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                  <span style={{ fontWeight: 700, fontSize: 15 }}>{m.name}</span>
-                  <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>{f.at ? timeAgo(f.at) : f.ago}</span>
-                </div>
-                <span className="kicker" style={{ color: d.color }}>{d.label}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                  <span style={{ fontSize: 14, color: 'var(--color-neutral-800)' }}>{isPr ? 'Nuevo récord en' : 'Desbloqueó la skill'}</span>
-                  <span className="label-600">{f.what}</span>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: 26, lineHeight: 1.1, color: isPr ? 'var(--color-text)' : 'var(--color-accent-2-700)' }}>
-                    {isPr ? `${fmt.val(f, f.value ?? 0)} ${fmt.unitOf(f)}`.trim() : f.stage}
-                  </span>
-                </div>
-                <button onClick={() => cheer(f.id)} aria-pressed={f.cheered} aria-label={`Felicitar a ${m.name} (${f.cheers})`}
-                  style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 6, height: 40, padding: '0 14px', borderRadius: 999,
-                    border: `2px solid ${f.cheered ? 'var(--color-accent)' : 'var(--color-accent-600)'}`, background: f.cheered ? 'var(--color-accent)' : 'transparent',
-                    color: f.cheered ? 'var(--color-on-accent)' : 'var(--color-accent-800)', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'background-color .15s, color .15s, border-color .15s' }}>
-                  <Icon name="flame" size={18} />{f.cheers}
-                </button>
-              </div>
-            </div>
+            <FeedCard key={f.id} name={m.name} color={m.color} isMe={m.id === 'me'} ago={f.at ? timeAgo(f.at) : f.ago} disc={f.disc}
+              isPr={f.kind === 'pr'} what={f.what} result={f.kind === 'pr' ? `${fmt.val(f, f.value ?? 0)} ${fmt.unitOf(f)}`.trim() : f.stage ?? ''}
+              cheers={f.cheers} cheered={f.cheered} onCheer={() => cheer(f.id)} />
           );
         })}
       </div>

@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Icon } from '../components/Icon';
 import { Switch } from '../components/Switch';
 import { DISCS } from '../data';
 import { pillStyle, useStore } from '../store';
+import { useCloud } from '../cloud';
 
 const circle = { position: 'absolute', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' } as const;
 
@@ -34,7 +36,18 @@ export function Profile() {
   const { data, set, setHomeFilter } = useStore();
   // The same screen is the second onboarding step and, afterwards, the profile/settings reached from Home's avatar.
   const settings = data.onboarded;
-  const finish = () => { setHomeFilter('all'); set(() => ({ screen: 'home', onboarded: true })); };
+  const cloud = useCloud();
+  const me = cloud.members.find(m => m.id === cloud.userId);
+  // Birthday lives in the shared profile (the group sees it); edited as a date, stored as MM-DD.
+  // null = untouched, so a profile opened before the group loads never wipes the saved birthday.
+  const [bday, setBday] = useState<string | null>(null);
+  const shownBday = bday ?? (me?.birthday ? `2000-${me.birthday}` : '');
+  const finish = () => {
+    if (cloud.userId) cloud.saveProfile(data.name, bday == null ? me?.birthday ?? null : bday ? bday.slice(5) : null);
+    setHomeFilter('all');
+    // Arrived through an invite link: go straight to the group to sign in and join.
+    set(() => ({ screen: !settings && cloud.pendingJoin ? 'gr' : 'home', onboarded: true }));
+  };
   const toggleGoal = (id: typeof DISCS[number]['id']) =>
     set(d => ({ goals: d.goals.includes(id) ? d.goals.filter(x => x !== id) : [...d.goals, id] }));
 
@@ -69,6 +82,12 @@ export function Profile() {
         <span id="units-l" style={label}>¿Cargas en kilos o libras?</span>
         <UnitToggle height={44} />
       </div>
+      {cloud.userId && (
+        <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+          <label htmlFor="bday" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>Tu cumpleaños (lo ve tu grupo)</label>
+          <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 15 }} />
+        </div>
+      )}
       {settings && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -76,6 +95,12 @@ export function Profile() {
             <span className="muted-13">Mensajes con más fiesta al superar una marca.</span>
           </div>
           <Switch on={data.celebrate} label="Celebrar mis récords" onToggle={() => set(d => ({ celebrate: !d.celebrate }))} />
+        </div>
+      )}
+      {cloud.userId && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}</span>
+          <button className="btn btn-secondary" onClick={() => cloud.signOut()} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
         </div>
       )}
       <div style={{ flex: 1 }} />

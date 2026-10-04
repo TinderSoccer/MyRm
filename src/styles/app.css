@@ -170,8 +170,18 @@ button { font-family: inherit; }
 .del-btn:hover { color: var(--color-accent-800); }
 .del-btn[data-armed='true'] { border-color: var(--color-accent-700); color: var(--color-accent-800); background: var(--color-accent-100); }
 
+/* — group: invite link — */
+.invite-btn {
+  display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 20px; border-radius: 999px; border: none; cursor: pointer;
+  background: var(--color-accent-200); color: var(--color-accent-900); font-weight: 700; font-size: 15px; transition: background-color .15s;
+}
+.invite-btn:hover { background: var(--color-accent-300); }
+.invite-btn .muted-13 { color: var(--color-accent-800); }
+
 /* — group: upcoming birthdays and events — */
-.upcoming { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.upcoming-card { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.upcoming { display: flex; align-items: center; gap: 14px; }
+.rsvp { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--color-divider); }
 .date-chip {
   width: 56px; height: 60px; flex: none; border-radius: var(--radius-md); display: flex; flex-direction: column;
   align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-text);

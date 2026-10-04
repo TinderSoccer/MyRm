@@ -1,0 +1,231 @@
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { DiscId, EventKind, PrType } from './data';
+import { useStore } from './store';
+
+// The shared group lives in Supabase. Without these variables the app keeps working fully on the phone, as before.
+const URL_ = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
+const KEY_ = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const sb: SupabaseClient | null = URL_ && KEY_ ? createClient(URL_, KEY_) : null;
+
+const JOIN_KEY = 'myrm.join';
+const REFRESH_MS = 60_000;
+
+export interface CloudGroup { id: string; name: string; invite_code: string; created_by: string }
+export interface CloudMember { id: string; name: string; birthday: string | null }
+export interface CloudFeedItem {
+  id: string; user_id: string; kind: 'pr' | 'skill'; disc: DiscId; what: string;
+  type: PrType | null; unit_label: string | null; value: number | null; stage: string | null;
+  created_at: string; cheers: number; cheered: boolean;
+}
+export interface CloudEvent {
+  id: string; kind: EventKind; title: string; day: string; time: string; place: string; created_by: string;
+  going: string[]; notGoing: string[];
+}
+export type NewFeedItem = Pick<CloudFeedItem, 'kind' | 'disc' | 'what'> & Partial<Pick<CloudFeedItem, 'type' | 'unit_label' | 'value' | 'stage'>>;
+
+interface Cloud {
+  /** False when Supabase isn't configured: callers fall back to the local-only group. */
+  enabled: boolean;
+  /** True once the first session check finished. */
+  ready: boolean;
+  userId: string | null;
+  email: string | null;
+  group: CloudGroup | null;
+  members: CloudMember[];
+  feed: CloudFeedItem[];
+  events: CloudEvent[];
+  /** An invite code from a link, waiting for the user to sign in. */
+  pendingJoin: string | null;
+  sendCode: (email: string) => Promise<string | null>;
+  verifyCode: (email: string, code: string) => Promise<string | null>;
+  signOut: () => Promise<void>;
+  createGroup: (name: string) => Promise<string | null>;
+  joinGroup: (code: string) => Promise<string | null>;
+  leaveGroup: () => Promise<void>;
+  post: (item: NewFeedItem) => void;
+  toggleCheer: (id: string) => void;
+  addEvent: (e: Pick<CloudEvent, 'kind' | 'title' | 'day' | 'time' | 'place'>) => Promise<string | null>;
+  deleteEvent: (id: string) => void;
+  rsvp: (id: string, going: boolean) => void;
+  saveProfile: (name: string, birthday: string | null) => void;
+  inviteLink: () => string;
+}
+
+const Ctx = createContext<Cloud | null>(null);
+
+/** Spanish, human messages for the errors a person can actually act on. */
+function explain(err: { message?: string } | null): string | null {
+  if (!err) return null;
+  const m = err.message || '';
+  if (/invalid invite code/i.test(m)) return 'Ese link de invitación no existe o expiró. Pide uno nuevo.';
+  if (/token has expired|invalid/i.test(m)) return 'El código no es válido o ya venció. Pide uno nuevo.';
+  if (/rate limit|security purposes/i.test(m)) return 'Pediste muchos códigos seguidos. Espera un minuto y vuelve a intentar.';
+  if (/fetch|network/i.test(m)) return 'Sin conexión. Revisa tu internet e intenta de nuevo.';
+  return 'Algo falló. Intenta de nuevo en un momento.';
+}
+
+export function CloudProvider({ children }: { children: ReactNode }) {
+  const { data } = useStore();
+  const [ready, setReady] = useState(!sb);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [group, setGroup] = useState<CloudGroup | null>(null);
+  const [members, setMembers] = useState<CloudMember[]>([]);
+  const [feed, setFeed] = useState<CloudFeedItem[]>([]);
+  const [events, setEvents] = useState<CloudEvent[]>([]);
+  const [pendingJoin, setPendingJoin] = useState<string | null>(() => {
+    // An invite link looks like …/?join=CODE. Keep the code until the person signs in, and clean the address bar.
+    const code = new URLSearchParams(location.search).get('join');
+    if (code) {
+      try { localStorage.setItem(JOIN_KEY, code); } catch { /* private mode */ }
+      history.replaceState(null, '', location.pathname);
+      return code;
+    }
+    try { return localStorage.getItem(JOIN_KEY); } catch { return null; }
+  });
+  const nameRef = useRef(data.name);
+  nameRef.current = data.name;
+
+  // Session
+  useEffect(() => {
+    if (!sb) return;
+    sb.auth.getSession().then(({ data: s }) => {
+      setUserId(s.session?.user.id ?? null); setEmail(s.session?.user.email ?? null); setReady(true);
+    });
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => { setUserId(s?.user.id ?? null); setEmail(s?.user.email ?? null); });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const refresh = useCallback(async () => {
+    if (!sb || !userId) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); return; }
+    const { data: mine } = await sb.from('group_members').select('group_id').eq('user_id', userId).order('joined_at').limit(1);
+    const gid = mine?.[0]?.group_id as string | undefined;
+    if (!gid) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); return; }
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const [g, mem, fd, ev] = await Promise.all([
+      sb.from('groups').select('id, name, invite_code, created_by').eq('id', gid).single(),
+      sb.from('group_members').select('user_id').eq('group_id', gid),
+      sb.from('feed_items').select('*, cheers(user_id)').eq('group_id', gid).order('created_at', { ascending: false }).limit(60),
+      sb.from('events').select('*, rsvps(user_id, going)').eq('group_id', gid).gte('day', yesterday).order('day')
+    ]);
+    if (g.data) setGroup(g.data as CloudGroup);
+    // Members reference auth.users, not profiles, so their names come in a second query.
+    const ids = (mem.data ?? []).map(r => r.user_id as string);
+    const { data: profs } = ids.length ? await sb.from('profiles').select('id, name, birthday').in('id', ids) : { data: [] };
+    setMembers(ids.map(id => { const p = profs?.find(x => x.id === id); return { id, name: p?.name || 'Sin nombre', birthday: p?.birthday ?? null }; }));
+    setFeed(((fd.data ?? []) as (Omit<CloudFeedItem, 'cheers' | 'cheered'> & { cheers: { user_id: string }[] })[]).map(f => ({
+      ...f, value: f.value == null ? null : Number(f.value), cheers: f.cheers.length, cheered: f.cheers.some(c => c.user_id === userId)
+    })));
+    setEvents(((ev.data ?? []) as (Omit<CloudEvent, 'going' | 'notGoing'> & { rsvps: { user_id: string; going: boolean }[] })[]).map(e => ({
+      ...e, going: e.rsvps.filter(r => r.going).map(r => r.user_id), notGoing: e.rsvps.filter(r => !r.going).map(r => r.user_id)
+    })));
+  }, [userId]);
+
+  // On sign-in: make sure there's a profile with the name from onboarding, use a pending invite, then load.
+  useEffect(() => {
+    if (!sb || !userId) { refresh(); return; }
+    (async () => {
+      const { data: prof } = await sb.from('profiles').select('id, name').eq('id', userId).maybeSingle();
+      if (!prof) await sb.from('profiles').insert({ id: userId, name: nameRef.current.trim() });
+      else if (!prof.name && nameRef.current.trim()) await sb.from('profiles').update({ name: nameRef.current.trim() }).eq('id', userId);
+      if (pendingJoin) {
+        await sb.rpc('join_group', { code: pendingJoin });
+        try { localStorage.removeItem(JOIN_KEY); } catch { /* ignore */ }
+        setPendingJoin(null);
+      }
+      refresh();
+    })();
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Stay fresh while open: on return to the app and once a minute.
+  useEffect(() => {
+    if (!sb || !userId) return;
+    const onVis = () => { if (document.visibilityState === 'visible') refresh(); };
+    document.addEventListener('visibilitychange', onVis);
+    const id = window.setInterval(refresh, REFRESH_MS);
+    return () => { document.removeEventListener('visibilitychange', onVis); clearInterval(id); };
+  }, [userId, refresh]);
+
+  const value = useMemo<Cloud>(() => ({
+    enabled: !!sb, ready, userId, email, group, members, feed, events, pendingJoin,
+    sendCode: async addr => {
+      if (!sb) return null;
+      const { error } = await sb.auth.signInWithOtp({ email: addr, options: { emailRedirectTo: location.origin + location.pathname } });
+      return explain(error);
+    },
+    verifyCode: async (addr, code) => {
+      if (!sb) return null;
+      const { error } = await sb.auth.verifyOtp({ email: addr, token: code.trim(), type: 'email' });
+      return explain(error);
+    },
+    signOut: async () => { await sb?.auth.signOut(); },
+    createGroup: async name => {
+      if (!sb) return null;
+      const { error } = await sb.rpc('create_group', { group_name: name });
+      if (!error) await refresh();
+      return explain(error);
+    },
+    joinGroup: async code => {
+      if (!sb) return null;
+      // Accept either the bare code or the whole invite link pasted in.
+      const bare = code.includes('join=') ? new URL(code, location.href).searchParams.get('join') ?? code : code;
+      const { error } = await sb.rpc('join_group', { code: bare });
+      if (!error) await refresh();
+      return explain(error);
+    },
+    leaveGroup: async () => {
+      if (!sb || !group || !userId) return;
+      await sb.from('group_members').delete().eq('group_id', group.id).eq('user_id', userId);
+      await refresh();
+    },
+    post: item => {
+      if (!sb || !group || !userId) return;
+      sb.from('feed_items').insert({ ...item, group_id: group.id, user_id: userId }).then(() => refresh());
+    },
+    toggleCheer: id => {
+      if (!sb || !userId) return;
+      const item = feed.find(f => f.id === id);
+      if (!item) return;
+      // Optimistic: the flame reacts instantly, the server catches up.
+      setFeed(fs => fs.map(f => f.id === id ? { ...f, cheered: !f.cheered, cheers: f.cheers + (f.cheered ? -1 : 1) } : f));
+      const q = item.cheered
+        ? sb.from('cheers').delete().eq('feed_item_id', id).eq('user_id', userId)
+        : sb.from('cheers').insert({ feed_item_id: id, user_id: userId });
+      q.then(({ error }) => { if (error) refresh(); });
+    },
+    addEvent: async e => {
+      if (!sb || !group || !userId) return null;
+      const { error } = await sb.from('events').insert({ ...e, group_id: group.id, created_by: userId });
+      if (!error) await refresh();
+      return explain(error);
+    },
+    deleteEvent: id => {
+      if (!sb) return;
+      setEvents(es => es.filter(e => e.id !== id));
+      sb.from('events').delete().eq('id', id).then(() => refresh());
+    },
+    rsvp: (id, going) => {
+      if (!sb || !userId) return;
+      setEvents(es => es.map(e => e.id !== id ? e : {
+        ...e,
+        going: going ? [...new Set([...e.going, userId])] : e.going.filter(x => x !== userId),
+        notGoing: going ? e.notGoing.filter(x => x !== userId) : [...new Set([...e.notGoing, userId])]
+      }));
+      sb.from('rsvps').upsert({ event_id: id, user_id: userId, going }).then(({ error }) => { if (error) refresh(); });
+    },
+    saveProfile: (name, birthday) => {
+      if (!sb || !userId) return;
+      sb.from('profiles').upsert({ id: userId, name: name.trim(), birthday, updated_at: new Date().toISOString() }).then(() => refresh());
+    },
+    inviteLink: () => group ? `${location.origin}${location.pathname}?join=${group.invite_code}` : ''
+  }), [ready, userId, email, group, members, feed, events, pendingJoin, refresh]);
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+}
+
+export function useCloud() {
+  const c = useContext(Ctx);
+  if (!c) throw new Error('useCloud outside CloudProvider');
+  return c;
+}

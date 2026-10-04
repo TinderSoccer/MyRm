@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { DeleteButton } from '../components/DeleteButton';
 import { STAGES, discOf, type DiscId, type Skill } from '../data';
 import { pillStyle, useShownDiscs, useStore } from '../store';
+import { useCloud } from '../cloud';
 
 export function Skills() {
   const { data, set, flash } = useStore();
   const shown = useShownDiscs();
+  const cloud = useCloud();
   const [filter, setFilter] = useState<DiscId | 'all'>('all');
   const [newSkill, setNewSkill] = useState('');
 
@@ -24,6 +26,7 @@ export function Skills() {
 
   const setStage = (k: Skill, i: number) => {
     set(d => ({ skills: d.skills.map(x => x.id === k.id ? { ...x, stage: i } : x) }));
+    if (i >= 3 && k.stage < 3) cloud.post({ kind: 'skill', disc: k.disc, what: k.name, stage: STAGES[i] });
     if (i >= 3 && k.stage < 3) flash(data.celebrate ? '¡Skill desbloqueada!' : 'Skill lograda', `${k.name}. Eso no se olvida.`);
   };
   const add = () => {
