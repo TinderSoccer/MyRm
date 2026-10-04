@@ -1,6 +1,6 @@
 import { Icon } from '../components/Icon';
 import { discOf } from '../data';
-import { currentOf, initialOf, longToday } from '../format';
+import { initialOf, logOf, longToday } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 
 const DAY_L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -10,7 +10,8 @@ export function Home() {
   const shown = useShownDiscs();
   const weekDone = data.done.filter(Boolean).length;
   const name = (data.name || '').trim();
-  const visible = data.prs.filter(p => shown.some(d => d.id === p.disc) && (homeFilter === 'all' || p.disc === homeFilter));
+  // Only marks with at least one attempt show up; the rest is just the catalog the record sheet offers.
+  const visible = data.prs.filter(p => logOf(p).length > 0 && shown.some(d => d.id === p.disc) && (homeFilter === 'all' || p.disc === homeFilter));
 
   return (
     <div className="screen" data-screen-label="03 Inicio">
@@ -62,7 +63,8 @@ export function Home() {
           </div>
         )}
         {visible.map(p => {
-          const h = p.hist.length ? p.hist : [currentOf(p)];
+          const log = logOf(p);
+          const h = p.hist.length ? p.hist : log.slice(-5).map(e => e.v);
           const last = h[h.length - 1];
           const sc = p.better === 'down' ? h.map(v => -v) : h;
           const min = Math.min(...sc), max = Math.max(...sc);
@@ -77,7 +79,7 @@ export function Home() {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
                 <span className="kicker" style={{ color: disc.color }}>{disc.label}</span>
                 <span style={{ fontWeight: 600, fontSize: 16 }}>{p.name}</span>
-                <span className="muted-13">Última · {p.date}</span>
+                <span className="muted-13">Última · {log[log.length - 1].date}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30 }}>
                 {sc.map((v, i) => (
@@ -86,7 +88,7 @@ export function Home() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 76 }}>
                 <span style={{ fontFamily: 'var(--font-heading)', fontSize: 24, lineHeight: 1 }}>{fmt.val(p, last)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, marginLeft: 3 }}>{fmt.unitOf(p)}</span></span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-accent-2-700)' }}>{delta > 0 ? fmt.gainTxt(p, delta) : 'Igual'}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-accent-2-700)' }}>{h.length === 1 ? 'Primera' : delta > 0 ? fmt.gainTxt(p, delta) : 'Igual'}</span>
               </div>
             </button>
           );

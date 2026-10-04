@@ -73,62 +73,54 @@ export const STAGES = ['Por empezar', 'Practicando', 'Con escala', '¡Logrado!',
 
 export const MEMBER_COLORS = ['var(--color-accent)', 'var(--color-accent-2)', 'var(--color-neutral-700)', 'var(--color-accent-700)', 'var(--color-accent-2-700)'];
 
+/** A fresh install: no marks, no group, no reminders — only a catalog of common movements and skills to pick from. */
 export function seedData(weekStart: string): AppData {
+  const mov = (id: string, disc: DiscId, name: string, type: PrType, extra: Partial<Pr> = {}): Pr =>
+    ({ id, disc, name, type, ...(type === 'time' ? { better: 'down' as const } : {}), ...extra, hist: [], log: [], date: '—' });
   return {
     screen: 'w1',
-    name: 'Ana', goals: ['cf', 'hx', 'gap', 'bm'], freq: 4,
-    done: [true, true, false, true, false, false, false],
+    name: '', goals: [], freq: 4,
+    done: [false, false, false, false, false, false, false],
     weekStart,
     units: 'kg',
     celebrate: true,
     prs: [
-      { id: 'sq', disc: 'cf', name: 'Back squat', type: 'kg', hist: [95, 100, 100, 105, 110], date: '28 sep' },
-      { id: 'cl', disc: 'cf', name: 'Clean', type: 'kg', hist: [60, 65, 67.5, 70, 72.5], date: '14 sep' },
-      { id: 'fr', disc: 'cf', name: 'Fran', type: 'time', better: 'down', hist: [372, 355, 341, 330, 318], date: '20 sep' },
-      { id: 'hxs', disc: 'hx', name: 'Simulacro completo', type: 'time', better: 'down', hist: [5400, 5210, 5040, 4890, 4720], date: '27 sep' },
-      { id: 'ski', disc: 'hx', name: 'SkiErg 1000 m', type: 'time', better: 'down', hist: [262, 255, 251, 246, 240], date: '24 sep' },
-      { id: 'wb', disc: 'hx', name: '100 wall balls', type: 'time', better: 'down', hist: [430, 412, 400, 391, 383], date: '17 sep' },
-      { id: 'cin', disc: 'mc', name: 'AMRAP 20′ Cindy', type: 'reps', unitLabel: 'rondas', hist: [14, 15, 15, 16, 17], date: '22 sep' },
-      { id: 'bk', disc: 'mc', name: 'Assault bike 50 cal', type: 'time', better: 'down', hist: [205, 198, 190, 186, 181], date: '15 sep' },
-      { id: 'ht', disc: 'gap', name: 'Hip thrust', type: 'kg', hist: [70, 80, 85, 90, 100], date: '30 sep' },
-      { id: 'pl', disc: 'gap', name: 'Plancha', type: 'time', better: 'up', hist: [60, 75, 90, 100, 120], date: '30 sep' },
-      { id: 'pu', disc: 'bm', name: 'Dominadas estrictas', type: 'reps', hist: [4, 5, 6, 7, 8], date: '26 sep' },
-      { id: 'mu', disc: 'bm', name: 'Muscle-up en barra', type: 'reps', hist: [0, 1, 1, 2, 3], date: '19 sep' },
-      { id: 't2b', disc: 'bm', name: 'Toes to bar seguidos', type: 'reps', hist: [8, 10, 12, 12, 15], date: '12 sep' }
+      mov('sq', 'cf', 'Back squat', 'kg'),
+      mov('fsq', 'cf', 'Front squat', 'kg'),
+      mov('dl', 'cf', 'Peso muerto', 'kg'),
+      mov('cl', 'cf', 'Clean', 'kg'),
+      mov('sn', 'cf', 'Snatch', 'kg'),
+      mov('cj', 'cf', 'Clean & jerk', 'kg'),
+      mov('sp', 'cf', 'Strict press', 'kg'),
+      mov('fr', 'cf', 'Fran', 'time'),
+      mov('hxs', 'hx', 'Simulacro completo', 'time'),
+      mov('ski', 'hx', 'SkiErg 1000 m', 'time'),
+      mov('row', 'hx', 'Remo 1000 m', 'time'),
+      mov('wb', 'hx', '100 wall balls', 'time'),
+      mov('cin', 'mc', 'AMRAP 20′ Cindy', 'reps', { unitLabel: 'rondas' }),
+      mov('bk', 'mc', 'Assault bike 50 cal', 'time'),
+      mov('ht', 'gap', 'Hip thrust', 'kg'),
+      mov('pl', 'gap', 'Plancha', 'time', { better: 'up' }),
+      mov('pu', 'bm', 'Dominadas estrictas', 'reps'),
+      mov('mu', 'bm', 'Muscle-up en barra', 'reps'),
+      mov('t2b', 'bm', 'Toes to bar seguidos', 'reps')
     ],
     skills: [
-      { id: 'du', disc: 'cf', name: 'Double unders', stage: 3 },
-      { id: 'hspu', disc: 'cf', name: 'Handstand push-up', stage: 1 },
-      { id: 'rc', disc: 'cf', name: 'Rope climb', stage: 3 },
-      { id: 'hsw', disc: 'cf', name: 'Handstand walk', stage: 1 },
+      { id: 'du', disc: 'cf', name: 'Double unders', stage: 0 },
+      { id: 'hspu', disc: 'cf', name: 'Handstand push-up', stage: 0 },
+      { id: 'rc', disc: 'cf', name: 'Rope climb', stage: 0 },
+      { id: 'hsw', disc: 'cf', name: 'Handstand walk', stage: 0 },
       { id: 'rmu', disc: 'cf', name: 'Muscle-up en anillas', stage: 0 },
-      { id: 'kpu', disc: 'bm', name: 'Kipping pull-up', stage: 4 },
-      { id: 'bfu', disc: 'bm', name: 'Butterfly pull-up', stage: 1 },
-      { id: 'bmu', disc: 'bm', name: 'Bar muscle-up', stage: 3 },
+      { id: 'kpu', disc: 'bm', name: 'Kipping pull-up', stage: 0 },
+      { id: 'bfu', disc: 'bm', name: 'Butterfly pull-up', stage: 0 },
+      { id: 'bmu', disc: 'bm', name: 'Bar muscle-up', stage: 0 },
       { id: 'fl', disc: 'bm', name: 'Front lever', stage: 0 },
-      { id: 'ps', disc: 'gap', name: 'Pistol squat', stage: 2 },
-      { id: 'sb', disc: 'hx', name: 'Sled push sin parar', stage: 2 }
+      { id: 'ps', disc: 'gap', name: 'Pistol squat', stage: 0 },
+      { id: 'sb', disc: 'hx', name: 'Sled push sin parar', stage: 0 }
     ],
-    members: [
-      { id: 'lu', name: 'Luis', color: 'var(--color-accent)' },
-      { id: 'mj', name: 'Majo', color: 'var(--color-accent-2)' },
-      { id: 'pa', name: 'Pato', color: 'var(--color-neutral-700)' },
-      { id: 'da', name: 'Dani', color: 'var(--color-accent-700)' }
-    ],
-    incoming: [{ id: 'ca', name: 'Caro' }],
-    feed: [
-      { id: 1, who: 'mj', kind: 'pr', disc: 'hx', what: 'Simulacro completo', type: 'time', value: 4510, ago: 'Hace 2 h', cheers: 3, cheered: false },
-      { id: 2, who: 'lu', kind: 'pr', disc: 'cf', what: 'Back squat', type: 'kg', value: 140, ago: 'Hace 5 h', cheers: 5, cheered: true },
-      { id: 3, who: 'pa', kind: 'skill', disc: 'bm', what: 'Bar muscle-up', stage: '¡Logrado!', ago: 'Ayer', cheers: 8, cheered: false },
-      { id: 4, who: 'da', kind: 'pr', disc: 'gap', what: 'Hip thrust', type: 'kg', value: 120, ago: 'Ayer', cheers: 2, cheered: false },
-      { id: 5, who: 'lu', kind: 'pr', disc: 'mc', what: 'AMRAP 20′ Cindy', type: 'reps', unitLabel: 'rondas', value: 21, ago: 'Hace 2 días', cheers: 4, cheered: false },
-      { id: 6, who: 'mj', kind: 'skill', disc: 'cf', what: 'Double unders', stage: 'Dominado', ago: 'Hace 3 días', cheers: 6, cheered: true }
-    ],
-    reminders: [
-      { id: 1, title: 'CrossFit en el box', sub: 'Lun · Mié · Vie', time: '7:00', on: true },
-      { id: 2, title: 'Clase de Hyrox', sub: 'Mar · Jue', time: '19:00', on: true },
-      { id: 3, title: '¿Hubo marca hoy?', sub: 'Después de cada entreno', time: '20:30', on: true },
-      { id: 4, title: 'GAP + movilidad', sub: 'Sábado', time: '10:00', on: false }
-    ]
+    members: [],
+    incoming: [],
+    feed: [],
+    reminders: []
   };
 }

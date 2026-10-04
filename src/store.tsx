@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { DISCS, seedData, type AppData, type DiscId } from './data';
 import { makeFormat, weekStartISO, type Format } from './format';
 
-const KEY = 'myrm.v1';
+const KEY = 'myrm.v2';
 
 function load(): AppData {
   const week = weekStartISO();

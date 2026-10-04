@@ -24,8 +24,7 @@ export function Group() {
   const accept = (r: Invite) => {
     set(d => ({
       incoming: d.incoming.filter(x => x.id !== r.id),
-      members: [...d.members, { id: r.id, name: r.name, color: MEMBER_COLORS[d.members.length % MEMBER_COLORS.length] }],
-      feed: [...d.feed.slice(0, 1), { id: Date.now(), who: r.id, kind: 'pr', disc: 'cf', what: 'Peso muerto', type: 'kg', value: 110, ago: 'Hace 1 h', cheers: 1, cheered: false }, ...d.feed.slice(1)]
+      members: [...d.members, { id: r.id, name: r.name, color: MEMBER_COLORS[d.members.length % MEMBER_COLORS.length] }]
     }));
     flash('¡Nuevo en el grupo!', `${r.name} ya ve tus logros y tú los suyos.`);
   };
@@ -41,8 +40,7 @@ export function Group() {
     window.setTimeout(() => {
       setPending(p => p.filter(x => x.id !== id));
       set(d => ({
-        members: [...d.members, { id, name, color: MEMBER_COLORS[d.members.length % MEMBER_COLORS.length] }],
-        feed: [{ id: Date.now(), who: id, kind: 'skill', disc: 'cf', what: 'Rope climb', stage: '¡Logrado!', ago: 'Hace 3 h', cheers: 0, cheered: false }, ...d.feed]
+        members: [...d.members, { id, name, color: MEMBER_COLORS[d.members.length % MEMBER_COLORS.length] }]
       }));
       flash('¡Aceptó tu solicitud!', `${name} ya está en tu grupo.`);
     }, ACCEPT_DELAY);
@@ -101,6 +99,11 @@ export function Group() {
 
       <div className="stack-3">
         <h2 className="section-title">{focus ? `Logros de ${focus.name}` : 'Logros del grupo'}</h2>
+        {feed.length === 0 && (
+          <div style={{ padding: 22, borderRadius: 'var(--radius-lg)', border: '2px dashed var(--color-neutral-400)', fontSize: 15, color: 'var(--color-neutral-800)' }}>
+            {focus ? 'Todavía no hay logros por aquí.' : 'Aún no hay logros. Cuando tú o tu grupo superen una marca, aparecerá aquí.'}
+          </div>
+        )}
         {feed.map(f => {
           const m = find(f.who), d = discOf(f.disc);
           const isPr = f.kind === 'pr';

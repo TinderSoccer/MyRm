@@ -22,6 +22,11 @@ export function Reminders() {
         <p className="lede">Un empujoncito, nunca un sermón.</p>
       </div>
       <div className="stack-3">
+        {data.reminders.length === 0 && (
+          <div style={{ padding: 22, borderRadius: 'var(--radius-lg)', border: '2px dashed var(--color-neutral-400)', fontSize: 15, color: 'var(--color-neutral-800)' }}>
+            Aún no tienes recordatorios. Elige días y hora abajo y crea el primero.
+          </div>
+        )}
         {data.reminders.map((r, i) => (
           <div key={r.id} className="surface" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 18, opacity: r.on ? 1 : 0.6, transition: 'opacity .2s' }}>
             <div className="flex-center" style={{ width: 48, height: 48, borderRadius: '50%', background: DOTS[i % 3], flex: 'none', color: 'var(--color-bg)', fontFamily: 'var(--font-heading)', fontSize: 15 }}>{r.time}</div>
