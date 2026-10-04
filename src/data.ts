@@ -44,6 +44,12 @@ export interface FeedItem {
 }
 
 /** `days` are Mon=0..Sun=6; reminders saved before it existed only carry `sub`. */
+export type EventKind = 'carrete' | 'competencia' | 'otro';
+/** A get-together the user plans for their box crew. Local to this phone until the group has a backend. */
+export interface GroupEvent { id: string; kind: EventKind; title: string; iso: string; time: string; place: string }
+/** `md` is MM-DD: the year doesn't matter for a birthday. */
+export interface Birthday { id: string; name: string; md: string }
+
 export interface Reminder { id: number; title: string; sub: string; time: string; on: boolean; days?: number[] }
 
 export interface AppData {
@@ -66,6 +72,8 @@ export interface AppData {
   outgoing: Invite[];
   feed: FeedItem[];
   reminders: Reminder[];
+  events: GroupEvent[];
+  birthdays: Birthday[];
 }
 
 export const DISCS: Disc[] = [
@@ -133,6 +141,8 @@ export function seedData(weekStart: string): AppData {
     incoming: [],
     outgoing: [],
     feed: [],
-    reminders: []
+    reminders: [],
+    events: [],
+    birthdays: []
   };
 }

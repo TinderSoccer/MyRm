@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
+import { Upcoming } from '../components/Upcoming';
 import { MEMBER_COLORS, discOf, type FeedItem, type Invite, type Member } from '../data';
 import { initialOf, timeAgo } from '../format';
 import { useStore } from '../store';
@@ -70,6 +71,8 @@ export function Group() {
           </div>
         </div>
       ))}
+
+      <Upcoming />
 
       <div className="dashed">
         <label htmlFor="invite" className="label-600">Invitar al grupo</label>

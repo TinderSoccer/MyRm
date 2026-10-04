@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DISCS, seedData, type AppData, type DiscId } from './data';
 import { makeFormat, weekStartISO, type Format } from './format';
-import { fireDueReminders } from './reminders';
+import { fireDue } from './reminders';
 
 const KEY = 'myrm.v2';
 
@@ -65,7 +65,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const tick = () => {
       const week = weekStartISO();
       if (latest.current.weekStart !== week) setData(d => ({ ...d, weekStart: week, done: d.done.map(() => false) }));
-      fireDueReminders(latest.current.reminders);
+      fireDue(latest.current.reminders, latest.current.events, latest.current.birthdays);
     };
     tick();
     const id = window.setInterval(tick, 30_000);

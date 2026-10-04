@@ -170,6 +170,17 @@ button { font-family: inherit; }
 .del-btn:hover { color: var(--color-accent-800); }
 .del-btn[data-armed='true'] { border-color: var(--color-accent-700); color: var(--color-accent-800); background: var(--color-accent-100); }
 
+/* — group: upcoming birthdays and events — */
+.upcoming { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.date-chip {
+  width: 56px; height: 60px; flex: none; border-radius: var(--radius-md); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-text);
+}
+.date-chip[data-soon='true'] { background: var(--color-accent-700); color: var(--color-bg); }
+.date-chip-day { font-family: var(--font-heading); font-size: 24px; line-height: 1; }
+.date-chip-month { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.field-date { height: 48px; font-size: 15px; flex: 1; min-width: 0; }
+
 /* — toast — */
 .toast {
   position: absolute; left: 22px; right: 22px; top: calc(var(--top) + 10px); padding: 16px 18px; border-radius: var(--radius-lg);

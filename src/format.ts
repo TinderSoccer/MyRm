@@ -117,3 +117,30 @@ export function weekIndexOf(iso: string, weekStart: string) {
 }
 
 export const todayIndex = () => (new Date().getDay() + 6) % 7;
+
+const WEEKDAYS_SHORT = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const atNoon = (iso: string) => new Date(iso + 'T12:00');
+export const monthShort = (iso: string) => MONTHS[atNoon(iso).getMonth()];
+export const dayOfMonth = (iso: string) => atNoon(iso).getDate();
+/** "sábado 10 de octubre" */
+export const longDate = (iso: string) => { const d = atNoon(iso); return `${WEEKDAYS[d.getDay()].toLowerCase()} ${d.getDate()} de ${MONTHS_LONG[d.getMonth()]}`; };
+
+/** Whole days from today to a date (negative when past). */
+export const daysUntil = (iso: string) => Math.round((atNoon(iso).getTime() - atNoon(todayISO()).getTime()) / 86400000);
+
+/** Next time a MM-DD birthday comes around, today included. */
+export function nextBirthdayISO(md: string) {
+  const year = new Date().getFullYear();
+  const thisYear = `${year}-${md}`;
+  return daysUntil(thisYear) >= 0 ? thisYear : `${year + 1}-${md}`;
+}
+
+/** "Hoy", "Mañana", "En 3 días", then "sáb 24 oct". */
+export function countdown(iso: string) {
+  const n = daysUntil(iso);
+  if (n === 0) return 'Hoy';
+  if (n === 1) return 'Mañana';
+  if (n < 7) return `En ${n} días`;
+  const d = atNoon(iso);
+  return `${WEEKDAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
