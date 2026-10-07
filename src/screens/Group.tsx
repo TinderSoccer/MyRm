@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FeedCard, MemberCircles } from '../components/GroupParts';
+import { FeedCard, GroupTabs, MemberCircles, type GroupView } from '../components/GroupParts';
 import { Icon } from '../components/Icon';
 import { Upcoming, type UpBirthday } from '../components/Upcoming';
 import { MEMBER_COLORS, type FeedItem, type Invite, type Member } from '../data';
@@ -24,6 +24,7 @@ export function Group() {
   const { data, set, fmt, flash } = useStore();
   const local = useLocalBirthdays();
   const [filter, setFilter] = useState('all');
+  const [view, setView] = useState<GroupView>('feed');
   const [inviteName, setInviteName] = useState('');
 
   const all = [ME, ...data.members];
@@ -60,7 +61,7 @@ export function Group() {
         <p className="lede">Los logros de tu gente del box. Solo ven lo tuyo quienes aceptan.</p>
       </div>
 
-      <MemberCircles circles={circles} filter={filter} setFilter={setFilter} />
+      <GroupTabs view={view} setView={setView} />
 
       {data.incoming.map(r => (
         <div key={r.id} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18, borderRadius: 'var(--radius-lg)', background: 'var(--color-accent-200)' }}>
@@ -75,7 +76,7 @@ export function Group() {
         </div>
       ))}
 
-      <Upcoming
+      {view === 'next' && <Upcoming
         events={data.events.map(e => ({ ...e, canDelete: true }))}
         birthdays={local.birthdays}
         people={[...new Set([...data.members, ...data.outgoing].map(m => m.name))]}
@@ -86,7 +87,10 @@ export function Group() {
         onDeleteEvent={id => set(d => ({ events: d.events.filter(x => x.id !== id) }))}
         onAddBirthday={local.addBirthday}
         onDeleteBirthday={local.deleteBirthday}
-        scopeNote="" />
+        scopeNote="" />}
+
+      {view === 'feed' && <>
+      <MemberCircles circles={circles} filter={filter} setFilter={setFilter} />
 
       <div className="dashed">
         <label htmlFor="invite" className="label-600">Invitar al grupo</label>
@@ -121,6 +125,7 @@ export function Group() {
           );
         })}
       </div>
+      </>}
     </div>
   );
 }

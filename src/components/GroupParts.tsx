@@ -2,6 +2,23 @@ import { Icon } from './Icon';
 import { discOf, type DiscId } from '../data';
 import { initialOf } from '../format';
 
+export type GroupView = 'feed' | 'next';
+
+/** Two views of the group so the screen is not one long scroll: achievements, or what is coming up. */
+export function GroupTabs({ view, setView }: { view: GroupView; setView: (v: GroupView) => void }) {
+  const tabs: [GroupView, string][] = [['feed', 'Logros'], ['next', 'Próximos']];
+  return (
+    <div role="group" aria-label="Vista del grupo" style={{ display: 'flex', padding: 4, borderRadius: 999, background: 'var(--color-surface)', gap: 4 }}>
+      {tabs.map(([v, label]) => {
+        const on = view === v;
+        return (
+          <button key={v} aria-pressed={on} onClick={() => setView(v)} style={{ flex: 1, height: 44, borderRadius: 999, border: 'none', background: on ? 'var(--color-text)' : 'transparent', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontWeight: 700, fontSize: 15, cursor: 'pointer', transition: 'background-color .15s, color .15s' }}>{label}</button>
+        );
+      })}
+    </div>
+  );
+}
+
 export interface Circle { id: string; name: string; color: string }
 
 /** The row of people at the top of the group; tapping one filters the feed. 'all' shows everyone. */

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DeleteButton } from '../components/DeleteButton';
-import { FeedCard, MemberCircles } from '../components/GroupParts';
+import { FeedCard, GroupTabs, MemberCircles, type GroupView } from '../components/GroupParts';
 import { Icon } from '../components/Icon';
 import { Upcoming } from '../components/Upcoming';
 import { useCloud } from '../cloud';
@@ -123,6 +123,7 @@ function SharedGroup() {
   const { fmt, flash } = useStore();
   const local = useLocalBirthdays();
   const [filter, setFilter] = useState('all');
+  const [view, setView] = useState<GroupView>('feed');
   const group = cloud.group!;
 
   // Stable colors per person, "Tú" always in ink and first.
@@ -153,15 +154,15 @@ function SharedGroup() {
     <div className="screen" data-screen-label="06 Grupo">
       <Head title={group.name} lede={`${cloud.members.length} ${cloud.members.length === 1 ? 'persona' : 'personas'} del box. Lo que publicas aquí lo ve solo este grupo.`} />
 
-      <MemberCircles circles={circles} filter={filter} setFilter={setFilter} />
-
       <button className="invite-btn" onClick={invite}>
         <Icon name="share" size={20} />
         <span style={{ flex: 1, textAlign: 'left' }}>Invitar a tu gente</span>
         <span className="muted-13">Link del grupo</span>
       </button>
 
-      <Upcoming
+      <GroupTabs view={view} setView={setView} />
+
+      {view === 'next' && <Upcoming
         events={cloud.events.map(e => ({
           id: e.id, kind: e.kind, title: e.title, iso: e.day, time: e.time, place: e.place,
           canDelete: e.created_by === cloud.userId,
@@ -178,7 +179,10 @@ function SharedGroup() {
         onAddBirthday={local.addBirthday}
         onDeleteBirthday={local.deleteBirthday}
         onRsvp={cloud.rsvp}
-        scopeNote="Los eventos los ve todo el grupo." />
+        scopeNote="Los eventos los ve todo el grupo." />}
+
+      {view === 'feed' && <>
+      <MemberCircles circles={circles} filter={filter} setFilter={setFilter} />
 
       <div className="stack-3">
         <h2 className="section-title">{focus ? `Logros de ${focus}` : 'Logros del grupo'}</h2>
@@ -194,6 +198,7 @@ function SharedGroup() {
           );
         })}
       </div>
+      </>}
 
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <DeleteButton label="Salir del grupo" what={`del grupo ${group.name}`} onDelete={cloud.leaveGroup} />
