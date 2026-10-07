@@ -59,7 +59,7 @@ button { font-family: inherit; }
 /* — scroll screens — */
 .screen {
   position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; box-sizing: border-box;
-  padding: calc(var(--top) + 12px) 22px calc(120px + var(--bottom));
+  padding: calc(var(--top) + 12px) 22px calc(108px + var(--bottom));
   /* The gesture stays in the list: no bounce handed to the page behind, smooth momentum on iOS. */
   overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
   display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: max-content; align-content: start; gap: var(--space-6);
@@ -177,14 +177,19 @@ button { font-family: inherit; }
 
 /* — tab bar — */
 .tabbar {
-  position: absolute; left: 16px; right: 16px; bottom: calc(22px + var(--bottom)); height: 72px; border-radius: 999px;
-  background: var(--color-text); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;
-  box-shadow: var(--shadow-lg); z-index: 6;
+  /* The theme's second colour, in pastel: never the paper's hue, never the ink of the dark cards scrolling under it.
+     It sits just above the phone's home indicator (or 12px from the edge without one). */
+  position: absolute; left: 16px; right: 16px; bottom: max(12px, var(--bottom)); height: 68px; border-radius: 999px;
+  background: var(--color-accent-2-300); border: 1.5px solid var(--color-accent-2-400);
+  display: flex; align-items: center; justify-content: space-around; padding: 0 8px;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--color-text) 22%, transparent); z-index: 6;
 }
 .tab {
-  display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer;
-  font-size: 12px; font-weight: 600; width: 58px; height: 56px; justify-content: center; transition: color .15s;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; border: none; cursor: pointer; border-radius: 999px;
+  font-size: 12px; font-weight: 700; width: 64px; height: 54px; justify-content: center; background: transparent;
+  color: var(--color-accent-2-900); transition: background-color .15s, color .15s;
 }
+.tab[aria-current='page'] { background: var(--color-accent-2-700); color: var(--color-bg); }
 .fab {
   width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--color-accent); color: var(--color-on-accent);
   display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s, transform .15s;
@@ -267,6 +272,7 @@ button { font-family: inherit; }
 .board-title { font-family: var(--font-heading); font-weight: 400; font-size: 32px; line-height: 1.05; margin: 0; text-wrap: balance; }
 .board-meta { font-size: 14px; color: var(--color-neutral-400); }
 .board-desc { margin: 0; white-space: pre-wrap; font-size: 16px; line-height: 1.5; }
+.board-more { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--color-neutral-600); background: transparent; color: var(--color-bg); font-weight: 700; font-size: 13px; cursor: pointer; }
 .board-rows { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 14px 0 0; list-style: none; border-top: 1px solid var(--color-neutral-700); }
 .board-row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; margin: 0 -12px; border-radius: var(--radius-md); }
 .board-row[data-me='true'] { background: var(--color-accent-500); color: var(--color-text); }

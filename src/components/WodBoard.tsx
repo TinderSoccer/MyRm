@@ -154,7 +154,7 @@ function Board({ nameOf }: Props) {
           <h2 id="board-title" className="board-title">{w.title}</h2>
           <span className="board-meta">{TYPES.find(t => t[0] === w.score_type)?.[1]} · {w.created_by === cloud.userId ? 'lo subiste tú' : `lo subió ${nameOf(w.created_by)}`}</span>
         </div>
-        {w.description && <p className="board-desc">{w.description}</p>}
+        {w.description && <BoardText text={w.description} />}
         {ranked.length === 0
           ? <p className="board-empty">Nadie ha anotado todavía. Sé el primero.</p>
           : (
@@ -185,6 +185,20 @@ function Board({ nameOf }: Props) {
         {mine && <DeleteButton label="Quitar mi resultado" what="tu resultado de hoy" onDelete={() => { cloud.dropScore(); unMark(); setText(''); setExtraText(''); setEditing(true); }} />}
         {w.created_by === cloud.userId && <DeleteButton label="Borrar WOD" what={`el WOD ${w.title} y sus resultados`} onDelete={cloud.deleteWod} />}
       </div>
+    </div>
+  );
+}
+
+/** A long board (11 lines from a photo) shows its first lines and opens on request, so the ranking stays in reach. */
+function BoardText({ text }: { text: string }) {
+  const SHOWN = 6;
+  const lines = text.split('\n');
+  const [open, setOpen] = useState(false);
+  const long = lines.length > SHOWN + 1;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+      <p className="board-desc">{long && !open ? lines.slice(0, SHOWN).join('\n') + '…' : text}</p>
+      {long && <button type="button" className="board-more" aria-expanded={open} onClick={() => setOpen(o => !o)}>{open ? 'Ver menos' : `Ver todo (${lines.length} líneas)`}</button>}
     </div>
   );
 }

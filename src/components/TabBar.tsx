@@ -13,9 +13,8 @@ export function TabBar() {
   const tab = (t: typeof TABS[number]) => {
     const on = data.screen === t.screen || !!t.also?.includes(data.screen);
     return (
-      <button key={t.screen} className="tab" aria-current={on ? 'page' : undefined} onClick={() => set(() => ({ screen: t.screen }))}
-        style={{ color: on ? 'var(--color-bg)' : 'var(--color-neutral-500)' }}>
-        <Icon name={t.icon} size={24} />{t.label}
+      <button key={t.screen} className="tab" aria-current={on ? 'page' : undefined} onClick={() => set(() => ({ screen: t.screen }))}>
+        <Icon name={t.icon} size={22} />{t.label}
       </button>
     );
   };
