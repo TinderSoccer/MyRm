@@ -1,4 +1,5 @@
 import { useCloud } from '../cloud';
+import { splitRounds } from '../format';
 import { useStore } from '../store';
 import { rankWod } from './WodBoard';
 
@@ -26,6 +27,7 @@ export function TodayWod() {
   const ranked = rankWod(w);
   const at = ranked.findIndex(s => s.user_id === cloud.userId);
   const mine = at >= 0 ? ranked[at] : null;
+  const unit = mine && w.score_type === 'reps' && splitRounds(mine.value)[1] ? '' : fmt.unitOf(measure);
   const firstLine = w.description.split('\n').find(l => l.trim()) ?? '';
 
   return (
@@ -36,11 +38,11 @@ export function TodayWod() {
       </div>
       {mine ? (
         <button className="pr-card" onClick={goBoard} style={{ background: 'var(--color-bg)', padding: '12px 16px' }}
-          aria-label={`Tu resultado: ${fmt.val(measure, mine.value)} ${fmt.unitOf(measure)}, puesto ${at + 1} de ${ranked.length}. Ver pizarra`}>
+          aria-label={`Tu resultado: ${fmt.val(measure, mine.value)} ${unit}, puesto ${at + 1} de ${ranked.length}. Ver pizarra`}>
           <span style={{ fontFamily: 'var(--font-heading)', fontSize: 28, lineHeight: 1, flex: 'none' }} aria-hidden="true">{at + 1}.º</span>
           <span style={{ flex: 1, minWidth: 0 }} aria-hidden="true">de {ranked.length} en la pizarra{mine.scaled ? ' · escalado' : ''}</span>
           <span style={{ fontFamily: 'var(--font-heading)', fontSize: 22, flex: 'none' }} aria-hidden="true">
-            {fmt.val(measure, mine.value)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{fmt.unitOf(measure)}</span>
+            {fmt.val(measure, mine.value)}{unit && <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{unit}</span>}
           </span>
         </button>
       ) : (

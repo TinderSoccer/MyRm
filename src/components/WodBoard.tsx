@@ -3,7 +3,7 @@ import { DeleteButton } from './DeleteButton';
 import { Segmented } from './Segmented';
 import type { Pr, PrType } from '../data';
 import { useCloud, type CloudWod, type WodScore } from '../cloud';
-import { logOf, shortDate, withLog } from '../format';
+import { joinRounds, logOf, shortDate, splitRounds, withLog } from '../format';
 import { useStore } from '../store';
 
 const TYPES: [PrType, string][] = [['time', 'Tiempo'], ['reps', 'Reps / rondas'], ['kg', 'Peso']];
@@ -61,7 +61,10 @@ function Board({ nameOf }: Props) {
   const asPr = { ...measure, hist: [] } as unknown as Pr;
   const mine = w.scores.find(s => s.user_id === cloud.userId);
   const [editing, setEditing] = useState(!mine);
-  const [text, setText] = useState(mine ? fmt.val(measure, mine.value) : '');
+  const isReps = w.score_type === 'reps';
+  // Reps WODs take rounds and extra reps in two number fields: a phone's number pad has no "+" key.
+  const [text, setText] = useState(mine ? (isReps ? String(splitRounds(mine.value)[0]) : fmt.val(measure, mine.value)) : '');
+  const [extraText, setExtraText] = useState(mine && isReps && splitRounds(mine.value)[1] ? String(splitRounds(mine.value)[1]) : '');
   const [scaled, setScaled] = useState(mine?.scaled ?? false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,8 +85,10 @@ function Board({ nameOf }: Props) {
   const unMark = () => { if (benchmark) set(d => ({ prs: d.prs.map(x => x.id === benchmark.id ? withLog(x, withoutToday(x)) : x) })); };
 
   const save = async () => {
-    const value = fmt.parse(asPr, text);
-    if (value == null || value <= 0) { setError(w.score_type === 'time' ? 'Escribe el tiempo como m:ss, p. ej. 4:32.' : 'Escribe un número.'); return; }
+    const extra = extraText.trim() ? Number(extraText) : 0;
+    const main = fmt.parse(asPr, text);
+    const value = isReps && main != null ? (Number.isInteger(main) && Number.isInteger(extra) && extra >= 0 && extra < 1000 ? joinRounds(main, extra) : null) : main;
+    if (value == null || value <= 0) { setError(w.score_type === 'time' ? 'Escribe el tiempo como m:ss, p. ej. 4:32.' : 'Escribe números enteros: rondas, y reps extra si sobraron.'); return; }
     setBusy(true); setError(null);
     const s = { value, scaled, note: '' };
     const err = await cloud.saveScore(s);
@@ -94,14 +99,25 @@ function Board({ nameOf }: Props) {
   };
 
   const unit = fmt.unitOf(measure);
+  // How a score is read out: "5 rondas y 12 reps", "4:05", "120 reps".
+  const scoreWords = (v: number) => {
+    const [r, extra] = splitRounds(v);
+    return isReps && extra ? `${r} rondas y ${extra} reps` : `${fmt.val(measure, v)} ${unit}`.trim();
+  };
   const form = (
     <div className="dashed">
       <label htmlFor="wod-score" className="label-600">{mine ? 'Cambia tu resultado' : 'Tu resultado de hoy'}</label>
       <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-        <input id="wod-score" className="input" inputMode={w.score_type === 'time' ? 'numeric' : 'decimal'} value={text} onChange={e => setText(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && save()} placeholder={w.score_type === 'time' ? 'm:ss' : w.score_type === 'reps' ? 'Reps o rondas' : 'Peso'}
+        <input id="wod-score" className="input" inputMode={w.score_type === 'time' ? 'numeric' : isReps ? 'numeric' : 'decimal'} value={text} onChange={e => setText(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && save()} placeholder={w.score_type === 'time' ? 'm:ss' : isReps ? 'Rondas o reps' : 'Peso'}
           style={{ flex: 1, minWidth: 0, height: 48, fontSize: 17 }} />
-        {unit && <span style={{ fontWeight: 600 }}>{unit}</span>}
+        {isReps ? (
+          <>
+            <span aria-hidden="true" style={{ fontFamily: 'var(--font-heading)', fontSize: 22 }}>+</span>
+            <input className="input" inputMode="numeric" aria-label="Reps extra (opcional)" placeholder="reps" value={extraText} onChange={e => setExtraText(e.target.value.replace(/\D/g, ''))}
+              onKeyDown={e => e.key === 'Enter' && save()} style={{ width: 88, flex: 'none', height: 48, fontSize: 17 }} />
+          </>
+        ) : unit && <span style={{ fontWeight: 600 }}>{unit}</span>}
       </div>
       <Segmented label="Modalidad" fit value={scaled} onChange={setScaled} options={MODES} />
       <button className="btn btn-primary" onClick={save} disabled={busy || !text.trim()} style={{ height: 48 }}>{busy ? 'Guardando…' : 'Anotar en la pizarra'}</button>
@@ -129,11 +145,11 @@ function Board({ nameOf }: Props) {
                 const name = me ? 'Tú' : nameOf(s.user_id);
                 return (
                   <li key={s.user_id} className="board-row" data-me={me} data-scaled={s.scaled}
-                    aria-label={`Puesto ${i + 1}: ${name}, ${fmt.val(measure, s.value)} ${unit}${s.scaled ? ', escalado' : ''}`.replace(/\s+,/g, ',')}>
+                    aria-label={`Puesto ${i + 1}: ${name}, ${scoreWords(s.value)}${s.scaled ? ', escalado' : ''}`}>
                     <span className="board-rank" aria-hidden="true">{i + 1}</span>
                     <span className="board-name" aria-hidden="true">{name}</span>
                     {s.scaled && <span className="board-tag" aria-hidden="true">Esc</span>}
-                    <span className="board-score" aria-hidden="true">{fmt.val(measure, s.value)}{unit && <span className="board-unit">{unit}</span>}</span>
+                    <span className="board-score" aria-hidden="true">{fmt.val(measure, s.value)}{unit && !(isReps && splitRounds(s.value)[1]) && <span className="board-unit">{unit}</span>}</span>
                   </li>
                 );
               })}
@@ -144,7 +160,7 @@ function Board({ nameOf }: Props) {
       {editing && mine && form}
       <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
         {mine && !editing && <button className="btn btn-secondary" onClick={() => setEditing(true)} style={{ minHeight: 44 }}>Cambiar mi resultado</button>}
-        {mine && <DeleteButton label="Quitar mi resultado" what="tu resultado de hoy" onDelete={() => { cloud.dropScore(); unMark(); setText(''); setEditing(true); }} />}
+        {mine && <DeleteButton label="Quitar mi resultado" what="tu resultado de hoy" onDelete={() => { cloud.dropScore(); unMark(); setText(''); setExtraText(''); setEditing(true); }} />}
         {w.created_by === cloud.userId && <DeleteButton label="Borrar WOD" what={`el WOD ${w.title} y sus resultados`} onDelete={cloud.deleteWod} />}
       </div>
     </div>

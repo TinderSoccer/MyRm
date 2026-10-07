@@ -63,7 +63,7 @@ export function Detail() {
           {best == null ? '—' : fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 18, fontWeight: 600, marginLeft: 6 }}>{unit}</span>
         </span>
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-accent-2-300)', position: 'relative' }}>
-          {mainEntries.length <= 1 ? 'Tu primer registro' : delta > 0 ? `${fmt.gainTxt(p, delta)} desde ${first.date}` : `Sin mejora desde ${first.date}`}
+          {mainEntries.length <= 1 ? 'Tu primer registro' : delta > 0 ? `${fmt.gainTxt(p, first.v, best!)} desde ${first.date}` : `Sin mejora desde ${first.date}`}
         </span>
       </div>
 

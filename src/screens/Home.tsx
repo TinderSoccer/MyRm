@@ -75,7 +75,7 @@ export function Home() {
           const best = bestOf(p, scheme, scaled) ?? 0;
           const recordAt = [...entries].reverse().find(e => e.v === best) ?? entries[entries.length - 1];
           const delta = fmt.gain(p, entries[0].v, best);
-          const badge = entries.length === 1 ? 'Primera' : delta > 0 ? fmt.gainTxt(p, delta) : `${entries.length} intentos`;
+          const badge = entries.length === 1 ? 'Primera' : delta > 0 ? fmt.gainTxt(p, entries[0].v, best) : `${entries.length} intentos`;
           const disc = discOf(p.disc);
           const tint = p.type === 'kg' ? 'accent' : p.type === 'time' ? 'accent-2' : 'neutral';
           return (

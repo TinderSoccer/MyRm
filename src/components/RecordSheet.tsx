@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
 import { discOf, type DiscId, type PrType } from '../data';
-import { bestOf, currentOf, logOf, shortDate, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
+import { bestOf, currentOf, joinRounds, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
 
 const SCHEMES = ['1RM', '3RM', '5RM', '10RM'];
+/** Smaller than any real difference: 0.1 kg, 1 s, or one extra rep in a rounds + reps score (0.001). */
+const EPS = 0.0005;
 const MODES = ['RX', 'Escalado'];
 type NewType = PrType | 'kb';
 const NEW_TYPES: [NewType, string][] = [['kg', 'Barra'], ['kb', 'KB / manc.'], ['time', 'Tiempo'], ['reps', 'Reps']];
@@ -70,9 +72,9 @@ export function RecordSheet() {
 
   const hint = best == null
     ? `¡Primer registro${schemeKey ? ' de ' + schemeKey : ''}${scaled ? ' escalado' : ''}!`
-    : g > 0.01
-      ? (selP.better === 'down' ? `¡${fmt.fmtD(g)} más rápido que ${rec}!` : `¡${fmt.gainTxt(selP, g)} sobre ${rec}!`)
-      : g < -0.01 ? `${scaled ? 'Mejor escalado' : 'Récord'} actual: ${fmt.val(selP, best)} ${unit}` : `Igual a ${rec}`;
+    : g > EPS
+      ? (selP.better === 'down' ? `¡${fmt.fmtD(g)} más rápido que ${rec}!` : `¡${fmt.gainTxt(selP, best, draft)} sobre ${rec}!`)
+      : g < -EPS ? `${scaled ? 'Mejor escalado' : 'Récord'} actual: ${fmt.val(selP, best)} ${unit}` : `Igual a ${rec}`;
 
   const chooseDisc = (id: DiscId) => {
     setSheetDisc(id);
@@ -91,11 +93,15 @@ export function RecordSheet() {
   };
 
   const step = fmt.stepOf(selP);
+  // Marks scored in rounds (Cindy…): the stepper moves whole rounds, a small field takes the reps left over.
+  const byRounds = selP.type === 'reps' && selP.unitLabel === 'rondas';
+  const [rounds, extraReps] = splitRounds(draft);
   const save = () => {
-    const better = g > 0.01;
+    const better = g > EPS;
     // Only RX records count as records: they go to the group. A better scaled attempt is celebrated here, not posted.
     const isPR = better && !scaled;
-    const v = Math.round(draft * 10) / 10;
+    // Kilos to 0.1, rounds + reps keep their extra reps (thousandths).
+    const v = selP.type === 'reps' ? Math.round(draft * 1000) / 1000 : Math.round(draft * 10) / 10;
     const entry = { v, date: shortDate(dateISO), iso: dateISO, scheme: schemeKey, mode, note: note.trim() };
     // Logging a mark means you trained that day.
     const day = weekIndexOf(dateISO, data.weekStart);
@@ -110,7 +116,7 @@ export function RecordSheet() {
     flash(
       isPR ? '¡Nuevo récord!' : better ? '¡Mejor escalado!' : 'Guardado',
       better
-        ? (best == null ? `${label}: ${fmt.val(selP, v)} ${unit}. ¡Primera marca${scaled ? ' escalada' : ''}!` : `${label}: ${fmt.gainTxt(selP, g)}. ${isPR ? '¡Qué bárbaro!' : 'Vas camino al RX.'}`)
+        ? (best == null ? `${label}: ${fmt.val(selP, v)} ${unit}. ¡Primera marca${scaled ? ' escalada' : ''}!` : `${label}: ${fmt.gainTxt(selP, best, v)}. ${isPR ? '¡Qué bárbaro!' : 'Vas camino al RX.'}`)
         : `${selP.name}: ${fmt.val(selP, draft)} ${unit}. Constancia es avance.`
     );
   };
@@ -156,14 +162,27 @@ export function RecordSheet() {
           <button className="stepper-btn stepper-minus" aria-label="Menos" onClick={() => { setDraftText(null); setDraft(v => Math.max(0, v - step)); }}><Icon name="minus" size={22} /></button>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4, width: '100%' }}>
-              <input className="draft-input" aria-label="Valor" inputMode="decimal" value={draftText ?? fmt.val(selP, draft)}
-                onChange={e => { const t = e.target.value; const v = fmt.parse(selP, t); setDraftText(t); if (v != null) setDraft(v); }}
+              <input className="draft-input" aria-label={byRounds ? 'Rondas' : 'Valor'} inputMode={byRounds ? 'numeric' : 'decimal'}
+                value={draftText ?? (byRounds ? String(rounds) : fmt.val(selP, draft))}
+                onChange={e => {
+                  const t = e.target.value; const v = fmt.parse(selP, t); setDraftText(t);
+                  if (v != null) setDraft(byRounds && Number.isInteger(v) ? joinRounds(v, extraReps) : v);
+                }}
                 onFocus={e => { const el = e.target; setTimeout(() => el.select(), 0); }}
                 onBlur={() => setDraftText(null)} />
               {unit && <span style={{ fontSize: 18, fontWeight: 600 }}>{unit}</span>}
             </div>
             {selP.type === 'time' && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Formato m:ss</span>}
-            <span style={{ fontSize: 13, fontWeight: 600, color: g > 0.01 ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
+            {byRounds && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600 }}>
+                +
+                <input className="input" inputMode="numeric" value={extraReps || ''} placeholder="0"
+                  onChange={e => { const n = Number(e.target.value.replace(/\D/g, '') || 0); setDraft(joinRounds(rounds, Math.min(n, 999))); }}
+                  style={{ width: 64, height: 36, padding: '0 10px', fontSize: 16, textAlign: 'center' }} />
+                reps
+              </label>
+            )}
+            <span style={{ fontSize: 13, fontWeight: 600, color: g > EPS ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
           </div>
           <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => v + step); }}><Icon name="plus" size={22} /></button>
         </div>

@@ -19,9 +19,17 @@ export const weekStartISO = () => { const d = new Date(); d.setDate(d.getDate() 
 /** Weights marked `unitLabel: 'kg'` (kettlebells, dumbbells) stay in kilos even when the bar is loaded in pounds. */
 export const fixedKg = (p: Measured) => p.type === 'kg' && p.unitLabel === 'kg';
 
+/** AMRAP scores are rounds + reps, kept as one sortable number: 5 rounds + 12 reps = 5.012 (reps under 1000). */
+const ROUND = 1000;
+/** Whole rounds and the extra reps of a rounds + reps score. */
+export const splitRounds = (v: number) => { const r = Math.floor(v + 1e-9); return [r, Math.round((v - r) * ROUND)] as const; };
+export const joinRounds = (rounds: number, reps: number) => rounds + Math.min(Math.max(reps, 0), ROUND - 1) / ROUND;
+const fmtReps = (v: number) => { const [r, extra] = splitRounds(v); return extra ? `${r}+${extra}` : String(r); };
+
 /** `lb`: the bar is loaded in pounds. Everything is stored in kg; only what is shown changes. */
 export function makeFormat(lb: boolean) {
-  const inLb = (p: Measured) => lb && !fixedKg(p);
+  // Only bar weights change unit; reps, rounds and times never do.
+  const inLb = (p: Measured) => lb && p.type === 'kg' && !fixedKg(p);
   const fmtKg = (kg: number) => kg % 1 ? kg.toFixed(1).replace('.', ',') : String(kg);
   const fmtW = (p: Measured, kg: number) => inLb(p) ? String(Math.round(kg * LB)) : fmtKg(kg);
   const fmtT = (sec: number) => {
@@ -30,11 +38,20 @@ export function makeFormat(lb: boolean) {
     return hh ? `${hh}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
   };
   const fmtD = (sec: number) => { sec = Math.round(Math.abs(sec)); return sec < 60 ? `${sec} s` : fmtT(sec); };
-  const val = (p: Measured, v: number) => p.type === 'kg' ? fmtW(p, v) : p.type === 'time' ? fmtT(v) : String(Math.round(v));
+  const val = (p: Measured, v: number) => p.type === 'kg' ? fmtW(p, v) : p.type === 'time' ? fmtT(v) : fmtReps(v);
   const unitOf = (p: Measured) => p.type === 'kg' ? (inLb(p) ? 'lb' : 'kg') : p.type === 'reps' ? (p.unitLabel || 'reps') : '';
   const gain = (p: Measured, a: number, b: number) => (p.better === 'down' ? a - b : b - a);
-  const gainTxt = (p: Measured, g: number) =>
-    p.type === 'kg' ? `+${fmtW(p, g)} ${unitOf(p)}` : p.type === 'reps' ? `+${Math.round(g)} ${unitOf(p)}` : (p.better === 'down' ? `−${fmtD(g)}` : `+${fmtD(g)}`);
+  /** How much better `to` is than `from`, in the mark's own terms ("+5 kg", "−0:12", "+3 reps", "+1 ronda"). */
+  const gainTxt = (p: Measured, from: number, to: number) => {
+    const g = gain(p, from, to);
+    if (p.type === 'kg') return `+${fmtW(p, g)} ${unitOf(p)}`;
+    if (p.type === 'time') return p.better === 'down' ? `−${fmtD(g)}` : `+${fmtD(g)}`;
+    const [ra, ea] = splitRounds(from), [rb, eb] = splitRounds(to);
+    if (!ea && !eb) return `+${Math.round(g)} ${unitOf(p)}`;
+    // Rounds + reps can't be subtracted as numbers: same round → the extra reps; otherwise the rounds gained.
+    if (ra === rb) return `+${eb - ea} reps`;
+    return `+${rb - ra} ${rb - ra === 1 ? 'ronda' : 'rondas'}`;
+  };
   const stepOf = (p: Pr) => p.type === 'kg' ? (fixedKg(p) ? 2 : lb ? 5 / LB : 2.5) : p.type === 'reps' ? 1 : ((p.hist[p.hist.length - 1] ?? 0) > 1800 ? 30 : 5);
   /** Parses what the user typed into the value field; weights come back in kg. */
   const parse = (p: Pr, raw: string): number | null => {
@@ -45,6 +62,9 @@ export function makeFormat(lb: boolean) {
       if (parts.some(isNaN)) return null;
       return parts.reduce((a, x) => a * 60 + x, 0);
     }
+    // "18+5": 18 rounds and 5 reps.
+    const rr = p.type === 'reps' ? t.match(/^(\d+)\s*\+\s*(\d+)$/) : null;
+    if (rr) return Number(rr[2]) < ROUND ? Number(rr[1]) + Number(rr[2]) / ROUND : null;
     const n = Number(t);
     if (isNaN(n)) return null;
     return inLb(p) ? n / LB : n;
