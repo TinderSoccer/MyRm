@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Icon, type IconName } from '../components/Icon';
 import { TodayWod } from '../components/TodayWod';
+import { CheckinCard } from '../components/Checkin';
 import { openTimerFrom } from './Timer';
 import { discOf, type Pr } from '../data';
 import { bestOf, bestWord, entriesOf, fixedKg, initialOf, logOf, longToday, mainSchemeOf, recordIsScaled, todayIndex } from '../format';
@@ -58,6 +59,7 @@ export function Home() {
       {/* Your day: the week and today's WOD belong together. */}
       {/* minmax(0, 1fr): an auto column grew to the WOD's long title and pushed both cards off the screen. */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 14 }}>
+        <CheckinCard where="home" />
         <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden' }}>
           {/* A bumper plate peeking in from the corner; clear of the text (pale on the accent wouldn't read). */}
           <div aria-hidden="true" className="deco-plate" />

@@ -22,6 +22,8 @@ Supabase → *SQL Editor* → pega y ejecuta, en orden:
 2. [`supabase/migrations/0002_user_data.sql`](supabase/migrations/0002_user_data.sql): el respaldo personal de marcas y ajustes. Solo su dueño lo puede leer.
 3. [`supabase/migrations/0003_wod.sql`](supabase/migrations/0003_wod.sql): la pizarra del WOD de cada día y los resultados de cada uno.
 4. [`supabase/migrations/0004_wod_policies.sql`](supabase/migrations/0004_wod_policies.sql): ajusta las reglas de la pizarra para que nadie pueda mover un WOD o un resultado a otro grupo.
+5. [`supabase/migrations/0005_event_policies.sql`](supabase/migrations/0005_event_policies.sql): lo mismo para los eventos, ahora que se pueden editar.
+6. [`supabase/migrations/0006_checkins.sql`](supabase/migrations/0006_checkins.sql): el check-in de clase ("¿Cómo llegas hoy?" / "¿Cómo terminaste?"), que el grupo ve en "Hoy vinieron".
 
 ## 3. Login por correo
 

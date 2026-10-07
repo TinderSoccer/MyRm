@@ -180,6 +180,21 @@ button { font-family: inherit; }
 .pr-tile-value small { font-family: var(--font-body); font-size: 13px; font-weight: 700; margin-left: 3px; }
 .pr-tile-gain { font-size: 12px; font-weight: 700; opacity: .85; }
 
+/* — class check-in: one tap on a face, in the theme's second pastel — */
+.checkin { display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: var(--radius-lg); background: var(--color-accent-2-200); color: var(--color-accent-2-900); }
+.checkin-title { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 22px; line-height: 1.2; }
+.checkin .field-label, .checkin .link-btn { color: var(--color-accent-2-900); }
+.checkin-time { width: 104px; height: 40px; padding: 0 10px; border-radius: 999px; background: var(--color-bg); }
+.mood-row { display: flex; justify-content: space-between; gap: 4px; }
+.mood-btn { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 4px; border: none; border-radius: var(--radius-md); background: transparent; cursor: pointer; color: inherit; transition: background-color .15s, transform .15s; }
+.mood-btn:hover { background: var(--color-accent-2-300); }
+.mood-btn:active { transform: scale(.94); }
+.mood-btn[aria-checked='true'] { background: var(--color-bg); }
+.mood-face { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--color-bg); font-size: 28px; line-height: 1; }
+.mood-word { font-size: 11px; font-weight: 700; white-space: nowrap; }
+.came-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px 4px 4px; border-radius: 999px; background: var(--color-surface); font-size: 14px; font-weight: 600; }
+.came-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-bg); font-family: var(--font-heading); font-size: 13px; }
+
 /* — list cards — */
 .pr-card {
   display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--radius-lg); border: none;

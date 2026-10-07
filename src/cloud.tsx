@@ -37,6 +37,8 @@ export interface CloudWod {
   id: string; day: string; title: string; description: string; score_type: PrType; created_by: string;
   scores: WodScore[];
 }
+/** "I came today": class time (HH:MM, or '' if not said), mood arriving and (later) leaving, 1 low – 5 high. */
+export interface Checkin { user_id: string; class_time: string; mood_in: number; mood_out: number | null }
 export type NewWod = Pick<CloudWod, 'title' | 'description' | 'score_type'>;
 export type NewFeedItem = Pick<CloudFeedItem, 'kind' | 'disc' | 'what'> & Partial<Pick<CloudFeedItem, 'type' | 'unit_label' | 'value' | 'stage'>>;
 
@@ -54,6 +56,12 @@ interface Cloud {
   /** Today's WOD on the group board; `wodBoard` is false while the board's tables aren't created yet. */
   wod: CloudWod | null;
   wodBoard: boolean;
+  /** Today's check-ins in the group; `checkinsOn` is false until their table exists (migration 0006). */
+  checkins: Checkin[];
+  checkinsOn: boolean;
+  checkIn: (classTime: string, moodIn: number) => Promise<string | null>;
+  checkOut: (moodOut: number) => Promise<string | null>;
+  undoCheckin: () => void;
   /** An invite code from a link, waiting for the user to sign in. */
   pendingJoin: string | null;
   /** Marks and settings are saved to the account (signed in and the first sync went through). */
@@ -128,6 +136,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const [events, setEvents] = useState<CloudEvent[]>([]);
   const [wod, setWod] = useState<CloudWod | null>(null);
   const [wodBoard, setWodBoard] = useState(true);
+  const [checkins, setCheckins] = useState<Checkin[]>([]);
+  const [checkinsOn, setCheckinsOn] = useState(true);
   const [pendingJoin, setPendingJoin] = useState<string | null>(() => {
     // An invite link looks like …/?join=CODE. Keep the code until the person signs in, and clean the address bar.
     const code = new URLSearchParams(location.search).get('join');
@@ -164,14 +174,18 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     const gid = mine?.[0]?.group_id as string | undefined;
     if (!gid) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); setWod(null); return; }
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    const [g, mem, fd, ev, wd] = await Promise.all([
+    const [g, mem, fd, ev, wd, ck] = await Promise.all([
       sb.from('groups').select('id, name, invite_code, created_by').eq('id', gid).single(),
       sb.from('group_members').select('user_id').eq('group_id', gid),
       sb.from('feed_items').select('*, cheers(user_id)').eq('group_id', gid).order('created_at', { ascending: false }).limit(60),
       sb.from('events').select('*, rsvps(user_id, going)').eq('group_id', gid).gte('day', yesterday).order('day'),
       // The phone's own date: a 7 AM class in Chile is still "today", whatever the UTC date says.
-      sb.from('wods').select('*, wod_scores(user_id, value, scaled, note)').eq('group_id', gid).eq('day', todayISO()).maybeSingle()
+      sb.from('wods').select('*, wod_scores(user_id, value, scaled, note)').eq('group_id', gid).eq('day', todayISO()).maybeSingle(),
+      sb.from('checkins').select('user_id, class_time, mood_in, mood_out').eq('group_id', gid).eq('day', todayISO()).order('class_time')
     ]);
+    // Same rule as the board: only a missing table turns check-ins off; a dropped connection keeps what was there.
+    if (ck.error) { if (ck.error.code === '42P01' || ck.error.code === 'PGRST205') setCheckinsOn(false); }
+    else { setCheckinsOn(true); setCheckins(ck.data as Checkin[]); }
     // Only a missing table turns the board off; a dropped connection just keeps what was there.
     if (wd.error) { if (wd.error.code === '42P01' || wd.error.code === 'PGRST205') setWodBoard(false); }
     else {
@@ -292,7 +306,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId, refresh]);
 
   const value = useMemo<Cloud>(() => ({
-    enabled: !!sb, ready, userId, email, hasPassword, needsPassword: !!userId && (wantsPassword || (!hasPassword && !skippedPassword)), group, members, feed, events, wod, wodBoard, pendingJoin, backedUp,
+    enabled: !!sb, ready, userId, email, hasPassword, needsPassword: !!userId && (wantsPassword || (!hasPassword && !skippedPassword)), group, members, feed, events, wod, wodBoard, checkins, checkinsOn, pendingJoin, backedUp,
     sendCode: async addr => {
       if (!sb) return null;
       const { error } = await sb.auth.signInWithOtp({ email: addr, options: { emailRedirectTo: location.origin + location.pathname } });
@@ -421,6 +435,26 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         return { title: out.title, description: out.description ?? '', score_type: out.score_type ?? 'time' };
       } catch { return 'Sin conexión. Revisa tu internet e intenta de nuevo.'; }
     },
+    checkIn: async (classTime, moodIn) => {
+      if (!sb || !group || !userId) return null;
+      const row = { group_id: group.id, user_id: userId, day: todayISO(), class_time: classTime, mood_in: moodIn };
+      setCheckins(cs => [...cs.filter(c => c.user_id !== userId), { user_id: userId, class_time: classTime, mood_in: moodIn, mood_out: null }]);
+      const { error } = await sb.from('checkins').upsert(row);
+      if (error) await refresh();
+      return explain(error);
+    },
+    checkOut: async moodOut => {
+      if (!sb || !group || !userId) return null;
+      setCheckins(cs => cs.map(c => c.user_id === userId ? { ...c, mood_out: moodOut } : c));
+      const { error } = await sb.from('checkins').update({ mood_out: moodOut }).eq('group_id', group.id).eq('user_id', userId).eq('day', todayISO());
+      if (error) await refresh();
+      return explain(error);
+    },
+    undoCheckin: () => {
+      if (!sb || !group || !userId) return;
+      setCheckins(cs => cs.filter(c => c.user_id !== userId));
+      sb.from('checkins').delete().eq('group_id', group.id).eq('user_id', userId).eq('day', todayISO()).then(() => refresh());
+    },
     updateWod: async w => {
       if (!sb || !wod) return null;
       const { error } = await sb.from('wods').update(w).eq('id', wod.id);
@@ -444,7 +478,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       sb.from('wod_scores').delete().eq('wod_id', wod.id).eq('user_id', userId).then(() => refresh());
     },
     inviteLink: () => group ? `${location.origin}${location.pathname}?join=${group.invite_code}` : ''
-  }), [set, push, mine, mineIsSynced, data.owner, ready, userId, email, hasPassword, wantsPassword, skippedPassword, group, members, feed, events, wod, wodBoard, pendingJoin, backedUp, refresh]);
+  }), [set, push, mine, mineIsSynced, data.owner, ready, userId, email, hasPassword, wantsPassword, skippedPassword, group, members, feed, events, wod, wodBoard, checkins, checkinsOn, pendingJoin, backedUp, refresh]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

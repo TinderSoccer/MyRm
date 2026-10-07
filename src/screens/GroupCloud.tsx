@@ -4,6 +4,7 @@ import { FeedCard, GroupTabs, MemberCircles, type GroupView } from '../component
 import { Icon } from '../components/Icon';
 import { Upcoming, type UpBirthday } from '../components/Upcoming';
 import { WodBoard } from '../components/WodBoard';
+import { CheckinCard, TodayAttendance } from '../components/Checkin';
 import { useCloud } from '../cloud';
 import { MEMBER_COLORS } from '../data';
 import { countdown, timeAgo } from '../format';
@@ -123,7 +124,11 @@ function SharedGroup() {
 
       <GroupTabs view={view} setView={setView} />
 
-      {view === 'today' && <WodBoard nameOf={nameOf} />}
+      {view === 'today' && <>
+        <CheckinCard where="group" />
+        <TodayAttendance nameOf={nameOf} colorOf={colorOf} />
+        <WodBoard nameOf={nameOf} />
+      </>}
 
       {view === 'next' && <Upcoming
         events={cloud.events.map(e => ({
