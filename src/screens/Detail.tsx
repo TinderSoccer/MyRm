@@ -2,7 +2,7 @@ import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
 import { Segmented } from '../components/Segmented';
 import { discOf, type Pr } from '../data';
-import { barLoad, bestOf, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
+import { SCHEMES, barLoad, bestOf, bestWord, estimatedMaxOf, repsWord, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
 import { useStore } from '../store';
 
 const PCTS = [50, 60, 65, 70, 75, 80, 85, 90, 95];
@@ -42,6 +42,9 @@ export function Detail() {
   const unit = fmt.unitOf(p);
   // Percentages are for the bar; kettlebells and dumbbells come in fixed sizes.
   const rm = fixedKg(p) ? null : oneRepMaxOf(p);
+  // A real 1RM that recent sets have outgrown (by more than 2.5%): worth testing again.
+  const est = rm && !rm.estimated ? estimatedMaxOf(p) : null;
+  const stronger = est && est.kg > rm!.kg * 1.025 ? est : null;
   const lb = data.units === 'lb';
 
   return (
@@ -57,7 +60,7 @@ export function Detail() {
       <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 4, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', width: 140, height: 140, borderRadius: '50%', background: 'var(--color-accent-2)', right: -40, bottom: -60 }} />
         <span style={{ fontSize: 14, color: 'var(--color-neutral-300)', position: 'relative' }}>
-          {p.type === 'kg' ? `Mejor ${main}` : p.better === 'down' ? 'Mejor tiempo' : 'Mejor marca'}{scaled ? ' · escalado' : ' · RX'}
+          {p.type === 'kg' ? (main === '1RM' ? 'Tu máximo (1 rep)' : bestWord(main)) : p.better === 'down' ? 'Mejor tiempo' : 'Mejor marca'}{scaled ? ' · escalado' : ' · RX'}
         </span>
         <span style={{ fontFamily: 'var(--font-heading)', fontSize: 56, lineHeight: 1, position: 'relative' }}>
           {best == null ? '—' : fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 18, fontWeight: 600, marginLeft: 6 }}>{unit}</span>
@@ -66,6 +69,25 @@ export function Detail() {
           {mainEntries.length <= 1 ? 'Tu primer registro' : delta > 0 ? `${fmt.gainTxt(p, first.v, best!)} desde ${first.date}` : `Sin mejora desde ${first.date}`}
         </span>
       </div>
+
+      {p.type === 'kg' && log.length > 0 && (
+        // Every rep scheme's best at a glance, so a 5-rep best never hides in the history.
+        <div className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '16px 18px' }}>
+          <h2 className="field-label" style={{ margin: 0 }}>Tus mejores por repeticiones</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            {SCHEMES.map(s => {
+              const b = bestOf(p, s);
+              return (
+                <div key={s} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '10px 4px', borderRadius: 'var(--radius-md)', background: s === main ? 'var(--color-bg)' : 'transparent' }}
+                  aria-label={`${repsWord(s)}: ${b == null ? 'sin marca' : `${fmt.val(p, b)} ${unit}`}`}>
+                  <span aria-hidden="true" style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-neutral-700)' }}>{repsWord(s)}</span>
+                  <span aria-hidden="true" style={{ fontFamily: 'var(--font-heading)', fontSize: 20, lineHeight: 1.1, color: b == null ? 'var(--color-neutral-500)' : 'var(--color-text)' }}>{b == null ? '—' : fmt.val(p, b)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {rm && (
         <div className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18 }}>
@@ -76,6 +98,11 @@ export function Detail() {
                 ? <>Aún no tienes 1RM, así que lo estimamos de tu mejor serie: <strong>{fmt.val(p, rm.kg)} {unit}</strong>.</>
                 : <>Tu 1RM (lo máximo que levantas una vez) es <strong>{fmt.val(p, rm.kg)} {unit}</strong>. Cada fila es un % de eso.</>}
             </p>
+            {stronger && (
+              <p className="note" style={{ color: 'var(--color-accent-2-700)', fontWeight: 600 }}>
+                Tu serie de {repsWord(stronger.from.scheme)} con {fmt.val(p, stronger.from.v)} {unit} ({stronger.from.date}) sugiere que hoy podrías llegar a ~{fmt.val(p, stronger.kg)} {unit}. Vale la pena probar un nuevo máximo.
+              </p>
+            )}
           </div>
           {/* Choosing the bar also chooses the unit: a 45 lb bar means pound plates. It's the app-wide setting. */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -125,8 +152,8 @@ export function Detail() {
           // "Récord" alone would read as the 1RM; the best 5RM says so.
           const isBest = e.v === bestOf(p, e.scheme, isScaled(e));
           const tags = [
-            ...(isBest ? [{ label: e.scheme && e.scheme !== '1RM' ? `Mejor ${e.scheme}` : 'Récord', bg: 'var(--color-accent-2-700)', fg: 'var(--color-bg)' }] : []),
-            ...(e.scheme && !(isBest && e.scheme !== '1RM') ? [{ label: e.scheme, bg: 'var(--color-bg)', fg: 'var(--color-text)' }] : []),
+            ...(isBest ? [{ label: bestWord(e.scheme), bg: 'var(--color-accent-2-700)', fg: 'var(--color-bg)' }] : []),
+            ...(e.scheme && !(isBest && e.scheme !== '1RM') ? [{ label: repsWord(e.scheme), bg: 'var(--color-bg)', fg: 'var(--color-text)' }] : []),
             { label: e.mode || 'RX', bg: scaled ? 'var(--color-accent-200)' : 'var(--color-bg)', fg: scaled ? 'var(--color-accent-800)' : 'var(--color-text)' }
           ];
           return (

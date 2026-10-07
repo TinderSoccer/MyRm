@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
 import { discOf, type DiscId, type Pr, type PrType } from '../data';
-import { bestOf, currentOf, joinRounds, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
+import { SCHEMES, bestOf, bestWord, currentOf, joinRounds, lastOf, repsWord, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
 
-const SCHEMES = ['1RM', '3RM', '5RM', '10RM'];
 /** Smaller than any real difference: 0.1 kg, 1 s, or one extra rep in a rounds + reps score (0.001). */
 const EPS = 0.0005;
 const MODES = ['RX', 'Escalado'];
@@ -34,7 +33,7 @@ export function RecordSheet() {
   const [more, setMore] = useState(false);
 
   const firstOf = (disc: DiscId) => data.prs.find(p => p.disc === disc);
-  const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); setDraft(p.hist.length ? currentOf(p) : fmt.startOf(p)); setDraftText(null); } };
+  const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); setDraft(lastOf(p, p.type === 'kg' ? scheme : null) ?? (p.hist.length ? currentOf(p) : fmt.startOf(p))); setDraftText(null); } };
 
   // Every open starts a fresh attempt on the requested mark (or on the filtered discipline, or the last one used).
   useEffect(() => {
@@ -63,7 +62,8 @@ export function RecordSheet() {
   const schemeKey = isWeight ? scheme : null;
   const scaled = mode === 'Escalado';
   const best = bestOf(selP, schemeKey, scaled);
-  const rec = scaled ? 'tu mejor escalado' : 'tu récord';
+  // What this attempt is compared with, in words: "tu récord", "tu mejor de 5 reps", "tu mejor escalado".
+  const rec = scaled ? 'tu mejor escalado' : schemeKey && schemeKey !== '1RM' ? `tu mejor de ${repsWord(schemeKey)}` : 'tu récord';
   const g0 = best == null ? 1 : fmt.gain(selP, best, draft);
   const g = best != null && isWeight && fmt.sameShown(selP, best, draft) ? 0 : g0;
   const unit = fmt.unitOf(selP);
@@ -71,10 +71,10 @@ export function RecordSheet() {
   const dateLabel = dateISO === todayISO() ? 'Hoy' : dateISO === yesterdayISO() ? 'Ayer' : shortDate(dateISO);
 
   const hint = best == null
-    ? `¡Primer registro${schemeKey ? ' de ' + schemeKey : ''}${scaled ? ' escalado' : ''}!`
+    ? (schemeKey ? `¡Tu primera marca a ${repsWord(schemeKey)}${scaled ? ' escalada' : ''}!` : `¡Primer registro${scaled ? ' escalado' : ''}!`)
     : g > EPS
       ? (selP.better === 'down' ? `¡${fmt.fmtD(g)} más rápido que ${rec}!` : `¡${fmt.gainTxt(selP, best, draft)} sobre ${rec}!`)
-      : g < -EPS ? `${scaled ? 'Mejor escalado' : 'Récord'} actual: ${fmt.val(selP, best)} ${unit}` : `Igual a ${rec}`;
+      : g < -EPS ? `${scaled ? 'Mejor escalado' : bestWord(schemeKey)}: ${fmt.val(selP, best)} ${unit}` : `Igual a ${rec}`;
 
   const chooseDisc = (id: DiscId) => {
     setSheetDisc(id);
@@ -108,10 +108,12 @@ export function RecordSheet() {
       prs: d.prs.map(x => x.id === selP.id ? withLog(x, [...logOf(x), entry]) : x),
       done: day >= 0 ? d.done.map((x, i) => x || i === day) : d.done
     }));
-    if (isPR) cloud.post({ kind: 'pr', disc: selP.disc, what: selP.name, type: selP.type, unit_label: selP.unitLabel ?? null, value: v });
+    // The group must not read a best set of 5 as a max: the reps go with the name.
+    const what = schemeKey && schemeKey !== '1RM' ? `${selP.name} (${repsWord(schemeKey)})` : selP.name;
+    if (isPR) cloud.post({ kind: 'pr', disc: selP.disc, what, type: selP.type, unit_label: selP.unitLabel ?? null, value: v });
     closeSheet();
     setDraftText(null);
-    const label = `${selP.name}${schemeKey && (best == null || schemeKey !== '1RM') ? ' ' + schemeKey : ''}`;
+    const label = schemeKey && schemeKey !== '1RM' ? `${selP.name} a ${repsWord(schemeKey)}` : selP.name;
     flash(
       isPR ? '¡Nuevo récord!' : better ? '¡Mejor escalado!' : 'Guardado',
       better
@@ -186,20 +188,23 @@ export function RecordSheet() {
           <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => fmt.nudge(selP, v, 1)); }}><Icon name="plus" size={22} /></button>
         </div>
 
+        {isWeight && (
+          // Always in sight: a set of 5 logged as a 1-rep max would skew the record and every percentage.
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span className="field-label" id="reps-label">¿Cuántas reps hiciste con ese peso?</span>
+            <Segmented label="¿Cuántas reps hiciste con ese peso?" value={scheme}
+              onChange={k => { setScheme(k); const last = lastOf(selP, k); if (last != null) { setDraft(last); setDraftText(null); } }}
+              options={SCHEMES.map(k => [k, k === '1RM' ? '1 · máx.' : String(parseInt(k, 10))] as const)} />
+          </div>
+        )}
+
         <button className="more-toggle" aria-expanded={more} aria-controls="sheet-more" onClick={() => setMore(v => !v)}>
           <span>Más detalles</span>
-          <span className="more-sum">{[schemeKey, dateLabel, mode, note.trim() && 'Con nota'].filter(Boolean).join(' · ')}</span>
+          <span className="more-sum">{[dateLabel, mode, note.trim() && 'Con nota'].filter(Boolean).join(' · ')}</span>
           <span aria-hidden="true" style={{ display: 'flex', transform: `rotate(${more ? 90 : -90}deg)`, transition: 'transform .2s' }}><Icon name="chevronLeft" size={18} /></span>
         </button>
 
         {more && <div id="sheet-more" style={{ display: 'grid', gap: 'var(--space-4)' }}>
-        {isWeight && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <span className="field-label">Repeticiones</span>
-            <Segmented label="Repeticiones" value={scheme} onChange={setScheme} options={SCHEMES.map(k => [k, k] as const)} />
-          </div>
-        )}
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span className="field-label">Fecha</span>
           <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>

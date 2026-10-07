@@ -153,12 +153,34 @@ export function currentOf(p: Pr): number {
 
 export const initialOf = (name: string, fallback = '?') => ((name || '').trim()[0] || fallback).toUpperCase();
 
-/** The scheme a mark is judged by: 1RM for weights (or the latest scheme if there's no 1RM yet), none otherwise. */
+/** Rep schemes for weights, stored as '1RM'…'10RM': the heaviest set of that many reps. */
+export const SCHEMES = ['1RM', '3RM', '5RM', '10RM'] as const;
+export const repsOf = (scheme: string | null) => parseInt(scheme ?? '1', 10) || 1;
+/** Plain words instead of the acronym: "1 rep", "5 reps". */
+export const repsWord = (scheme: string | null) => { const n = repsOf(scheme); return `${n} ${n === 1 ? 'rep' : 'reps'}`; };
+/** What a scheme's best is called: "Récord" for the 1-rep max, "Mejor de 5 reps" otherwise. */
+export const bestWord = (scheme: string | null) => !scheme || scheme === '1RM' ? 'Récord' : `Mejor de ${repsWord(scheme)}`;
+
+/** The scheme a mark is judged by: the 1-rep max for weights, or while there is none, the fewest-reps scheme logged
+ *  (stable: logging a set of 10 doesn't flip the card away from your best triple). None for times and reps. */
 export function mainSchemeOf(p: Pr): string | null {
   if (p.type !== 'kg') return null;
-  const log = logOf(p);
-  if (!log.length || log.some(e => e.scheme === '1RM')) return '1RM';
-  return log[log.length - 1].scheme ?? '1RM';
+  const used = new Set(logOf(p).map(e => e.scheme ?? '1RM'));
+  return SCHEMES.find(s => used.has(s)) ?? '1RM';
+}
+
+/** The last weight logged for a scheme: where the stepper starts when you switch to it. */
+export const lastOf = (p: Pr, scheme: string | null) => { const es = logOf(p).filter(e => (e.scheme || null) === (scheme || null)); return es.length ? es[es.length - 1].v : null; };
+
+/** The 1RM a multi-rep set implies (Epley), from the set that implies the most; with the set it came from.
+ *  Estimates hold up to about 5 reps; sets of 10 overshoot, so they only count when `maxReps` allows them. */
+export function estimatedMaxOf(p: Pr, maxReps = 5): { kg: number; from: LogEntry } | null {
+  let top: { kg: number; from: LogEntry } | null = null;
+  for (const e of logOf(p)) {
+    const n = repsOf(e.scheme);
+    if (n > 1 && n <= maxReps && (!top || e.v * (1 + n / 30) > top.kg)) top = { kg: e.v * (1 + n / 30), from: e };
+  }
+  return top;
 }
 
 /** The 1RM that percentages are worked from: the real one, or else estimated (Epley) from the best 3RM/5RM/10RM. */
@@ -166,9 +188,9 @@ export function oneRepMaxOf(p: Pr): { kg: number; estimated: boolean } | null {
   if (p.type !== 'kg') return null;
   const real = bestOf(p, '1RM') ?? bestOf(p, '1RM', true);
   if (real != null) return { kg: real, estimated: false };
-  const est = logOf(p).map(e => { const n = parseInt(e.scheme ?? '', 10); return n > 1 ? e.v * (1 + n / 30) : 0; });
-  const kg = Math.max(0, ...est);
-  return kg > 0 ? { kg, estimated: true } : null;
+  // With no max yet, any set is better than nothing: 3s and 5s first, 10s only when that's all there is.
+  const est = estimatedMaxOf(p) ?? estimatedMaxOf(p, 10);
+  return est ? { kg: est.kg, estimated: true } : null;
 }
 
 /** Entries of one scheme, in the order they were logged. */

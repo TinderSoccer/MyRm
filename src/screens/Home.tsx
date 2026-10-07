@@ -1,7 +1,7 @@
 import { Icon } from '../components/Icon';
 import { TodayWod } from '../components/TodayWod';
 import { discOf } from '../data';
-import { bestOf, entriesOf, initialOf, logOf, longToday, mainSchemeOf, recordIsScaled, todayIndex } from '../format';
+import { bestOf, bestWord, entriesOf, initialOf, logOf, longToday, mainSchemeOf, recordIsScaled, todayIndex } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 
 const DAY_L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -86,7 +86,7 @@ export function Home() {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
                 {homeFilter === 'all' && <span className="kicker" style={{ color: disc.color }}>{disc.label}</span>}
                 <span style={{ fontWeight: 600, fontSize: 16 }}>{p.name}</span>
-                <span className="muted-13">Récord{scheme && scheme !== '1RM' ? ` ${scheme}` : ''}{scaled ? ' escalado' : ''} · {recordAt.date}</span>
+                <span className="muted-13">{bestWord(scheme)}{scaled ? ' · escalado' : ''} · {recordAt.date}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 76 }}>
                 <span style={{ fontFamily: 'var(--font-heading)', fontSize: 24, lineHeight: 1 }}>{fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, marginLeft: 3 }}>{fmt.unitOf(p)}</span></span>
