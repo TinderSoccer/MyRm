@@ -147,6 +147,21 @@ button { font-family: inherit; }
 }
 .avatar-btn:hover { background: var(--color-accent-2-800); }
 
+/* — Home — */
+/* Your goal, as a small pastel badge under the greeting. */
+.aim-pill {
+  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; max-width: 100%; padding: 5px 12px 5px 10px; border-radius: 999px;
+  background: var(--color-accent-200); color: var(--color-accent-800); font-size: 13px; font-weight: 700;
+}
+.aim-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A section's icon in a pastel disc (an icon alone in the accent goes faint on light themes). */
+.icon-badge { width: 38px; height: 38px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--color-accent-200); color: var(--color-accent-800); }
+/* A bumper plate peeking into the streak card: rubber rim, inner ring, steel hub. */
+.deco-plate {
+  position: absolute; width: 120px; height: 120px; right: -34px; top: -46px; border-radius: 50%;
+  background: radial-gradient(circle, var(--color-text) 0 7px, var(--color-neutral-300) 8px 15px, var(--color-accent) 16px 40px, var(--color-accent-600) 41px 43px, var(--color-accent) 44px);
+}
+
 /* — list cards — */
 .pr-card {
   display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--radius-lg); border: none;

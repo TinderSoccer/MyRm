@@ -1,12 +1,47 @@
-// Lucide icons at stroke-width 2.75, as the Organic system asks.
+// Lucide icons at stroke-width 2.75, as the Organic system asks, plus the box's own kit drawn on the same 24px grid
+// and stroke: barbell, kettlebell, rings, plyo box, whiteboard, stopwatch.
 const PATHS = {
-  dumbbell: (
+  /** Olympic bar from the side: the long bar, a big and a small plate each side (thin, so it never reads as a dumbbell). */
+  barbell: (
     <>
-      <path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z" />
-      <path d="m2.5 21.5 1.4-1.4" />
-      <path d="m20.1 3.9 1.4-1.4" />
-      <path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z" />
-      <path d="m9.6 14.4 4.8-4.8" />
+      <path d="M1 12h22" />
+      <path d="M6 7v10M3.5 9v6M18 7v10M20.5 9v6" />
+    </>
+  ),
+  /** A round bell with the handle arching out of its shoulders (straight legs would make it a padlock). */
+  kettlebell: (
+    <>
+      <circle cx="12" cy="15" r="6" />
+      <path d="M7.4 11.2C5.8 5 18.2 5 16.6 11.2" />
+    </>
+  ),
+  /** Gymnastics rings on their straps. */
+  rings: (
+    <>
+      <path d="M7.5 2v9M16.5 2v9" />
+      <circle cx="7.5" cy="15.5" r="4.5" />
+      <circle cx="16.5" cy="15.5" r="4.5" />
+    </>
+  ),
+  /** The plyo box: "the box" is what CrossFitters call their gym. */
+  box: (
+    <>
+      <path d="M3 9l9-5 9 5v8l-9 5-9-5z" />
+      <path d="M3 9l9 5 9-5M12 14v8" />
+    </>
+  ),
+  /** The WOD whiteboard on its easel. */
+  board: (
+    <>
+      <rect x="3" y="3" width="18" height="13" rx="2" />
+      <path d="M7 7.5h6M7 11h9M8.5 21l2-5M15.5 21l-2-5" />
+    </>
+  ),
+  trophy: (
+    <>
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16" />
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
     </>
   ),
   flame: <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />,
@@ -41,25 +76,12 @@ const PATHS = {
       <path d="m6 6 12 12" />
     </>
   ),
-  house: (
-    <>
-      <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
-      <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    </>
-  ),
-  zap: <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />,
   users: (
     <>
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </>
-  ),
-  bell: (
-    <>
-      <path d="M10.268 21a2 2 0 0 0 3.464 0" />
-      <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
     </>
   )
 };

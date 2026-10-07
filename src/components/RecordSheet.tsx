@@ -184,7 +184,7 @@ export function RecordSheet() {
         <span style={{ width: 44, height: 5, borderRadius: 999, background: 'var(--color-neutral-400)', justifySelf: 'center' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 id="sheet-title" ref={titleRef} tabIndex={-1} style={{ outline: 'none', fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 26, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span className="flex-center" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-accent)', color: 'var(--color-bg)' }}><Icon name="dumbbell" size={22} /></span>
+            <span className="flex-center" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}><Icon name="barbell" size={22} /></span>
             {editingEntry ? 'Editar registro' : 'Registrar marca'}
           </h2>
           <button className="round-btn" onClick={closeSheet} aria-label="Cerrar"><Icon name="x" size={18} /></button>

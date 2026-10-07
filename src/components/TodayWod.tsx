@@ -1,3 +1,4 @@
+import { Icon } from './Icon';
 import { useCloud } from '../cloud';
 import { splitRounds } from '../format';
 import { useStore } from '../store';
@@ -15,7 +16,7 @@ export function TodayWod() {
     return (
       <div className="surface" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span className="label-600">WOD de hoy</span>
+          <span className="label-600" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="board" size={18} />WOD de hoy</span>
           <span className="muted-13">Nadie lo ha subido a la pizarra.</span>
         </div>
         <button className="btn btn-secondary" onClick={goBoard} style={{ minHeight: 44, flex: 'none' }}>Súbelo tú</button>
@@ -34,7 +35,7 @@ export function TodayWod() {
     <div className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '18px 18px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
         <h2 className="section-title" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.title}</h2>
-        <span className="muted-13" style={{ flex: 'none' }}>WOD de hoy</span>
+        <span className="muted-13" style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 5 }}><Icon name="board" size={16} />WOD de hoy</span>
       </div>
       {mine ? (
         <button className="pr-card" onClick={goBoard} style={{ background: 'var(--color-bg)', padding: '12px 16px' }}

@@ -3,8 +3,8 @@ import type { Screen } from '../data';
 import { useStore } from '../store';
 
 const TABS: { screen: Screen; label: string; icon: IconName; also?: Screen[] }[] = [
-  { screen: 'home', label: 'Inicio', icon: 'house', also: ['det'] },
-  { screen: 'sk', label: 'Skills', icon: 'zap' },
+  { screen: 'home', label: 'Inicio', icon: 'box', also: ['det'] },
+  { screen: 'sk', label: 'Skills', icon: 'rings' },
   { screen: 'gr', label: 'Grupo', icon: 'users' }
 ];
 

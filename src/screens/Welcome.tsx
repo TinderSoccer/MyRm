@@ -14,9 +14,9 @@ export function Welcome() {
   return (
     <div data-screen-label="01 Bienvenida" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 'calc(var(--top) + 16px) 28px calc(40px + var(--bottom))', boxSizing: 'border-box', overflow: 'hidden' }}>
       <div style={{ ...circle, width: 300, height: 300, background: 'var(--color-accent-2-300)', top: 70, right: -110 }} />
-      <div style={{ ...circle, width: 170, height: 170, background: 'var(--color-accent)', top: 230, right: 70, color: 'var(--color-bg)' }}><Icon name="dumbbell" size={88} /></div>
-      <div style={{ ...circle, top: 150, right: 40, width: 64, height: 64, background: 'var(--color-bg)', color: 'var(--color-accent-2-700)', transform: 'rotate(-30deg)' }}><Icon name="dumbbell" size={34} /></div>
-      <div style={{ ...circle, width: 64, height: 64, background: 'var(--color-accent-200)', top: 120, left: 40, color: 'var(--color-accent-700)' }}><Icon name="dumbbell" size={30} /></div>
+      <div style={{ ...circle, width: 170, height: 170, background: 'var(--color-accent)', top: 230, right: 70, color: 'var(--color-on-accent)' }}><Icon name="barbell" size={92} /></div>
+      <div style={{ ...circle, top: 150, right: 40, width: 64, height: 64, background: 'var(--color-bg)', color: 'var(--color-accent-2-700)', }}><Icon name="timer" size={32} /></div>
+      <div style={{ ...circle, width: 64, height: 64, background: 'var(--color-accent-200)', top: 120, left: 40, color: 'var(--color-accent-700)' }}><Icon name="rings" size={30} /></div>
       <div style={{ ...circle, width: 110, height: 110, border: '12px solid var(--color-text)', top: 290, left: -30, boxSizing: 'border-box' }} />
       <div style={{ flex: 1 }} />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
