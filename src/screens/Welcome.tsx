@@ -147,25 +147,42 @@ export function Profile() {
         )}
       </div>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 34, lineHeight: 1.08, margin: 0 }}>{settings ? 'Tu perfil' : steps[step].title}</h1>
-      {settings ? <>{about}{training}{aim}{account}</> : steps[step].body}
+      {settings ? <>
+        {/* Same parts as the first run, under headings, so everything chosen then can be changed here the same way. */}
+        <Section title="Sobre ti">{about}</Section>
+        <Section title="Tu entrenamiento">{training}</Section>
+        <Section title="Tus skills de gimnasia"><SkillsSetup /></Section>
+        <Section title="Tu meta">{aim}</Section>
+        {account && <Section title="Tu cuenta">{account}</Section>}
+      </> : steps[step].body}
       <div style={{ flex: 1 }} />
       <button className="btn btn-primary btn-block" onClick={next} style={{ height: 56, fontSize: 17, flex: 'none' }}>{settings ? 'Listo' : last ? '¡Vamos al box!' : 'Siguiente'}</button>
     </div>
   );
 }
 
-/** First-run: mark the gymnastics you already have, or are working on. They land in Skills, without posting to the group. */
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-divider)' }}>
+      <h2 className="section-title" style={{ fontSize: 22 }}>{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+/** Mark the gymnastics you already have, or are working on. They land in Skills, without posting to the group. */
 function SkillsSetup() {
   const { data, set } = useStore();
   const shown = useShownDiscs();
   const list = data.skills.filter(k => shown.some(d => d.id === k.disc));
   const stateOf = (k: Skill) => k.stage >= 3 ? 'yes' : (k.tracked ?? k.stage > 0) ? 'practice' : 'no';
+  // 'Me sale' keeps a skill already at Dominado; 'Practicando' keeps Con escala.
   const setState = (k: Skill, v: 'no' | 'practice' | 'yes') =>
-    set(d => ({ skills: d.skills.map(x => x.id !== k.id ? x : v === 'no' ? { ...x, tracked: false, stage: 0 } : { ...x, tracked: true, stage: v === 'yes' ? 3 : Math.max(1, Math.min(x.stage, 2)) }) }));
+    set(d => ({ skills: d.skills.map(x => x.id !== k.id ? x : v === 'no' ? { ...x, tracked: false, stage: 0 } : { ...x, tracked: true, stage: v === 'yes' ? Math.max(3, x.stage) : Math.max(1, Math.min(x.stage, 2)) }) }));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <p className="note" style={{ fontSize: 15 }}>
-        {list.length ? 'Marca las que ya te salen y las que estás practicando. Las verás en Skills, donde puedes ir subiendo de nivel.'
+        {list.length ? 'Marca las que ya te salen y las que estás practicando. En Skills las vas subiendo de nivel paso a paso.'
           : 'Para lo que entrenas no hay skills de gimnasia en la lista. Si quieres seguir alguna, la agregas después en Skills.'}
       </p>
       {list.map(k => (
