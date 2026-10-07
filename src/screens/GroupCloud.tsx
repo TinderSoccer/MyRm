@@ -63,14 +63,14 @@ function Setup() {
       <div className="dashed">
         <label htmlFor="gname" className="label-600">Crear un grupo</label>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <input id="gname" className="input" placeholder="Nombre, p. ej. Box Ñuñoa 7AM" value={name} onChange={e => setName(e.target.value)} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 15 }} />
+          <input id="gname" className="input" placeholder="Nombre, p. ej. Box Ñuñoa 7AM" value={name} onChange={e => setName(e.target.value)} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 16 }} />
           <button className="btn btn-primary" disabled={busy || !name.trim()} onClick={() => run(() => createGroup(name.trim()), '¡Grupo creado!')} style={{ height: 48, flex: 'none' }}>Crear</button>
         </div>
       </div>
       <div className="dashed">
         <label htmlFor="gcode" className="label-600">¿Te pasaron un link?</label>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <input id="gcode" className="input" placeholder="Pega el link o el código" value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 15 }} />
+          <input id="gcode" className="input" placeholder="Pega el link o el código" value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 16 }} />
           <button className="btn btn-primary" disabled={busy || !code.trim()} onClick={() => run(() => joinGroup(code.trim()), '¡Estás dentro!')} style={{ height: 48, flex: 'none' }}>Unirme</button>
         </div>
       </div>

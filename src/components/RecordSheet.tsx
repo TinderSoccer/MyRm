@@ -61,8 +61,17 @@ export function RecordSheet() {
     const target = (sheet.prId && data.prs.find(p => p.id === sheet.prId))
       || (sheet.disc && firstOf(sheet.disc))
       || data.prs.find(p => p.id === sel) || data.prs[0];
-    if (target) { setSel(target.id); setSheetDisc(target.disc); startAttempt(target, target.type === 'kg' ? '1RM' : null); }
     setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX'); setMore(false); setTyping(false);
+    const editing = target && sheet.editAt != null ? logOf(target)[sheet.editAt] : undefined;
+    if (target && editing) {
+      // Correcting a past entry: everything as it was saved, plates included when they were counted in today's unit.
+      setSel(target.id); setSheetDisc(target.disc);
+      setDraft(editing.v); setScheme(editing.scheme ?? '1RM'); setMode(editing.mode || 'RX'); setNote(editing.note);
+      setDateISO(editing.iso ?? todayISO());
+      setMore(!!editing.note || (!!editing.iso && editing.iso !== todayISO()));
+      if (editing.plates && editing.plates.lb === lb) { set(() => ({ bar: editing.plates!.bar })); setCounts(editing.plates.side); }
+      else setTyping(true);
+    } else if (target) { setSel(target.id); setSheetDisc(target.disc); startAttempt(target, target.type === 'kg' ? '1RM' : null); }
   }, [sheet]);
 
   // Modal focus: move into the sheet on open, close on Escape, hand focus back to whatever opened it.
@@ -85,8 +94,12 @@ export function RecordSheet() {
     });
   }, [lb]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const selP = data.prs.find(p => p.id === sel) ?? data.prs[0];
-  if (!selP) return null;
+  const selRaw = data.prs.find(p => p.id === sel) ?? data.prs[0];
+  if (!selRaw) return null;
+  const editAt = sheet?.editAt ?? null;
+  const editingEntry = editAt != null ? logOf(selRaw)[editAt] : undefined;
+  // While correcting an entry, records and "last weight" are judged without it.
+  const selP = editingEntry ? withLog(selRaw, logOf(selRaw).filter((_, i) => i !== editAt)) : selRaw;
   const plateMode = onBar(selP) && !typing;
   // The attempt's weight: added up from the plates, or what was typed.
   const value = plateMode ? totalKgOf(counts, lb, data.bar) : draft;
@@ -135,7 +148,15 @@ export function RecordSheet() {
     // Kilos to 0.1, rounds + reps keep their extra reps (thousandths).
     const v = selP.type === 'reps' ? Math.round(value * 1000) / 1000 : Math.round(value * 10) / 10;
     const side = Object.fromEntries(Object.entries(counts).filter(([, c]) => c > 0));
-    const entry = { v, date: shortDate(dateISO), iso: dateISO, scheme: schemeKey, mode, note: note.trim(), ...(plateMode ? { plates: { bar: data.bar, lb, side } } : {}) };
+    // An old entry without a calendar date keeps its label unless the date was changed.
+    const keepDate = editingEntry && !editingEntry.iso && dateISO === todayISO();
+    const entry = { v, date: keepDate ? editingEntry!.date : shortDate(dateISO), ...(keepDate ? {} : { iso: dateISO }), scheme: schemeKey, mode, note: note.trim(), ...(plateMode ? { plates: { bar: data.bar, lb, side } } : {}) };
+    if (editingEntry) {
+      set(d => ({ prs: d.prs.map(x => x.id === selRaw.id ? withLog(x, logOf(x).map((e, i) => i === editAt ? entry : e)) : x) }));
+      closeSheet(); setDraftText(null);
+      flash('Registro corregido', `${selP.name}: ${fmt.val(selP, v)} ${unit}${schemeKey && schemeKey !== '1RM' ? ` a ${repsWord(schemeKey)}` : ''}.`);
+      return;
+    }
     // Logging a mark means you trained that day.
     const day = weekIndexOf(dateISO, data.weekStart);
     set(d => ({
@@ -164,11 +185,14 @@ export function RecordSheet() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 id="sheet-title" ref={titleRef} tabIndex={-1} style={{ outline: 'none', fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 26, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
             <span className="flex-center" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-accent)', color: 'var(--color-bg)' }}><Icon name="dumbbell" size={22} /></span>
-            Registrar marca
+            {editingEntry ? 'Editar registro' : 'Registrar marca'}
           </h2>
           <button className="round-btn" onClick={closeSheet} aria-label="Cerrar"><Icon name="x" size={18} /></button>
         </div>
 
+        {editingEntry ? (
+          <p className="note" style={{ fontSize: 15 }}><strong>{selRaw.name}</strong> · registro del {editingEntry.date}</p>
+        ) : <>
         <div className="chip-row">
           {shown.map(d => (
             <button key={d.id} className="pill" onClick={() => chooseDisc(d.id)} aria-pressed={sheetDisc === d.id} style={{ fontWeight: 700, ...pillStyle(sheetDisc === d.id) }}>{d.label}</button>
@@ -187,11 +211,12 @@ export function RecordSheet() {
 
         {showNewMov && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--color-surface)' }}>
-            <input className="input" aria-label="Nombre del movimiento" placeholder="Nombre, p. ej. Thruster" value={newMovName} onChange={e => setNewMovName(e.target.value)} style={{ height: 46, fontSize: 15 }} />
+            <input className="input" aria-label="Nombre del movimiento" placeholder="Nombre, p. ej. Thruster" value={newMovName} onChange={e => setNewMovName(e.target.value)} style={{ height: 46, fontSize: 16 }} />
             <Segmented label="Cómo se mide" value={newMovType} onChange={setNewMovType} options={NEW_TYPES} />
             <button onClick={createMov} className="btn btn-primary" style={{ height: 44 }}>Crear en {sheetDiscLabel}</button>
           </div>
         )}
+        </>}
 
         {plateMode ? (
           <div className="surface" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '16px 18px' }}>
@@ -273,7 +298,7 @@ export function RecordSheet() {
             <Segmented label="Día" fit value={dateISO === todayISO() || dateISO === yesterdayISO() ? dateISO : null} onChange={setDateISO}
               options={[[todayISO(), 'Hoy'], [yesterdayISO(), 'Ayer']]} />
             <input type="date" aria-label="Otra fecha" value={dateISO} max={todayISO()} onChange={e => e.target.value && setDateISO(e.target.value)}
-              style={{ height: 44, padding: '0 12px', borderRadius: 999, border: '2px solid var(--color-neutral-600)', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }} />
+              style={{ height: 44, padding: '0 12px', borderRadius: 999, border: '2px solid var(--color-neutral-600)', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 16, fontWeight: 600, color: 'var(--color-text)' }} />
           </div>
         </div>
 
@@ -285,10 +310,10 @@ export function RecordSheet() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <label htmlFor="sheet-note" className="field-label">Nota (opcional)</label>
           <textarea id="sheet-note" className="input" rows={2} placeholder="¿Cómo te sentiste? Técnica, cinturón, rodilleras…" value={note} onChange={e => setNote(e.target.value)}
-            style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 15, resize: 'none', height: 'auto', minHeight: 64 }} />
+            style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 16, resize: 'none', height: 'auto', minHeight: 64 }} />
         </div>
         </div>}
-        <button className="btn btn-primary btn-block" onClick={save} style={{ height: 56, fontSize: 17 }}>Guardar</button>
+        <button className="btn btn-primary btn-block" onClick={save} style={{ height: 56, fontSize: 17 }}>{editingEntry ? 'Guardar cambios' : 'Guardar'}</button>
       </div>
     </>
   );

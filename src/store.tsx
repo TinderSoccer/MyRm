@@ -46,7 +46,8 @@ function withCatalog(data: AppData): AppData {
   };
 }
 
-export interface SheetRequest { prId?: string; disc?: DiscId }
+/** `editAt`: index in the mark's log of an entry to correct, instead of logging a new attempt. */
+export interface SheetRequest { prId?: string; disc?: DiscId; editAt?: number }
 
 interface Store {
   data: AppData;

@@ -142,16 +142,16 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
           {adding === 'event' ? (
             <>
               <Segmented label="Tipo de evento" value={kind} onChange={setKind} options={KINDS} />
-              <input className="input" aria-label="Nombre del evento" placeholder="Nombre, p. ej. Carrete post Open" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 15 }} />
+              <input className="input" aria-label="Nombre del evento" placeholder="Nombre, p. ej. Carrete post Open" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 16 }} />
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <input className="input field-date" type="date" aria-label="Fecha" min={todayISO()} value={iso} onChange={e => setIso(e.target.value)} />
                 <input className="input field-date" type="time" aria-label="Hora (opcional)" value={time} onChange={e => setTime(e.target.value)} style={{ flex: '0 0 120px' }} />
               </div>
-              <input className="input" aria-label="Lugar (opcional)" placeholder="Lugar (opcional)" value={place} onChange={e => setPlace(e.target.value)} style={{ height: 48, fontSize: 15 }} />
+              <input className="input" aria-label="Lugar (opcional)" placeholder="Lugar (opcional)" value={place} onChange={e => setPlace(e.target.value)} style={{ height: 48, fontSize: 16 }} />
             </>
           ) : (
             <>
-              <input className="input" aria-label="Nombre" placeholder="¿De quién?" list="group-people" value={name} onChange={e => setName(e.target.value)} style={{ height: 48, fontSize: 15 }} />
+              <input className="input" aria-label="Nombre" placeholder="¿De quién?" list="group-people" value={name} onChange={e => setName(e.target.value)} style={{ height: 48, fontSize: 16 }} />
               <datalist id="group-people">{people.map(p => <option key={p} value={p} />)}</datalist>
               <label className="field-label" htmlFor="bd-date">Fecha (el año no importa)</label>
               <input id="bd-date" className="input field-date" type="date" value={iso} onChange={e => setIso(e.target.value)} />

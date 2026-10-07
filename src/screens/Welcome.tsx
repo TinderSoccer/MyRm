@@ -91,7 +91,7 @@ export function Profile() {
       {cloud.userId && (
         <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           <label htmlFor="bday" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>Tu cumpleaños (lo ve tu grupo)</label>
-          <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 15 }} />
+          <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 16 }} />
         </div>
       )}
       {cloud.userId && (

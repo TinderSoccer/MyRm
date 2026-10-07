@@ -102,7 +102,7 @@ export function Skills() {
         )}
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
         <input className="input" aria-label="Nueva skill" placeholder="Nueva skill, p. ej. Pistol squat" value={newSkill} onChange={e => setNewSkill(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && add()} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 15 }} />
+          onKeyDown={e => e.key === 'Enter' && add()} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 16 }} />
         <button onClick={add} className="btn btn-primary" style={{ height: 48, flex: 'none' }}>Agregar</button>
         </div>
       </div>

@@ -43,9 +43,9 @@ function PostWod() {
     <div className="dashed">
       <label htmlFor="wod-title" className="label-600">Nadie ha subido el WOD de hoy</label>
       <p className="note">Súbelo tú y el grupo anota sus resultados en la misma pizarra.</p>
-      <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 15 }} />
+      <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 16 }} />
       <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'21-15-9\nThrusters 95/65 lb\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
-        style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 15, resize: 'none', height: 'auto', minHeight: 96 }} />
+        style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 16, resize: 'none', height: 'auto', minHeight: 96 }} />
       <Segmented label="Cómo se mide" value={type} onChange={setType} options={TYPES} />
       <button className="btn btn-primary" onClick={post} disabled={busy || !title.trim()} style={{ height: 48 }}>{busy ? 'Subiendo…' : 'Subir a la pizarra'}</button>
       {error && <p className="note" role="alert" style={{ color: 'var(--color-accent-800)' }}>{error}</p>}

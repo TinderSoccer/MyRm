@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { Icon } from '../components/Icon';
 import { TodayWod } from '../components/TodayWod';
 import { discOf } from '../data';
@@ -7,7 +8,12 @@ import { pillStyle, useShownDiscs, useStore } from '../store';
 const DAY_L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const DAY_LONG = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
+// Where Home was scrolled, so coming back from a mark's detail lands on the same card instead of the top.
+let homeScroll = 0;
+
 export function Home() {
+  const scroller = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => { if (scroller.current) scroller.current.scrollTop = homeScroll; }, []);
   const { data, set, fmt, openDetail, homeFilter, setHomeFilter } = useStore();
   const shown = useShownDiscs();
   const weekDone = data.done.filter(Boolean).length;
@@ -17,7 +23,7 @@ export function Home() {
   const visible = data.prs.filter(p => logOf(p).length > 0 && shown.some(d => d.id === p.disc) && (homeFilter === 'all' || p.disc === homeFilter));
 
   return (
-    <div className="screen" data-screen-label="03 Inicio">
+    <div className="screen" data-screen-label="03 Inicio" ref={scroller} onScroll={e => { homeScroll = e.currentTarget.scrollTop; }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <span style={{ fontSize: 14, color: 'var(--color-neutral-700)', fontWeight: 500 }}>{longToday()}</span>

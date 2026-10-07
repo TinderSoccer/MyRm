@@ -167,7 +167,10 @@ export function Detail() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flex: 'none' }}>
               <span style={{ fontFamily: 'var(--font-heading)', fontSize: 22 }}>{fmt.val(p, e.v)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{unit}</span></span>
-                <DeleteButton label="Borrar" what={`el registro del ${e.date}`} onDelete={() => removeEntry(at)} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <button className="del-btn" onClick={() => openSheet({ prId: p.id, editAt: at })} aria-label={`Editar el registro del ${e.date}`}>Editar</button>
+                  <DeleteButton label="Borrar" what={`el registro del ${e.date}`} onDelete={() => removeEntry(at)} />
+                </div>
               </div>
             </div>
           );

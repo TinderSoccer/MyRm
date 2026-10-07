@@ -2,6 +2,13 @@
    project/CrossFit Avances.dc.html; dynamic colors stay inline in the components. */
 
 body { margin: 0; background: var(--color-neutral-300); font-family: var(--font-body); color: var(--color-text); }
+
+/* On a phone the app is one fixed layer; the page behind it must never scroll. Otherwise a swipe sometimes moves that
+   invisible page (100vh is taller than the visible area on iOS) instead of the list, and reads as "scroll didn't work". */
+@media (max-width: 599px) {
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+}
+
 a { color: var(--color-accent-700); }
 a:hover { color: var(--color-accent-800); }
 button { font-family: inherit; }
@@ -15,6 +22,9 @@ button { font-family: inherit; }
 .btn-primary:hover { background: var(--color-accent-500); }
 .btn-primary:active { background: var(--color-accent-400); }
 
+/* Fields are 16px or more: iOS zooms into anything smaller on focus and never zooms back out. */
+.input { font-size: 16px; }
+
 /* — empty states — */
 .empty { padding: 22px; border-radius: var(--radius-lg); border: 2px dashed var(--color-neutral-400); font-size: 15px; color: var(--color-neutral-800); }
 .note { margin: 0; font-size: 14px; color: var(--color-neutral-800); }
@@ -24,7 +34,7 @@ button { font-family: inherit; }
 .hit::after { content: ''; position: absolute; inset: -8px; }
 
 /* — phone shell — full screen on phones, a 390×844 device frame on wider screens — */
-.stage { min-height: 100vh; }
+.stage { min-height: 100vh; min-height: 100dvh; }
 .phone {
   --top: max(env(safe-area-inset-top), 24px);
   --bottom: env(safe-area-inset-bottom, 0px);
@@ -50,6 +60,8 @@ button { font-family: inherit; }
 .screen {
   position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; box-sizing: border-box;
   padding: calc(var(--top) + 12px) 22px calc(120px + var(--bottom));
+  /* The gesture stays in the list: no bounce handed to the page behind, smooth momentum on iOS. */
+  overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
   display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: max-content; align-content: start; gap: var(--space-6);
 }
 .screen-head { display: flex; flex-direction: column; gap: 6px; }
@@ -66,7 +78,7 @@ button { font-family: inherit; }
 .flex-center { display: flex; align-items: center; justify-content: center; }
 
 /* — chips & pills — */
-.chip-row { display: flex; gap: var(--space-2); overflow-x: auto; margin: 0 -22px; padding: 0 22px 4px; scrollbar-width: none; }
+.chip-row { display: flex; gap: var(--space-2); overflow-x: auto; margin: 0 -22px; padding: 0 22px 4px; scrollbar-width: none; overscroll-behavior-x: contain; }
 .chip-row::-webkit-scrollbar { display: none; }
 .pill {
   position: relative; flex: none; height: 40px; padding: 0 16px; border-radius: 999px; border: 2px solid;
@@ -172,6 +184,7 @@ button { font-family: inherit; }
 .backdrop[data-open='true'] { opacity: .45; pointer-events: auto; }
 .sheet {
   position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; scrollbar-width: none;
+  overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
   background: var(--color-bg); border-radius: 36px 36px 0 0; padding: 14px 24px calc(34px + var(--bottom)); box-sizing: border-box;
   display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: max-content; gap: var(--space-4);
   transform: translateY(110%); transition: transform .32s cubic-bezier(.2, .9, .3, 1); z-index: 8;
@@ -229,7 +242,7 @@ button { font-family: inherit; }
 .date-chip[data-soon='true'] { background: var(--color-accent-700); color: var(--color-bg); }
 .date-chip-day { font-family: var(--font-heading); font-size: 24px; line-height: 1; }
 .date-chip-month { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-.field-date { height: 48px; font-size: 15px; flex: 1; min-width: 0; }
+.field-date { height: 48px; font-size: 16px; flex: 1; min-width: 0; }
 
 /* — WOD board: the box's chalkboard. Ink surface, chalk-cream type, the ranking in the display face. — */
 .board {
@@ -265,5 +278,4 @@ button { font-family: inherit; }
   .sheet[data-open='true'] { opacity: 1; visibility: visible; transition: opacity .2s; }
   .toast, .toast[data-show='true'] { transform: none; transition: opacity .2s; }
   .step-dot:hover, .fab:active { transform: none; }
-  .switch-knob { transition: none !important; }
 }
