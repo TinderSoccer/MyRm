@@ -257,7 +257,7 @@ export function Timer() {
           </>}
           {(mode === 'emom' || mode === 'tabata') && <span className="timer-sub">{mode === 'emom' ? `${minutes} minutos` : `${rounds} rondas`} completados. ¡Bien!</span>}
         </div>
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 10 }}>
           {boardFits && <button className="btn btn-primary btn-block" disabled={saving} onClick={toBoard} style={{ height: 58, fontSize: 18 }}>{saving ? 'Anotando…' : 'Anotar en la pizarra'}</button>}
           <button className="btn btn-block timer-ghost" onClick={() => setPhase('setup')} style={{ height: 52 }}>Otro cronómetro</button>
           <button className="btn btn-block timer-ghost" onClick={leave} style={{ height: 52 }}>Salir</button>
@@ -278,7 +278,7 @@ export function Timer() {
         <span className="timer-big" role="timer" aria-live="off">{big}</span>
         {mode === 'amrap' && phase !== 'countdown' && <span className="timer-sub">{laps} {laps === 1 ? 'ronda' : 'rondas'}</span>}
       </div>
-      <div style={{ display: 'grid', gap: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 10 }}>
         {mode === 'amrap' && phase !== 'countdown' && (
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="btn timer-ghost" onClick={() => setLaps(l => Math.max(0, l - 1))} style={{ height: 72, width: 72, flex: 'none', fontSize: 22 }} aria-label="Quitar una ronda">−1</button>

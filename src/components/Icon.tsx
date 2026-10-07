@@ -23,6 +23,14 @@ const PATHS = {
       <circle cx="16.5" cy="15.5" r="4.5" />
     </>
   ),
+  /** A medal on its ribbon: skills are unlocked, like medals. */
+  medal: (
+    <>
+      <path d="M7.5 2.5l3.2 6.3M16.5 2.5l-3.2 6.3" />
+      <circle cx="12" cy="15" r="6.2" />
+      <circle cx="12" cy="15" r="2.2" />
+    </>
+  ),
   /** The plyo box: "the box" is what CrossFitters call their gym. */
   box: (
     <>

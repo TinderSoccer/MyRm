@@ -291,7 +291,7 @@ export function RecordSheet() {
           <span aria-hidden="true" style={{ display: 'flex', transform: `rotate(${more ? 90 : -90}deg)`, transition: 'transform .2s' }}><Icon name="chevronLeft" size={18} /></span>
         </button>
 
-        {more && <div id="sheet-more" style={{ display: 'grid', gap: 'var(--space-4)' }}>
+        {more && <div id="sheet-more" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--space-4)' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span className="field-label">Fecha</span>
           <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>

@@ -4,7 +4,7 @@ import { useStore } from '../store';
 
 const TABS: { screen: Screen; label: string; icon: IconName; also?: Screen[] }[] = [
   { screen: 'home', label: 'Inicio', icon: 'box', also: ['det'] },
-  { screen: 'sk', label: 'Skills', icon: 'rings' },
+  { screen: 'sk', label: 'Skills', icon: 'medal' },
   { screen: 'gr', label: 'Grupo', icon: 'users' }
 ];
 

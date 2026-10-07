@@ -24,6 +24,19 @@ export function Home() {
   const visible = data.prs.filter(p => logOf(p).length > 0 && shown.some(d => d.id === p.disc) && (homeFilter === 'all' || p.disc === homeFilter));
 
   const several = shown.length > 1;
+
+  // Recent records: every RX attempt that beat the best before it, newest first. The highlight reel of Home.
+  const recent = data.prs.filter(p => shown.some(d => d.id === p.disc)).flatMap(p => {
+    const scheme = mainSchemeOf(p);
+    let best: number | null = null;
+    const out: { p: Pr; v: number; gain: string; date: string; iso: string }[] = [];
+    for (const e of entriesOf(p, scheme)) {
+      if (best != null && fmt.gain(p, best, e.v) > 0.0005) out.push({ p, v: e.v, gain: fmt.gainTxt(p, best, e.v), date: e.date, iso: e.iso ?? '' });
+      if (best == null || fmt.gain(p, best, e.v) > 0) best = e.v;
+    }
+    return out;
+  }).sort((a, b) => b.iso.localeCompare(a.iso)).slice(0, 6);
+  const weekLine = weekDone >= data.freq ? '¡Semana cumplida! Todo lo de hoy es extra.' : weekDone === 0 ? `Esta semana van ${data.freq} entrenos. ¡A empezar!` : `Te faltan ${data.freq - weekDone} ${data.freq - weekDone === 1 ? 'entreno' : 'entrenos'} para tu meta de la semana.`;
   const iconOf = (p: Pr): IconName => p.type === 'time' ? 'timer' : p.type === 'reps' ? 'rings' : fixedKg(p) ? 'kettlebell' : 'barbell';
 
   return (
@@ -33,6 +46,7 @@ export function Home() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
           <span style={{ fontSize: 14, color: 'var(--color-neutral-700)', fontWeight: 500 }}>{longToday()}</span>
           <h1 className="title" style={{ fontSize: 34 }}>¡Hola, {name || 'atleta'}!</h1>
+          <span style={{ fontSize: 15, color: 'var(--color-neutral-800)' }}>{weekLine}</span>
           {data.aim?.trim() && <span className="aim-pill"><Icon name="trophy" size={15} /><span>{data.aim.trim()}</span></span>}
         </div>
         <div style={{ display: 'flex', gap: 10, flex: 'none' }}>
@@ -42,7 +56,8 @@ export function Home() {
       </header>
 
       {/* Your day: the week and today's WOD belong together. */}
-      <div style={{ display: 'grid', gap: 14 }}>
+      {/* minmax(0, 1fr): an auto column grew to the WOD's long title and pushed both cards off the screen. */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 14 }}>
         <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden' }}>
           {/* A bumper plate peeking in from the corner; clear of the text (pale on the accent wouldn't read). */}
           <div aria-hidden="true" className="deco-plate" />
@@ -70,6 +85,27 @@ export function Home() {
         </div>
         <TodayWod />
       </div>
+
+      {/* The highlight reel: recent records as pastel cards, swiped sideways. */}
+      {recent.length > 0 && (
+        <section className="stack-3" aria-labelledby="recent-h">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span className="icon-badge" style={{ background: 'var(--color-accent-2-200)', color: 'var(--color-accent-2-800)' }} aria-hidden="true"><Icon name="trophy" size={19} /></span>
+            <h2 id="recent-h" className="section-title">Récords recientes</h2>
+          </div>
+          <div className="pr-reel">
+            {recent.map((r, i) => (
+              <button key={r.p.id + r.iso + i} className="pr-tile" data-tone={i % 3} onClick={() => openDetail(r.p.id)}
+                aria-label={`${r.p.name}: ${fmt.val(r.p, r.v)} ${fmt.unitOf(r.p)}, ${r.gain}, ${r.date}`}>
+                <span className="pr-tile-icon" aria-hidden="true"><Icon name={iconOf(r.p)} size={20} /></span>
+                <span className="pr-tile-name" aria-hidden="true">{r.p.name}</span>
+                <span className="pr-tile-value" aria-hidden="true">{fmt.val(r.p, r.v)}<small>{fmt.unitOf(r.p)}</small></span>
+                <span className="pr-tile-gain" aria-hidden="true">{r.gain} · {r.date}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Your records: their own section, the list tight. */}
       <section className="stack-3" aria-labelledby="marks-h">
