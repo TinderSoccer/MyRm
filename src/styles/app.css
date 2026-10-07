@@ -72,13 +72,12 @@ button { font-family: inherit; }
   position: relative; flex: none; height: 40px; padding: 0 16px; border-radius: 999px; border: 2px solid;
   font-weight: 600; font-size: 14px; cursor: pointer; transition: background-color .15s, color .15s, border-color .15s;
 }
-.pill-sm { position: relative; flex: none; height: 38px; padding: 0 14px; border-radius: 999px; border: 2px solid; font-weight: 700; font-size: 14px; cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; }
 /* 44px touch target without changing the pill's look; horizontal gaps stay untouched. */
-.pill::after, .pill-sm::after { content: ''; position: absolute; inset: -4px -2px; }
+.pill::after { content: ''; position: absolute; inset: -4px -2px; }
 .chip { height: 40px; padding: 0 16px; border-radius: 999px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: background-color .15s, color .15s; }
-.chip[aria-pressed='true'] { background: var(--color-accent); color: var(--color-on-accent); }
+.chip[aria-pressed='true'] { background: var(--color-text); color: var(--color-bg); }
 .chip[aria-pressed='false'] { background: var(--color-surface); color: var(--color-text); }
-.pill:hover, .pill-sm:hover { filter: brightness(0.96); }
+.pill:hover { filter: brightness(0.96); }
 
 /* — quiet text action (sign-in alternatives): a real button with a 44px target, underlined like a link — */
 .link-btn {
@@ -86,6 +85,18 @@ button { font-family: inherit; }
   color: var(--color-accent-700); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px;
 }
 .link-btn:hover { color: var(--color-accent-800); }
+
+/* — segmented control: one look for "pick one of a few" everywhere — */
+.seg { display: flex; padding: 4px; gap: 4px; border-radius: 999px; background: var(--color-surface); min-width: 0; }
+.seg[data-fit] { display: inline-flex; align-self: flex-start; }
+.seg-btn {
+  flex: 1 1 auto; min-width: 0; min-height: 40px; padding: 0 12px; border-radius: 999px; border: none; background: transparent;
+  color: var(--color-text); font-weight: 700; font-size: 14px; white-space: nowrap; cursor: pointer; transition: background-color .15s, color .15s;
+}
+.seg[data-fit] .seg-btn { flex: none; padding: 0 16px; }
+.seg[data-size='lg'] .seg-btn { min-height: 44px; font-size: 15px; }
+.seg-btn:hover { background: var(--color-accent-200); }
+.seg-btn[aria-pressed='true'] { background: var(--color-text); color: var(--color-bg); }
 
 /* — round icon button (back, close) — */
 .round-btn {

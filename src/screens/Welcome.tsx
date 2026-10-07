@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
+import { Segmented } from '../components/Segmented';
 import { DISCS } from '../data';
 import { pillStyle, useStore } from '../store';
 import { useCloud } from '../cloud';
@@ -80,7 +81,7 @@ export function Profile() {
       </div>
       <div style={group} role="group" aria-labelledby="units-l">
         <span id="units-l" style={label}>¿Los discos de la barra son en libras o kilos?</span>
-        <UnitToggle height={44} />
+        <UnitToggle />
         <span className="muted-13">Kettlebells y mancuernas van siempre en kilos.</span>
       </div>
       {cloud.userId && (
@@ -103,16 +104,7 @@ export function Profile() {
   );
 }
 
-export function UnitToggle({ height }: { height: number }) {
+export function UnitToggle() {
   const { data, set } = useStore();
-  return (
-    <div style={{ display: 'flex', padding: 4, borderRadius: 999, background: 'var(--color-surface)', gap: 4, alignSelf: 'flex-start' }}>
-      {(['lb', 'kg'] as const).map(u => {
-        const on = data.units === u;
-        return (
-          <button key={u} aria-pressed={on} onClick={() => set(() => ({ units: u }))} style={{ height, minWidth: 64, padding: '0 16px', borderRadius: 999, border: 'none', background: on ? 'var(--color-text)' : 'transparent', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontWeight: 700, fontSize: 15, cursor: 'pointer', transition: 'background-color .15s, color .15s' }}>{u}</button>
-        );
-      })}
-    </div>
-  );
+  return <Segmented label="Unidad de la barra" fit size="lg" value={data.units} onChange={u => set(() => ({ units: u }))} options={[['lb', 'lb'], ['kg', 'kg']]} />;
 }

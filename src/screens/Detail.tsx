@@ -1,8 +1,9 @@
 import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
+import { Segmented } from '../components/Segmented';
 import { discOf, type Pr } from '../data';
 import { barLoad, bestOf, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
-import { pillStyle, useStore } from '../store';
+import { useStore } from '../store';
 
 const PCTS = [50, 60, 65, 70, 75, 80, 85, 90, 95];
 
@@ -72,13 +73,8 @@ export function Detail() {
             <h2 style={{ fontWeight: 600, fontSize: 15, margin: 0 }}>Porcentajes</h2>
             <span className="muted-13">{rm.estimated ? 'de tu 1RM estimado' : 'de tu 1RM'} · {fmt.val(p, rm.kg)} {unit}</span>
           </div>
-          <div role="group" aria-label="Barra" style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            {(['big', 'small'] as const).map(b => (
-              <button key={b} className="pill-sm" aria-pressed={data.bar === b} onClick={() => set(() => ({ bar: b }))} style={pillStyle(data.bar === b)}>
-                Barra {lb ? (b === 'big' ? '45 lb' : '35 lb') : (b === 'big' ? '20 kg' : '15 kg')}
-              </button>
-            ))}
-          </div>
+          <Segmented label="Barra" fit value={data.bar} onChange={b => set(() => ({ bar: b }))}
+            options={lb ? [['big', 'Barra 45 lb'], ['small', 'Barra 35 lb']] : [['big', 'Barra 20 kg'], ['small', 'Barra 15 kg']]} />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {PCTS.map(pct => {
               const l = barLoad(rm.kg * pct / 100, lb, data.bar);

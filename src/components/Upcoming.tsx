@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { DeleteButton } from './DeleteButton';
 import { Icon } from './Icon';
+import { Segmented } from './Segmented';
 import type { EventKind } from '../data';
 import { countdown, dayOfMonth, daysUntil, longDate, monthShort, nextBirthdayISO, todayISO } from '../format';
-import { pillStyle } from '../store';
 
 const KINDS: [EventKind, string][] = [['carrete', 'Carrete'], ['competencia', 'Competencia'], ['otro', 'Otro']];
 const KIND_LABEL: Record<EventKind, string> = { carrete: 'Carrete', competencia: 'Competencia', otro: 'Evento' };
@@ -117,12 +117,8 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
             </div>
             {rsvp && onRsvp && it.kind === 'event' && (
               <div className="rsvp">
-                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                  <button className="pill-sm" aria-pressed={rsvp.mine === true} style={pillStyle(rsvp.mine === true)} onClick={() => onRsvp(it.ev.id, true)}>
-                    Voy{rsvp.goingNames.length ? ` · ${rsvp.goingNames.length}` : ''}
-                  </button>
-                  <button className="pill-sm" aria-pressed={rsvp.mine === false} style={pillStyle(rsvp.mine === false)} onClick={() => onRsvp(it.ev.id, false)}>No voy</button>
-                </div>
+                <Segmented label={`¿Vas a ${it.ev.title}?`} fit value={rsvp.mine} onChange={v => onRsvp(it.ev.id, v)}
+                  options={[[true, `Voy${rsvp.goingNames.length ? ` · ${rsvp.goingNames.length}` : ''}`], [false, 'No voy']]} />
                 <span className="muted-13">{rsvp.goingNames.length ? `Van: ${namesLine(rsvp.goingNames)}` : 'Nadie confirmó todavía'}</span>
               </div>
             )}
@@ -145,9 +141,7 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
           <span className="label-600">{adding === 'event' ? 'Nuevo evento' : 'Nuevo cumpleaños'}</span>
           {adding === 'event' ? (
             <>
-              <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                {KINDS.map(([k, l]) => <button key={k} className="pill-sm" onClick={() => setKind(k)} aria-pressed={kind === k} style={pillStyle(kind === k)}>{l}</button>)}
-              </div>
+              <Segmented label="Tipo de evento" value={kind} onChange={setKind} options={KINDS} />
               <input className="input" aria-label="Nombre del evento" placeholder="Nombre, p. ej. Carrete post Open" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 15 }} />
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <input className="input field-date" type="date" aria-label="Fecha" min={todayISO()} value={iso} onChange={e => setIso(e.target.value)} />

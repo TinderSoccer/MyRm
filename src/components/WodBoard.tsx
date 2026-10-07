@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { DeleteButton } from './DeleteButton';
+import { Segmented } from './Segmented';
 import type { Pr, PrType } from '../data';
 import { useCloud, type CloudWod, type WodScore } from '../cloud';
 import { logOf, shortDate, withLog } from '../format';
-import { pillStyle, useStore } from '../store';
+import { useStore } from '../store';
 
-const TYPES: [PrType, string][] = [['time', 'Por tiempo'], ['reps', 'Reps / rondas'], ['kg', 'Peso']];
-const MODES = [false, true];
+const TYPES: [PrType, string][] = [['time', 'Tiempo'], ['reps', 'Reps / rondas'], ['kg', 'Peso']];
+const MODES = [[false, 'RX'], [true, 'Escalado']] as const;
 
 /** The box whiteboard order: RX before scaled, then fastest time or most reps/weight. */
 export const rankWod = (w: CloudWod) => [...w.scores].sort((a, b) =>
@@ -45,9 +46,7 @@ function PostWod() {
       <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 15 }} />
       <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'21-15-9\nThrusters 95/65 lb\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
         style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 15, resize: 'none', height: 'auto', minHeight: 96 }} />
-      <div role="group" aria-label="Cómo se mide" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-        {TYPES.map(([t, l]) => <button key={t} className="pill-sm" aria-pressed={type === t} onClick={() => setType(t)} style={pillStyle(type === t)}>{l}</button>)}
-      </div>
+      <Segmented label="Cómo se mide" value={type} onChange={setType} options={TYPES} />
       <button className="btn btn-primary" onClick={post} disabled={busy || !title.trim()} style={{ height: 48 }}>{busy ? 'Subiendo…' : 'Subir a la pizarra'}</button>
       {error && <p className="note" role="alert" style={{ color: 'var(--color-accent-800)' }}>{error}</p>}
     </div>
@@ -104,9 +103,7 @@ function Board({ nameOf }: Props) {
           style={{ flex: 1, minWidth: 0, height: 48, fontSize: 17 }} />
         {unit && <span style={{ fontWeight: 600 }}>{unit}</span>}
       </div>
-      <div role="group" aria-label="Modalidad" style={{ display: 'flex', gap: 'var(--space-2)' }}>
-        {MODES.map(m => <button key={String(m)} className="pill-sm" aria-pressed={scaled === m} onClick={() => setScaled(m)} style={pillStyle(scaled === m)}>{m ? 'Escalado' : 'RX'}</button>)}
-      </div>
+      <Segmented label="Modalidad" fit value={scaled} onChange={setScaled} options={MODES} />
       <button className="btn btn-primary" onClick={save} disabled={busy || !text.trim()} style={{ height: 48 }}>{busy ? 'Guardando…' : 'Anotar en la pizarra'}</button>
       {error && <p className="note" role="alert" style={{ color: 'var(--color-accent-800)' }}>{error}</p>}
     </div>

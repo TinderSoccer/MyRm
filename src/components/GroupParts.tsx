@@ -1,4 +1,5 @@
 import { Icon } from './Icon';
+import { Segmented } from './Segmented';
 import { discOf, type DiscId } from '../data';
 import { initialOf } from '../format';
 
@@ -6,17 +7,7 @@ export type GroupView = 'today' | 'feed' | 'next';
 
 /** Views of the group so the screen is not one long scroll: today's WOD board, achievements, what is coming up. */
 export function GroupTabs({ view, setView }: { view: GroupView; setView: (v: GroupView) => void }) {
-  const tabs: [GroupView, string][] = [['today', 'Hoy'], ['feed', 'Logros'], ['next', 'Próximos']];
-  return (
-    <div role="group" aria-label="Vista del grupo" style={{ display: 'flex', padding: 4, borderRadius: 999, background: 'var(--color-surface)', gap: 4 }}>
-      {tabs.map(([v, label]) => {
-        const on = view === v;
-        return (
-          <button key={v} aria-pressed={on} onClick={() => setView(v)} style={{ flex: 1, height: 44, borderRadius: 999, border: 'none', background: on ? 'var(--color-text)' : 'transparent', color: on ? 'var(--color-bg)' : 'var(--color-text)', fontWeight: 700, fontSize: 15, cursor: 'pointer', transition: 'background-color .15s, color .15s' }}>{label}</button>
-        );
-      })}
-    </div>
-  );
+  return <Segmented label="Vista del grupo" size="lg" value={view} onChange={setView} options={[['today', 'Hoy'], ['feed', 'Logros'], ['next', 'Próximos']]} />;
 }
 
 export interface Circle { id: string; name: string; color: string }

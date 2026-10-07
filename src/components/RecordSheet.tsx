@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
+import { Segmented } from './Segmented';
 import { discOf, type DiscId, type PrType } from '../data';
 import { bestOf, currentOf, logOf, shortDate, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
@@ -8,7 +9,7 @@ import { useCloud } from '../cloud';
 const SCHEMES = ['1RM', '3RM', '5RM', '10RM'];
 const MODES = ['RX', 'Escalado'];
 type NewType = PrType | 'kb';
-const NEW_TYPES: [NewType, string][] = [['kg', 'Barra'], ['kb', 'KB / mancuerna'], ['time', 'Tiempo'], ['reps', 'Reps']];
+const NEW_TYPES: [NewType, string][] = [['kg', 'Barra'], ['kb', 'KB / manc.'], ['time', 'Tiempo'], ['reps', 'Reps']];
 
 export function RecordSheet() {
   const { data, set, fmt, sheet, closeSheet, flash } = useStore();
@@ -146,9 +147,7 @@ export function RecordSheet() {
         {showNewMov && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--color-surface)' }}>
             <input className="input" aria-label="Nombre del movimiento" placeholder="Nombre, p. ej. Thruster" value={newMovName} onChange={e => setNewMovName(e.target.value)} style={{ height: 46, fontSize: 15 }} />
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-              {NEW_TYPES.map(([k, l]) => <button key={k} className="pill-sm" onClick={() => setNewMovType(k)} aria-pressed={newMovType === k} style={pillStyle(newMovType === k)}>{l}</button>)}
-            </div>
+            <Segmented label="Cómo se mide" value={newMovType} onChange={setNewMovType} options={NEW_TYPES} />
             <button onClick={createMov} className="btn btn-primary" style={{ height: 44 }}>Crear en {sheetDiscLabel}</button>
           </div>
         )}
@@ -179,16 +178,15 @@ export function RecordSheet() {
         {isWeight && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span className="field-label">Repeticiones</span>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-              {SCHEMES.map(k => <button key={k} className="pill-sm" onClick={() => setScheme(k)} aria-pressed={scheme === k} style={pillStyle(scheme === k)}>{k}</button>)}
-            </div>
+            <Segmented label="Repeticiones" value={scheme} onChange={setScheme} options={SCHEMES.map(k => [k, k] as const)} />
           </div>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span className="field-label">Fecha</span>
           <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
-            {[[todayISO(), 'Hoy'], [yesterdayISO(), 'Ayer']].map(([iso, l]) => <button key={l} className="pill-sm" onClick={() => setDateISO(iso)} aria-pressed={dateISO === iso} style={pillStyle(dateISO === iso)}>{l}</button>)}
+            <Segmented label="Día" fit value={dateISO === todayISO() || dateISO === yesterdayISO() ? dateISO : null} onChange={setDateISO}
+              options={[[todayISO(), 'Hoy'], [yesterdayISO(), 'Ayer']]} />
             <input type="date" aria-label="Otra fecha" value={dateISO} max={todayISO()} onChange={e => e.target.value && setDateISO(e.target.value)}
               style={{ height: 44, padding: '0 12px', borderRadius: 999, border: '2px solid var(--color-neutral-600)', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }} />
           </div>
@@ -196,9 +194,7 @@ export function RecordSheet() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span className="field-label">Modalidad</span>
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            {MODES.map(k => <button key={k} className="pill-sm" onClick={() => setMode(k)} aria-pressed={mode === k} style={pillStyle(mode === k)}>{k}</button>)}
-          </div>
+          <Segmented label="Modalidad" fit value={mode} onChange={setMode} options={MODES.map(k => [k, k] as const)} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
