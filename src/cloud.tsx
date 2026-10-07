@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { seedData, type DiscId, type EventKind, type PrType } from './data';
 import { todayISO, weekStartISO } from './format';
+import { shrinkPhoto } from './photo';
 import { useStore } from './store';
 import { canon, hashOf, mergePersonal, personalOf, type Personal } from './sync';
 
@@ -78,6 +79,8 @@ interface Cloud {
   rsvp: (id: string, going: boolean) => void;
   saveProfile: (name: string, birthday: string | null) => void;
   postWod: (w: NewWod) => Promise<string | null>;
+  /** A photo of the box's whiteboard read into a WOD (server-side AI); a string is an error to show. */
+  readBoardPhoto: (photo: Blob) => Promise<NewWod | string>;
   deleteWod: () => void;
   saveScore: (s: Omit<WodScore, 'user_id'>) => Promise<string | null>;
   dropScore: () => void;
@@ -380,6 +383,20 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       await refresh();
       // Someone else posted it a moment earlier: theirs is the board now, and the person should know.
       return error?.code === '23505' ? 'Alguien subió el WOD de hoy justo antes que tú: es el que ves en la pizarra.' : explain(error);
+    },
+    readBoardPhoto: async photo => {
+      if (!sb) return 'La lectura de fotos necesita conexión.';
+      const { data: s } = await sb.auth.getSession();
+      if (!s.session) return 'Entra a MyRm para usar la foto.';
+      let body: string;
+      try { const p = await shrinkPhoto(photo); body = JSON.stringify({ image: p.data, mediaType: p.mediaType }); }
+      catch { return 'No pudimos abrir esa foto. Prueba con otra.'; }
+      try {
+        const res = await fetch('/api/wod-photo', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${s.session.access_token}` }, body });
+        const out = await res.json().catch(() => ({})) as Partial<NewWod> & { error?: string };
+        if (!res.ok || !out.title) return out.error ?? 'No pudimos leer esta foto. Escribe el WOD a mano.';
+        return { title: out.title, description: out.description ?? '', score_type: out.score_type ?? 'time' };
+      } catch { return 'Sin conexión. Revisa tu internet e intenta de nuevo.'; }
     },
     deleteWod: () => {
       if (!sb || !wod) return;

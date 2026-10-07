@@ -33,6 +33,17 @@ function PostWod() {
   const [type, setType] = useState<PrType>('time');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
+  const [fromPhoto, setFromPhoto] = useState(false);
+  // A photo of the real whiteboard, read by AI into the fields below; the person checks it before posting.
+  const readPhoto = async (file: File | undefined) => {
+    if (!file) return;
+    setReading(true); setError(null);
+    const out = await cloud.readBoardPhoto(file);
+    setReading(false);
+    if (typeof out === 'string') { setError(out); return; }
+    setTitle(out.title); setDescription(out.description); setType(out.score_type); setFromPhoto(true);
+  };
   const post = async () => {
     if (!title.trim() || busy) return;
     setBusy(true); setError(null);
@@ -45,6 +56,12 @@ function PostWod() {
     <div className="dashed">
       <label htmlFor="wod-title" className="label-600">Nadie ha subido el WOD de hoy</label>
       <p className="note">Súbelo tú y el grupo anota sus resultados en la misma pizarra.</p>
+      <label className="btn btn-secondary" style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: reading ? 'progress' : 'pointer' }} aria-busy={reading}>
+        <Icon name="board" size={20} />{reading ? 'Leyendo la pizarra…' : 'Foto de la pizarra'}
+        <input type="file" accept="image/*" capture="environment" disabled={reading} onChange={e => { readPhoto(e.target.files?.[0]); e.target.value = ''; }}
+          style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
+      </label>
+      {fromPhoto && <p className="note" role="status" style={{ color: 'var(--color-accent-2-700)', fontWeight: 600 }}>Lo leímos de la foto. Revisa que esté bien antes de subirlo.</p>}
       <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 16 }} />
       <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'21-15-9\nThrusters 95/65 lb\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
         style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 16, resize: 'none', height: 'auto', minHeight: 96 }} />
