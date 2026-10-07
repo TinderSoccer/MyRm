@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
-import { DISCS, seedData } from '../data';
-import { weekStartISO } from '../format';
+import { DISCS } from '../data';
 import { pillStyle, useStore } from '../store';
 import { useCloud } from '../cloud';
 
@@ -42,16 +41,12 @@ export function Profile() {
   // null = untouched, so a profile opened before the group loads never wipes the saved birthday.
   const [bday, setBday] = useState<string | null>(null);
   const shownBday = bday ?? (me?.birthday ? `2000-${me.birthday}` : '');
+  const saveCloudProfile = () => { if (cloud.userId) cloud.saveProfile(data.name, bday == null ? me?.birthday ?? null : bday ? bday.slice(5) : null); };
   const finish = () => {
-    if (cloud.userId) cloud.saveProfile(data.name, bday == null ? me?.birthday ?? null : bday ? bday.slice(5) : null);
+    saveCloudProfile();
     setHomeFilter('all');
     // Arrived through an invite link: go straight to the group to sign in and join.
     set(() => ({ screen: !settings && cloud.pendingJoin ? 'gr' : 'home', onboarded: true }));
-  };
-  // Your marks live in the account; signing out leaves this phone clean for whoever signs in next.
-  const signOut = async () => {
-    await cloud.signOut();
-    set(() => seedData(weekStartISO()));
   };
   const toggleGoal = (id: typeof DISCS[number]['id']) =>
     set(d => ({ goals: d.goals.includes(id) ? d.goals.filter(x => x !== id) : [...d.goals, id] }));
@@ -97,9 +92,9 @@ export function Profile() {
       {cloud.userId && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}<br />
-            <button className="btn btn-ghost" onClick={() => cloud.changePassword(true)} style={{ minHeight: 44, padding: 0 }}>Cambiar mi clave</button>
+            <button className="btn btn-ghost" onClick={() => { saveCloudProfile(); cloud.changePassword(true); }} style={{ minHeight: 44, padding: 0 }}>Cambiar mi clave</button>
           </span>
-          <button className="btn btn-secondary" onClick={signOut} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
+          <button className="btn btn-secondary" onClick={cloud.signOut} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
         </div>
       )}
       <div style={{ flex: 1 }} />

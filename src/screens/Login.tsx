@@ -20,6 +20,24 @@ const Err = ({ error }: { error: string | null }) =>
 
 const validEmail = (s: string) => /^\S+@\S+\.\S+$/.test(s);
 
+/** Runs a server call with a busy flag and its error message; true when it went through. */
+function useRunner() {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const run = async (fn: () => Promise<string | null>) => {
+    setBusy(true); setError(null);
+    try {
+      const err = await fn();
+      if (err) setError(err);
+      return !err;
+    } catch {
+      setError('Sin conexión. Revisa tu internet e intenta de nuevo.');
+      return false;
+    } finally { setBusy(false); }
+  };
+  return { busy, error, setError, run };
+}
+
 /** Everyone signs in when the app opens. Usually email + password; the first time (or after forgetting it) with a 6-digit
  *  code by email, then a password is set. The code matters on iPhone: the email's link opens in Safari, not in the app. */
 export function Login() {
@@ -29,16 +47,7 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const run = async (fn: () => Promise<string | null>) => {
-    setBusy(true); setError(null);
-    const err = await fn();
-    setBusy(false);
-    if (err) setError(err);
-    return !err;
-  };
+  const { busy, error, setError, run } = useRunner();
   const enter = () => {
     const addr = email.trim();
     if (!validEmail(addr)) { setError('Revisa el correo: falta algo.'); return; }
@@ -56,7 +65,7 @@ export function Login() {
   const lede = pendingJoin ? 'Te invitaron al grupo de tu box. Entra para sumarte.' : 'Tus marcas quedan guardadas en tu cuenta y tu grupo del box te espera adentro.';
   const emailField = (
     <input id="email" className="input" type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com" value={email}
-      onChange={e => setEmail(e.target.value)} style={{ height: 48, fontSize: 15 }} />
+      onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && mode === 'code' && send()} style={{ height: 48, fontSize: 15 }} />
   );
 
   if (mode === 'password') {
@@ -99,19 +108,15 @@ export function Login() {
 
 /** Right after entering with a code (first time or forgotten password), or from Profile: choose the password. */
 export function SetPassword() {
-  const { setPassword, changePassword, hasPassword } = useCloud();
+  const { setPassword, changePassword, hasPassword, signOut } = useCloud();
   const [pw, setPw] = useState('');
   const [again, setAgain] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { busy, error, setError, run } = useRunner();
 
-  const save = async () => {
+  const save = () => {
     if (pw.length < MIN_PASSWORD) { setError(`Usa al menos ${MIN_PASSWORD} caracteres.`); return; }
     if (pw !== again) { setError('Las dos claves no son iguales.'); return; }
-    setBusy(true); setError(null);
-    const err = await setPassword(pw);
-    setBusy(false);
-    if (err) setError(err);
+    run(() => setPassword(pw));
   };
 
   return (
@@ -124,7 +129,9 @@ export function SetPassword() {
         onKeyDown={e => e.key === 'Enter' && save()} style={{ height: 48, fontSize: 15 }} />
       <button className="btn btn-primary" onClick={save} disabled={busy} style={{ height: 48 }}>{busy ? 'Guardando…' : 'Guardar clave'}</button>
       <Err error={error} />
-      {hasPassword && <button className="btn btn-ghost" onClick={() => changePassword(false)} style={{ minHeight: 44 }}>Dejar la clave que tenía</button>}
+      {/* Never a dead end: offline at the box, or just not now, the app stays usable. */}
+      <button className="btn btn-ghost" onClick={() => changePassword(false)} style={{ minHeight: 44 }}>{hasPassword ? 'Dejar la clave que tenía' : 'Ahora no'}</button>
+      <button className="btn btn-ghost" onClick={signOut} style={{ minHeight: 44 }}>Cerrar sesión</button>
     </Frame>
   );
 }
