@@ -1,8 +1,8 @@
 import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
 import { discOf, type Pr } from '../data';
-import { bestOf, entriesOf, logOf, mainSchemeOf, oneRepMaxOf, withLog } from '../format';
-import { useStore } from '../store';
+import { barLoad, bestOf, entriesOf, fixedKg, logOf, mainSchemeOf, oneRepMaxOf, withLog } from '../format';
+import { pillStyle, useStore } from '../store';
 
 const PCTS = [50, 60, 65, 70, 75, 80, 85, 90, 95];
 
@@ -38,7 +38,9 @@ export function Detail() {
   const sc = mainLog.map(e => p.better === 'down' ? -e.v : e.v);
   const mn = Math.min(...sc), mx = Math.max(...sc);
   const unit = fmt.unitOf(p);
-  const rm = oneRepMaxOf(p);
+  // Percentages are for the bar; kettlebells and dumbbells come in fixed sizes.
+  const rm = fixedKg(p) ? null : oneRepMaxOf(p);
+  const lb = data.units === 'lb';
 
   return (
     <div className="screen" data-screen-label="07 Detalle de marca">
@@ -69,13 +71,25 @@ export function Detail() {
             <h2 style={{ fontWeight: 600, fontSize: 15, margin: 0 }}>Porcentajes</h2>
             <span className="muted-13">{rm.estimated ? 'de tu 1RM estimado' : 'de tu 1RM'} · {fmt.val(p, rm.kg)} {unit}</span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            {PCTS.map(pct => (
-              <div key={pct} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '10px 4px', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-neutral-700)' }}>{pct}%</span>
-                <span style={{ fontFamily: 'var(--font-heading)', fontSize: 20, lineHeight: 1.1 }}>{fmt.plate(rm.kg * pct / 100)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{unit}</span></span>
-              </div>
+          <div role="group" aria-label="Barra" style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            {(['big', 'small'] as const).map(b => (
+              <button key={b} className="pill-sm" aria-pressed={data.bar === b} onClick={() => set(() => ({ bar: b }))} style={pillStyle(data.bar === b)}>
+                Barra {lb ? (b === 'big' ? '45 lb' : '35 lb') : (b === 'big' ? '20 kg' : '15 kg')}
+              </button>
             ))}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {PCTS.map(pct => {
+              const l = barLoad(rm.kg * pct / 100, lb, data.bar);
+              const plates = [l.big.length ? `${l.big.join(' + ')} ${lb ? 'lb' : 'kg'}` : '', l.small.length ? `${l.small.join(' + ')} kg` : ''].filter(Boolean).join(' + ');
+              return (
+                <div key={pct} style={{ display: 'flex', alignItems: 'baseline', gap: 12, padding: '10px 0', borderTop: pct === PCTS[0] ? 'none' : '1px solid var(--color-neutral-300)' }}>
+                  <span style={{ width: 40, fontSize: 13, fontWeight: 700, color: 'var(--color-neutral-700)', flex: 'none' }}>{pct}%</span>
+                  <span style={{ width: 72, fontFamily: 'var(--font-heading)', fontSize: 20, lineHeight: 1.1, flex: 'none' }}>{fmt.val(p, l.totalKg)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{unit}</span></span>
+                  <span className="muted-13" style={{ flex: 1, minWidth: 0 }}>{plates ? `Por lado: ${plates}` : `Solo la barra (${l.bar})`}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

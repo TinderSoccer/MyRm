@@ -16,21 +16,26 @@ export const longToday = () => { const d = new Date(); return `${WEEKDAYS[d.getD
 /** ISO date of this week's Monday. */
 export const weekStartISO = () => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return isoOf(d); };
 
+/** Weights marked `unitLabel: 'kg'` (kettlebells, dumbbells) stay in kilos even when the bar is loaded in pounds. */
+export const fixedKg = (p: Measured) => p.type === 'kg' && p.unitLabel === 'kg';
+
+/** `lb`: the bar is loaded in pounds. Everything is stored in kg; only what is shown changes. */
 export function makeFormat(lb: boolean) {
-  const wu = lb ? 'lb' : 'kg';
-  const fmtKg = (kg: number) => lb ? String(Math.round(kg * LB)) : (kg % 1 ? kg.toFixed(1).replace('.', ',') : String(kg));
+  const inLb = (p: Measured) => lb && !fixedKg(p);
+  const fmtKg = (kg: number) => kg % 1 ? kg.toFixed(1).replace('.', ',') : String(kg);
+  const fmtW = (p: Measured, kg: number) => inLb(p) ? String(Math.round(kg * LB)) : fmtKg(kg);
   const fmtT = (sec: number) => {
     sec = Math.round(sec);
     const hh = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), ss = String(sec % 60).padStart(2, '0');
     return hh ? `${hh}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
   };
   const fmtD = (sec: number) => { sec = Math.round(Math.abs(sec)); return sec < 60 ? `${sec} s` : fmtT(sec); };
-  const val = (p: Measured, v: number) => p.type === 'kg' ? fmtKg(v) : p.type === 'time' ? fmtT(v) : String(Math.round(v));
-  const unitOf = (p: Measured) => p.type === 'kg' ? wu : p.type === 'reps' ? (p.unitLabel || 'reps') : '';
+  const val = (p: Measured, v: number) => p.type === 'kg' ? fmtW(p, v) : p.type === 'time' ? fmtT(v) : String(Math.round(v));
+  const unitOf = (p: Measured) => p.type === 'kg' ? (inLb(p) ? 'lb' : 'kg') : p.type === 'reps' ? (p.unitLabel || 'reps') : '';
   const gain = (p: Measured, a: number, b: number) => (p.better === 'down' ? a - b : b - a);
   const gainTxt = (p: Measured, g: number) =>
-    p.type === 'kg' ? `+${fmtKg(g)} ${wu}` : p.type === 'reps' ? `+${Math.round(g)} ${unitOf(p)}` : (p.better === 'down' ? `−${fmtD(g)}` : `+${fmtD(g)}`);
-  const stepOf = (p: Pr) => p.type === 'kg' ? (lb ? 5 / LB : 2.5) : p.type === 'reps' ? 1 : ((p.hist[p.hist.length - 1] ?? 0) > 1800 ? 30 : 5);
+    p.type === 'kg' ? `+${fmtW(p, g)} ${unitOf(p)}` : p.type === 'reps' ? `+${Math.round(g)} ${unitOf(p)}` : (p.better === 'down' ? `−${fmtD(g)}` : `+${fmtD(g)}`);
+  const stepOf = (p: Pr) => p.type === 'kg' ? (fixedKg(p) ? 2 : lb ? 5 / LB : 2.5) : p.type === 'reps' ? 1 : ((p.hist[p.hist.length - 1] ?? 0) > 1800 ? 30 : 5);
   /** Parses what the user typed into the value field; weights come back in kg. */
   const parse = (p: Pr, raw: string): number | null => {
     const t = String(raw).trim().replace(',', '.');
@@ -42,13 +47,47 @@ export function makeFormat(lb: boolean) {
     }
     const n = Number(t);
     if (isNaN(n)) return null;
-    return p.type === 'kg' && lb ? n / LB : n;
+    return inLb(p) ? n / LB : n;
   };
-  /** True when two kg values print the same in the current unit (so lb rounding never fakes a PR). */
-  const sameShown = (a: number, b: number) => lb && Math.abs(Math.round(a * LB) - Math.round(b * LB)) < 1;
-  /** A load you can build on the bar: nearest 2.5 kg, or nearest 5 lb. */
-  const plate = (kg: number) => lb ? String(Math.round(kg * LB / 5) * 5) : fmtKg(Math.round(kg / 2.5) * 2.5);
-  return { wu, fmtD, val, unitOf, gain, gainTxt, stepOf, parse, sameShown, plate };
+  /** True when two kg values print the same in pounds (so lb rounding never fakes a PR). */
+  const sameShown = (p: Measured, a: number, b: number) => inLb(p) && Math.abs(Math.round(a * LB) - Math.round(b * LB)) < 1;
+  return { fmtD, val, unitOf, gain, gainTxt, stepOf, parse, sameShown };
+}
+
+export type BarSize = 'big' | 'small';
+
+/** Bumpers by bar unit (the heaviest can repeat, the rest one each per side); change plates are kilos, one of each. */
+const PLATES = { lb: [45, 35, 25, 15, 10], kg: [20, 15, 10, 5] };
+const SMALL_KG = [2.5, 2, 1.5, 1, 0.5];
+/** Each extra plate on a side costs as much as being this many kg off: a box loads fewer plates over hitting it exactly. */
+const PLATE_COST = 0.3;
+
+const subsets = <T,>(xs: T[]) => Array.from({ length: 1 << xs.length }, (_, m) => xs.filter((_, i) => m & (1 << i)));
+
+export interface BarLoad { totalKg: number; bar: string; big: string[]; small: string[] }
+
+/** How to load a bar for a target weight: bumpers in the bar's unit plus kilo change plates, close to the target with few plates. */
+export function barLoad(targetKg: number, lb: boolean, size: BarSize): BarLoad {
+  const unitKg = lb ? 1 / LB : 1;
+  const barKg = (lb ? (size === 'big' ? 45 : 35) : (size === 'big' ? 20 : 15)) * unitKg;
+  const side = Math.max(0, (targetKg - barKg) / 2);
+  const [top, ...rest] = PLATES[lb ? 'lb' : 'kg'];
+  const smalls = subsets(SMALL_KG).map(xs => ({ xs, kg: xs.reduce((a, x) => a + x, 0) }));
+  let best = { big: [] as number[], small: [] as number[], kg: 0, score: side };
+  for (let n = 0; n <= Math.floor(side / (top * unitKg)) + 1; n++) {
+    for (const mid of subsets(rest)) {
+      const big = [...Array(n).fill(top), ...mid];
+      const bigKg = big.reduce((a, x) => a + x * unitKg, 0);
+      if (bigKg > side + 2) continue;
+      for (const sm of smalls) {
+        const kg = bigKg + sm.kg;
+        const score = Math.abs(side - kg) + PLATE_COST * (big.length + sm.xs.length);
+        if (score < best.score - 0.001) best = { big, small: sm.xs, kg, score };
+      }
+    }
+  }
+  const n = (x: number) => String(x).replace('.', ',');
+  return { totalKg: barKg + 2 * best.kg, bar: lb ? `${size === 'big' ? 45 : 35} lb` : `${size === 'big' ? 20 : 15} kg`, big: best.big.map(n), small: best.small.map(n) };
 }
 
 export type Format = ReturnType<typeof makeFormat>;

@@ -14,6 +14,7 @@ export interface Pr {
   name: string;
   type: PrType;
   better?: 'up' | 'down';
+  /** Rep label ("rondas"); on a weight, 'kg' means kettlebell/dumbbell, always shown in kilos. */
   unitLabel?: string;
   /** Last five main-scheme values, oldest first — drives the mini chart. */
   hist: number[];
@@ -63,6 +64,8 @@ export interface AppData {
   done: boolean[];
   weekStart: string;
   units: Units;
+  /** Which bar the percentage calculator loads: 45 lb / 20 kg, or 35 lb / 15 kg. */
+  bar: 'big' | 'small';
   prs: Pr[];
   skills: Skill[];
   members: Member[];
@@ -154,7 +157,8 @@ export function seedData(weekStart: string): AppData {
     name: '', goals: [], freq: 4,
     done: [false, false, false, false, false, false, false],
     weekStart,
-    units: 'kg',
+    units: 'lb',
+    bar: 'big',
     prs: CATALOG_PRS,
     skills: CATALOG_SKILLS,
     members: [],

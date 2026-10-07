@@ -7,7 +7,8 @@ import { useCloud } from '../cloud';
 
 const SCHEMES = ['1RM', '3RM', '5RM', '10RM'];
 const MODES = ['RX', 'Escalado'];
-const NEW_TYPES: [PrType, string][] = [['kg', 'Peso'], ['time', 'Tiempo'], ['reps', 'Reps']];
+type NewType = PrType | 'kb';
+const NEW_TYPES: [NewType, string][] = [['kg', 'Barra'], ['kb', 'KB / mancuerna'], ['time', 'Tiempo'], ['reps', 'Reps']];
 
 export function RecordSheet() {
   const { data, set, fmt, sheet, closeSheet, flash } = useStore();
@@ -22,7 +23,7 @@ export function RecordSheet() {
   const [draftText, setDraftText] = useState<string | null>(null);
   const [showNewMov, setShowNewMov] = useState(false);
   const [newMovName, setNewMovName] = useState('');
-  const [newMovType, setNewMovType] = useState<PrType>('kg');
+  const [newMovType, setNewMovType] = useState<NewType>('kg');
   const [scheme, setScheme] = useState('1RM');
   const [dateISO, setDateISO] = useState(todayISO());
   const [mode, setMode] = useState('RX');
@@ -59,7 +60,7 @@ export function RecordSheet() {
   const schemeKey = isWeight ? scheme : null;
   const best = bestOf(selP, schemeKey);
   const g0 = best == null ? 1 : fmt.gain(selP, best, draft);
-  const g = best != null && isWeight && fmt.sameShown(best, draft) ? 0 : g0;
+  const g = best != null && isWeight && fmt.sameShown(selP, best, draft) ? 0 : g0;
   const unit = fmt.unitOf(selP);
   const sheetDiscLabel = discOf(sheetDisc).label;
   const dateLabel = dateISO === todayISO() ? 'Hoy' : dateISO === yesterdayISO() ? 'Ayer' : shortDate(dateISO);
@@ -80,9 +81,10 @@ export function RecordSheet() {
     const name = newMovName.trim();
     if (!name) return;
     const id = 'u' + Date.now();
-    const type = newMovType;
-    set(d => ({ prs: [...d.prs, { id, disc: sheetDisc, name, type, better: type === 'time' ? 'down' : undefined, hist: [], log: [], date: '—' }] }));
-    setSel(id); setDraft(type === 'kg' ? 40 : type === 'time' ? 300 : 10); setDraftText(null); setShowNewMov(false); setNewMovName('');
+    const kb = newMovType === 'kb';
+    const type: PrType = kb ? 'kg' : newMovType;
+    set(d => ({ prs: [...d.prs, { id, disc: sheetDisc, name, type, better: type === 'time' ? 'down' : undefined, unitLabel: kb ? 'kg' : undefined, hist: [], log: [], date: '—' }] }));
+    setSel(id); setDraft(kb ? 16 : type === 'kg' ? 40 : type === 'time' ? 300 : 10); setDraftText(null); setShowNewMov(false); setNewMovName('');
   };
 
   const step = fmt.stepOf(selP);
