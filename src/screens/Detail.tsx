@@ -1,7 +1,7 @@
 import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
 import { discOf, type Pr } from '../data';
-import { barLoad, bestOf, entriesOf, fixedKg, logOf, mainSchemeOf, oneRepMaxOf, withLog } from '../format';
+import { barLoad, bestOf, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
 import { pillStyle, useStore } from '../store';
 
 const PCTS = [50, 60, 65, 70, 75, 80, 85, 90, 95];
@@ -15,8 +15,9 @@ export function Detail() {
   const d = discOf(p.disc);
   const log = logOf(p);
   const main = mainSchemeOf(p);
-  const best = bestOf(p, main);
-  const mainEntries = entriesOf(p, main);
+  const scaled = recordIsScaled(p, main);
+  const best = bestOf(p, main, scaled);
+  const mainEntries = entriesOf(p, main, scaled);
   const first = mainEntries[0];
   const delta = best != null && first ? fmt.gain(p, first.v, best) : 0;
   const mainLog = mainEntries.slice(-6);
@@ -55,7 +56,7 @@ export function Detail() {
       <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 4, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', width: 140, height: 140, borderRadius: '50%', background: 'var(--color-accent-2)', right: -40, bottom: -60 }} />
         <span style={{ fontSize: 14, color: 'var(--color-neutral-300)', position: 'relative' }}>
-          {p.type === 'kg' ? `Mejor ${main}` : p.better === 'down' ? 'Mejor tiempo' : 'Mejor marca'}
+          {p.type === 'kg' ? `Mejor ${main}` : p.better === 'down' ? 'Mejor tiempo' : 'Mejor marca'}{scaled ? ' · escalado' : ' · RX'}
         </span>
         <span style={{ fontFamily: 'var(--font-heading)', fontSize: 56, lineHeight: 1, position: 'relative' }}>
           {best == null ? '—' : fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 18, fontWeight: 600, marginLeft: 6 }}>{unit}</span>
@@ -117,7 +118,7 @@ export function Detail() {
         {log.map((e, at) => ({ e, at })).reverse().map(({ e, at }) => {
           const scaled = e.mode === 'Escalado';
           const tags = [
-            ...(e.v === bestOf(p, e.scheme) ? [{ label: 'Récord', bg: 'var(--color-accent-2-700)', fg: 'var(--color-bg)' }] : []),
+            ...(e.v === bestOf(p, e.scheme, isScaled(e)) ? [{ label: 'Récord', bg: 'var(--color-accent-2-700)', fg: 'var(--color-bg)' }] : []),
             ...(e.scheme ? [{ label: e.scheme, bg: 'var(--color-bg)', fg: 'var(--color-text)' }] : []),
             { label: e.mode || 'RX', bg: scaled ? 'var(--color-accent-200)' : 'var(--color-bg)', fg: scaled ? 'var(--color-accent-800)' : 'var(--color-text)' }
           ];

@@ -58,7 +58,9 @@ export function RecordSheet() {
 
   const isWeight = selP.type === 'kg';
   const schemeKey = isWeight ? scheme : null;
-  const best = bestOf(selP, schemeKey);
+  const scaled = mode === 'Escalado';
+  const best = bestOf(selP, schemeKey, scaled);
+  const rec = scaled ? 'tu mejor escalado' : 'tu récord';
   const g0 = best == null ? 1 : fmt.gain(selP, best, draft);
   const g = best != null && isWeight && fmt.sameShown(selP, best, draft) ? 0 : g0;
   const unit = fmt.unitOf(selP);
@@ -66,10 +68,10 @@ export function RecordSheet() {
   const dateLabel = dateISO === todayISO() ? 'Hoy' : dateISO === yesterdayISO() ? 'Ayer' : shortDate(dateISO);
 
   const hint = best == null
-    ? `¡Primer registro${schemeKey ? ' de ' + schemeKey : ''}!`
+    ? `¡Primer registro${schemeKey ? ' de ' + schemeKey : ''}${scaled ? ' escalado' : ''}!`
     : g > 0.01
-      ? (selP.better === 'down' ? `¡${fmt.fmtD(g)} más rápido que tu récord!` : `¡${fmt.gainTxt(selP, g)} sobre tu récord!`)
-      : g < -0.01 ? `Récord actual: ${fmt.val(selP, best)} ${unit}` : 'Igual a tu récord';
+      ? (selP.better === 'down' ? `¡${fmt.fmtD(g)} más rápido que ${rec}!` : `¡${fmt.gainTxt(selP, g)} sobre ${rec}!`)
+      : g < -0.01 ? `${scaled ? 'Mejor escalado' : 'Récord'} actual: ${fmt.val(selP, best)} ${unit}` : `Igual a ${rec}`;
 
   const chooseDisc = (id: DiscId) => {
     setSheetDisc(id);
@@ -89,7 +91,9 @@ export function RecordSheet() {
 
   const step = fmt.stepOf(selP);
   const save = () => {
-    const isPR = g > 0.01;
+    const better = g > 0.01;
+    // Only RX records count as records: they go to the group. A better scaled attempt is celebrated here, not posted.
+    const isPR = better && !scaled;
     const v = Math.round(draft * 10) / 10;
     const entry = { v, date: shortDate(dateISO), iso: dateISO, scheme: schemeKey, mode, note: note.trim() };
     // Logging a mark means you trained that day.
@@ -99,16 +103,14 @@ export function RecordSheet() {
       done: day >= 0 ? d.done.map((x, i) => x || i === day) : d.done,
       feed: isPR ? [{ id: Date.now(), who: 'me', kind: 'pr' as const, disc: selP.disc, what: selP.name, type: selP.type, unitLabel: selP.unitLabel, value: v, ago: 'Ahora', at: Date.now(), cheers: 0, cheered: false }, ...d.feed] : d.feed
     }));
-    // Records also go to the shared group, when there is one.
     if (isPR) cloud.post({ kind: 'pr', disc: selP.disc, what: selP.name, type: selP.type, unit_label: selP.unitLabel ?? null, value: v });
     closeSheet();
     setDraftText(null);
+    const label = `${selP.name}${schemeKey && (best == null || schemeKey !== '1RM') ? ' ' + schemeKey : ''}`;
     flash(
-      isPR ? '¡Nuevo récord!' : 'Guardado',
-      isPR
-        ? (best == null
-          ? `${selP.name}${schemeKey ? ' ' + schemeKey : ''}: ${fmt.val(selP, v)} ${unit}. ¡Primera marca!`
-          : `${selP.name}${schemeKey && schemeKey !== '1RM' ? ' ' + schemeKey : ''}: ${fmt.gainTxt(selP, g)}. ¡Qué bárbaro!`)
+      isPR ? '¡Nuevo récord!' : better ? '¡Mejor escalado!' : 'Guardado',
+      better
+        ? (best == null ? `${label}: ${fmt.val(selP, v)} ${unit}. ¡Primera marca${scaled ? ' escalada' : ''}!` : `${label}: ${fmt.gainTxt(selP, g)}. ${isPR ? '¡Qué bárbaro!' : 'Vas camino al RX.'}`)
         : `${selP.name}: ${fmt.val(selP, draft)} ${unit}. Constancia es avance.`
     );
   };

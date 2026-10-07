@@ -106,8 +106,11 @@ export function logOf(p: Pr): LogEntry[] {
   }));
 }
 
-export function bestOf(p: Pr, scheme: string | null): number | null {
-  const vs = logOf(p).filter(e => (e.scheme || null) === (scheme || null)).map(e => e.v);
+export const isScaled = (e: LogEntry) => e.mode === 'Escalado';
+
+/** Best of one scheme, RX and scaled kept apart: a scaled Fran never beats an RX one. */
+export function bestOf(p: Pr, scheme: string | null, scaled = false): number | null {
+  const vs = entriesOf(p, scheme, scaled).map(e => e.v);
   if (!vs.length) return null;
   return p.better === 'down' ? Math.min(...vs) : Math.max(...vs);
 }
@@ -129,7 +132,7 @@ export function mainSchemeOf(p: Pr): string | null {
 /** The 1RM that percentages are worked from: the real one, or else estimated (Epley) from the best 3RM/5RM/10RM. */
 export function oneRepMaxOf(p: Pr): { kg: number; estimated: boolean } | null {
   if (p.type !== 'kg') return null;
-  const real = bestOf(p, '1RM');
+  const real = bestOf(p, '1RM') ?? bestOf(p, '1RM', true);
   if (real != null) return { kg: real, estimated: false };
   const est = logOf(p).map(e => { const n = parseInt(e.scheme ?? '', 10); return n > 1 ? e.v * (1 + n / 30) : 0; });
   const kg = Math.max(0, ...est);
@@ -137,7 +140,11 @@ export function oneRepMaxOf(p: Pr): { kg: number; estimated: boolean } | null {
 }
 
 /** Entries of one scheme, in the order they were logged. */
-export const entriesOf = (p: Pr, scheme: string | null) => logOf(p).filter(e => (e.scheme || null) === (scheme || null));
+export const entriesOf = (p: Pr, scheme: string | null, scaled = false) =>
+  logOf(p).filter(e => (e.scheme || null) === (scheme || null) && isScaled(e) === scaled);
+
+/** Which record a mark shows: the RX one, or the scaled one while there are only scaled attempts. */
+export const recordIsScaled = (p: Pr, scheme: string | null) => !entriesOf(p, scheme).length && entriesOf(p, scheme, true).length > 0;
 
 /** Recomputes the derived fields (mini-chart history, last date) after the log changes.
  *  The log is kept in date order, so a mark entered late for an earlier day lands in its place.

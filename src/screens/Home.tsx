@@ -1,6 +1,6 @@
 import { Icon } from '../components/Icon';
 import { discOf } from '../data';
-import { bestOf, entriesOf, initialOf, logOf, longToday, mainSchemeOf, todayIndex } from '../format';
+import { bestOf, entriesOf, initialOf, logOf, longToday, mainSchemeOf, recordIsScaled, todayIndex } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 
 const DAY_L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -69,8 +69,9 @@ export function Home() {
         {visible.map(p => {
           // The card shows the record (same number as the detail), judged on one scheme so dates and values match.
           const scheme = mainSchemeOf(p);
-          const entries = entriesOf(p, scheme);
-          const best = bestOf(p, scheme) ?? 0;
+          const scaled = recordIsScaled(p, scheme);
+          const entries = entriesOf(p, scheme, scaled);
+          const best = bestOf(p, scheme, scaled) ?? 0;
           const recordAt = [...entries].reverse().find(e => e.v === best) ?? entries[entries.length - 1];
           const delta = fmt.gain(p, entries[0].v, best);
           const badge = entries.length === 1 ? 'Primera' : delta > 0 ? fmt.gainTxt(p, delta) : `${entries.length} intentos`;
@@ -84,7 +85,7 @@ export function Home() {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
                 {homeFilter === 'all' && <span className="kicker" style={{ color: disc.color }}>{disc.label}</span>}
                 <span style={{ fontWeight: 600, fontSize: 16 }}>{p.name}</span>
-                <span className="muted-13">Récord{scheme && scheme !== '1RM' ? ` ${scheme}` : ''} · {recordAt.date}</span>
+                <span className="muted-13">Récord{scheme && scheme !== '1RM' ? ` ${scheme}` : ''}{scaled ? ' escalado' : ''} · {recordAt.date}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 76 }}>
                 <span style={{ fontFamily: 'var(--font-heading)', fontSize: 24, lineHeight: 1 }}>{fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, marginLeft: 3 }}>{fmt.unitOf(p)}</span></span>
