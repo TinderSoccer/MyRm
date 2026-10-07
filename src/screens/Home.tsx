@@ -22,7 +22,10 @@ export function Home() {
           <span style={{ fontSize: 14, color: 'var(--color-neutral-700)', fontWeight: 500 }}>{longToday()}</span>
           <h1 className="title" style={{ fontSize: 32 }}>¡Hola, {name || 'atleta'}!</h1>
         </div>
-        <button className="flex-center avatar-btn" onClick={() => set(() => ({ screen: 'w2' }))} aria-label="Tu perfil y ajustes">{initialOf(name, 'A')}</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 'none' }}>
+          <button className="round-btn" onClick={() => set(() => ({ screen: 'rem' }))} aria-label="Recordatorios"><Icon name="bell" size={20} /></button>
+          <button className="flex-center avatar-btn" onClick={() => set(() => ({ screen: 'w2' }))} aria-label="Tu perfil y ajustes">{initialOf(name, 'A')}</button>
+        </div>
       </div>
 
       <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden' }}>

@@ -111,7 +111,7 @@ button { font-family: inherit; }
 /* — tab bar — */
 .tabbar {
   position: absolute; left: 16px; right: 16px; bottom: calc(22px + var(--bottom)); height: 72px; border-radius: 999px;
-  background: var(--color-text); display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
+  background: var(--color-text); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;
   box-shadow: var(--shadow-lg); z-index: 6;
 }
 .tab {

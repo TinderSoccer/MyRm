@@ -3,10 +3,9 @@ import type { Screen } from '../data';
 import { useStore } from '../store';
 
 const TABS: { screen: Screen; label: string; icon: IconName; also?: Screen[] }[] = [
-  { screen: 'home', label: 'Inicio', icon: 'house', also: ['det'] },
+  { screen: 'home', label: 'Inicio', icon: 'house', also: ['det', 'rem'] },
   { screen: 'sk', label: 'Skills', icon: 'zap' },
-  { screen: 'gr', label: 'Grupo', icon: 'users' },
-  { screen: 'rem', label: 'Avisos', icon: 'bell' }
+  { screen: 'gr', label: 'Grupo', icon: 'users' }
 ];
 
 export function TabBar() {
@@ -26,7 +25,6 @@ export function TabBar() {
       {tab(TABS[1])}
       <button className="fab" aria-label="Registrar marca" onClick={() => openSheet(homeFilter !== 'all' ? { disc: homeFilter } : {})}><Icon name="plus" size={28} /></button>
       {tab(TABS[2])}
-      {tab(TABS[3])}
     </nav>
   );
 }

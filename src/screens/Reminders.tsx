@@ -36,6 +36,7 @@ export function Reminders() {
 
   return (
     <div className="screen" data-screen-label="04 Recordatorios">
+      <button className="round-btn" aria-label="Volver a Inicio" onClick={() => set(() => ({ screen: 'home' }))} style={{ alignSelf: 'flex-start' }}><Icon name="chevronLeft" size={20} /></button>
       <div className="screen-head">
         <h1 className="title">Recordatorios</h1>
         <p className="lede">Un empujoncito, nunca un sermón.</p>
