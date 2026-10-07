@@ -1,5 +1,5 @@
 -- MyRm · shared group: profiles, groups, feed, cheers, events and RSVPs.
--- Personal marks, skills and reminders stay on each phone; only what is posted to the group lives here.
+-- Personal marks, skills and reminders are backed up separately (0002_user_data.sql).
 -- Run once in the Supabase SQL editor (or `supabase db push`).
 
 -- ─── tables ────────────────────────────────────────────────────────────────

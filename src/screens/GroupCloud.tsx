@@ -54,7 +54,7 @@ function SignIn() {
 
   return (
     <div className="screen" data-screen-label="06 Grupo · Entrar">
-      <Head title="Mi grupo" lede={pendingJoin ? 'Te invitaron a un grupo del box. Entra con tu correo para sumarte.' : 'Comparte tus récords con tu gente del box, organiza carretes y no te pierdas ningún cumple.'} />
+      <Head title="Mi grupo" lede={pendingJoin ? 'Te invitaron a un grupo del box. Entra con tu correo para sumarte.' : 'Comparte tus récords con tu gente del box, organiza carretes y no te pierdas ningún cumple. Además, tus marcas quedan respaldadas en tu cuenta.'} />
       <div className="dashed">
         {!sentTo ? (
           <>

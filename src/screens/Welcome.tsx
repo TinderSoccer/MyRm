@@ -88,9 +88,16 @@ export function Profile() {
           <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 15 }} />
         </div>
       )}
+      {settings && cloud.enabled && !cloud.userId && (
+        <div className="dashed">
+          <span className="label-600">Respalda tus marcas</span>
+          <p className="note">Hoy viven solo en este teléfono. Entra con tu correo y no las pierdes si cambias de teléfono.</p>
+          <button className="btn btn-primary" onClick={() => set(() => ({ screen: 'gr' }))} style={{ height: 48 }}>Entrar con mi correo</button>
+        </div>
+      )}
       {cloud.userId && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}</span>
+          <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}</span>
           <button className="btn btn-secondary" onClick={() => cloud.signOut()} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
         </div>
       )}

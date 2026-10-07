@@ -2,7 +2,7 @@
 
 Sin Supabase configurado, MyRm funciona entero en el teléfono: el grupo es local. Con estas variables, la pestaña **Grupo** pasa a ser compartida: login por correo, grupo con link de invitación, feed de logros con felicitaciones, eventos con "Voy / No voy" y cumpleaños desde el perfil de cada uno.
 
-Las marcas, skills y recordatorios **siguen en cada teléfono**. Solo se sube lo que se publica en el grupo.
+Al entrar con tu correo, tus marcas, skills, recordatorios y ajustes **se respaldan en tu cuenta**: si cambias de teléfono, entras con el mismo correo y aparecen. Sin entrar, todo sigue funcionando solo en el teléfono.
 
 ## 1. Crear el proyecto
 
@@ -16,9 +16,10 @@ Para probar en local, copia `.env.example` a `.env.local` y llénalo.
 
 ## 2. Crear las tablas
 
-Supabase → *SQL Editor* → pega y ejecuta [`supabase/migrations/0001_group.sql`](supabase/migrations/0001_group.sql).
+Supabase → *SQL Editor* → pega y ejecuta, en orden:
 
-Crea perfiles, grupos, miembros, feed, felicitaciones, eventos y asistencia, con reglas (RLS) para que cada persona vea solo su grupo y solo pueda escribir a su nombre.
+1. [`supabase/migrations/0001_group.sql`](supabase/migrations/0001_group.sql): perfiles, grupos, miembros, feed, felicitaciones, eventos y asistencia, con reglas (RLS) para que cada persona vea solo su grupo y solo pueda escribir a su nombre.
+2. [`supabase/migrations/0002_user_data.sql`](supabase/migrations/0002_user_data.sql): el respaldo personal de marcas y ajustes. Solo su dueño lo puede leer.
 
 ## 3. Login por correo
 

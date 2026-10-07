@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { DiscId, EventKind, PrType } from './data';
 import { useStore } from './store';
+import { canon, mergePersonal, personalOf, type Personal } from './sync';
 
 // The shared group lives in Supabase. Without these variables the app keeps working fully on the phone, as before.
 const URL_ = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,6 +11,9 @@ const sb: SupabaseClient | null = URL_ && KEY_ ? createClient(URL_, KEY_) : null
 
 const JOIN_KEY = 'myrm.join';
 const REFRESH_MS = 60_000;
+/** Set once a phone has joined its marks with the account's; from then on the newest copy wins. */
+const SYNCED_KEY = 'myrm.synced.';
+const PUSH_DELAY_MS = 2000;
 
 export interface CloudGroup { id: string; name: string; invite_code: string; created_by: string }
 export interface CloudMember { id: string; name: string; birthday: string | null }
@@ -37,6 +41,8 @@ interface Cloud {
   events: CloudEvent[];
   /** An invite code from a link, waiting for the user to sign in. */
   pendingJoin: string | null;
+  /** Marks and settings are saved to the account (signed in and the first sync went through). */
+  backedUp: boolean;
   sendCode: (email: string) => Promise<string | null>;
   verifyCode: (email: string, code: string) => Promise<string | null>;
   signOut: () => Promise<void>;
@@ -66,7 +72,7 @@ function explain(err: { message?: string } | null): string | null {
 }
 
 export function CloudProvider({ children }: { children: ReactNode }) {
-  const { data } = useStore();
+  const { data, set } = useStore();
   const [ready, setReady] = useState(!sb);
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
@@ -138,6 +144,58 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     })();
   }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ─── Personal backup: marks, skills and settings follow the account ───
+  const [backedUp, setBackedUp] = useState(false);
+  const mine = useMemo(() => canon(personalOf(data)), [data]);
+  const latestMine = useRef(mine);
+  latestMine.current = mine;
+  const sent = useRef<string | null>(null);     // last copy the server has (or that came from it)
+  const remoteAt = useRef<string | null>(null);  // updated_at of that copy
+
+  const push = useCallback(async (json: string) => {
+    if (!sb || !userId) return;
+    const { data: row, error } = await sb.from('user_data').upsert({ user_id: userId, data: JSON.parse(json), updated_at: new Date().toISOString() }).select('updated_at').single();
+    if (!error) { sent.current = json; remoteAt.current = row.updated_at; setBackedUp(true); }
+  }, [userId]);
+
+  const pull = useCallback(async () => {
+    if (!sb || !userId) return;
+    const { data: row, error } = await sb.from('user_data').select('data, updated_at').eq('user_id', userId).maybeSingle();
+    if (error) return; // table not created yet, or offline: the phone keeps working on its own
+    const local = latestMine.current;
+    const firstTime = (() => { try { return !localStorage.getItem(SYNCED_KEY + userId); } catch { return true; } })();
+    if (!row) { await push(local); }
+    else if (firstTime) {
+      const merged = canon(mergePersonal(JSON.parse(local) as Personal, row.data as Personal));
+      set(() => JSON.parse(merged));
+      await push(merged);
+    } else if (local !== sent.current) {
+      await push(local);  // unsent changes on this phone are the newest
+    } else if (row.updated_at !== remoteAt.current) {
+      const json = canon(row.data);
+      sent.current = json; remoteAt.current = row.updated_at;
+      set(() => row.data as Personal);  // logged from another phone
+      setBackedUp(true);
+    } else setBackedUp(true);
+    try { localStorage.setItem(SYNCED_KEY + userId, '1'); } catch { /* private mode */ }
+  }, [userId, push, set]);
+
+  useEffect(() => {
+    sent.current = null; remoteAt.current = null; setBackedUp(false);
+    pull();
+    if (!sb || !userId) return;
+    const onVis = () => { if (document.visibilityState === 'visible') pull(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Every change goes up shortly after it settles.
+  useEffect(() => {
+    if (!backedUp || mine === sent.current) return;
+    const t = window.setTimeout(() => push(mine), PUSH_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [mine, backedUp, push]);
+
   // Stay fresh while open: on return to the app and once a minute.
   useEffect(() => {
     if (!sb || !userId) return;
@@ -148,7 +206,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId, refresh]);
 
   const value = useMemo<Cloud>(() => ({
-    enabled: !!sb, ready, userId, email, group, members, feed, events, pendingJoin,
+    enabled: !!sb, ready, userId, email, group, members, feed, events, pendingJoin, backedUp,
     sendCode: async addr => {
       if (!sb) return null;
       const { error } = await sb.auth.signInWithOtp({ email: addr, options: { emailRedirectTo: location.origin + location.pathname } });
@@ -219,7 +277,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       sb.from('profiles').upsert({ id: userId, name: name.trim(), birthday, updated_at: new Date().toISOString() }).then(() => refresh());
     },
     inviteLink: () => group ? `${location.origin}${location.pathname}?join=${group.invite_code}` : ''
-  }), [ready, userId, email, group, members, feed, events, pendingJoin, refresh]);
+  }), [ready, userId, email, group, members, feed, events, pendingJoin, backedUp, refresh]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
