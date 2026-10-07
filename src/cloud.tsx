@@ -55,6 +55,13 @@ interface Cloud {
   backedUp: boolean;
   sendCode: (email: string) => Promise<string | null>;
   verifyCode: (email: string, code: string) => Promise<string | null>;
+  signInPassword: (email: string, password: string) => Promise<string | null>;
+  /** Signed in but without a password yet (first time), or after entering with a code because it was forgotten. */
+  needsPassword: boolean;
+  setPassword: (password: string) => Promise<string | null>;
+  /** From Profile: ask for a new password now (`false` cancels). */
+  changePassword: (on: boolean) => void;
+  hasPassword: boolean;
   signOut: () => Promise<void>;
   createGroup: (name: string) => Promise<string | null>;
   joinGroup: (code: string) => Promise<string | null>;
@@ -79,6 +86,9 @@ function explain(err: { message?: string } | null): string | null {
   if (!err) return null;
   const m = err.message || '';
   if (/invalid invite code/i.test(m)) return 'Ese link de invitación no existe o expiró. Pide uno nuevo.';
+  if (/invalid login credentials/i.test(m)) return 'Correo o clave incorrectos. Si es tu primera vez o no te acuerdas, entra con código.';
+  if (/should be different/i.test(m)) return 'La clave nueva tiene que ser distinta a la anterior.';
+  if (/password/i.test(m) && /least|short|weak/i.test(m)) return 'La clave es muy corta o muy fácil. Usa al menos 8 caracteres.';
   if (/token has expired|invalid/i.test(m)) return 'El código no es válido o ya venció. Pide uno nuevo.';
   if (/rate limit|security purposes/i.test(m)) return 'Pediste muchos códigos seguidos. Espera un minuto y vuelve a intentar.';
   if (/fetch|network/i.test(m)) return 'Sin conexión. Revisa tu internet e intenta de nuevo.';
@@ -90,6 +100,9 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(!sb);
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  // Supabase doesn't say whether a user has a password, so the app marks it in the user's metadata when one is set.
+  const [hasPassword, setHasPassword] = useState(false);
+  const [wantsPassword, setWantsPassword] = useState(false);
   const [group, setGroup] = useState<CloudGroup | null>(null);
   const [members, setMembers] = useState<CloudMember[]>([]);
   const [feed, setFeed] = useState<CloudFeedItem[]>([]);
@@ -113,9 +126,11 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!sb) return;
     sb.auth.getSession().then(({ data: s }) => {
-      setUserId(s.session?.user.id ?? null); setEmail(s.session?.user.email ?? null); setReady(true);
+      setUserId(s.session?.user.id ?? null); setEmail(s.session?.user.email ?? null); setHasPassword(!!s.session?.user.user_metadata?.has_password); setReady(true);
     });
-    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => { setUserId(s?.user.id ?? null); setEmail(s?.user.email ?? null); });
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => {
+      setUserId(s?.user.id ?? null); setEmail(s?.user.email ?? null); setHasPassword(!!s?.user.user_metadata?.has_password);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
 
@@ -228,7 +243,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId, refresh]);
 
   const value = useMemo<Cloud>(() => ({
-    enabled: !!sb, ready, userId, email, group, members, feed, events, wod, wodBoard, pendingJoin, backedUp,
+    enabled: !!sb, ready, userId, email, hasPassword, needsPassword: !!userId && (wantsPassword || !hasPassword), group, members, feed, events, wod, wodBoard, pendingJoin, backedUp,
     sendCode: async addr => {
       if (!sb) return null;
       const { error } = await sb.auth.signInWithOtp({ email: addr, options: { emailRedirectTo: location.origin + location.pathname } });
@@ -237,9 +252,23 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     verifyCode: async (addr, code) => {
       if (!sb) return null;
       const { error } = await sb.auth.verifyOtp({ email: addr, token: code.trim(), type: 'email' });
+      // Entering with a code means it's the first time or the password was forgotten: either way, set one now.
+      if (!error) setWantsPassword(true);
       return explain(error);
     },
-    signOut: async () => { await sb?.auth.signOut(); },
+    signInPassword: async (addr, password) => {
+      if (!sb) return null;
+      const { error } = await sb.auth.signInWithPassword({ email: addr, password });
+      return explain(error);
+    },
+    setPassword: async password => {
+      if (!sb) return null;
+      const { error } = await sb.auth.updateUser({ password, data: { has_password: true } });
+      if (!error) { setHasPassword(true); setWantsPassword(false); }
+      return explain(error);
+    },
+    changePassword: on => setWantsPassword(on),
+    signOut: async () => { setWantsPassword(false); await sb?.auth.signOut(); },
     createGroup: async name => {
       if (!sb) return null;
       const { error } = await sb.rpc('create_group', { group_name: name });
@@ -322,7 +351,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       sb.from('wod_scores').delete().eq('wod_id', wod.id).eq('user_id', userId).then(() => refresh());
     },
     inviteLink: () => group ? `${location.origin}${location.pathname}?join=${group.invite_code}` : ''
-  }), [ready, userId, email, group, members, feed, events, wod, wodBoard, pendingJoin, backedUp, refresh]);
+  }), [ready, userId, email, hasPassword, wantsPassword, group, members, feed, events, wod, wodBoard, pendingJoin, backedUp, refresh]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

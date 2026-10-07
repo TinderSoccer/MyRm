@@ -96,7 +96,9 @@ export function Profile() {
       )}
       {cloud.userId && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}</span>
+          <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}<br />
+            <button className="btn btn-ghost" onClick={() => cloud.changePassword(true)} style={{ minHeight: 44, padding: 0 }}>Cambiar mi clave</button>
+          </span>
           <button className="btn btn-secondary" onClick={signOut} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
         </div>
       )}

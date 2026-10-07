@@ -41,7 +41,7 @@ Supabase → *Authentication*:
 
 ## Cómo se usa
 
-1. Al abrir la app, después de la bienvenida, entras con tu correo (código de 6 dígitos). Luego, en **Grupo**, creas el grupo del box.
+1. Al abrir la app, después de la bienvenida, entras. La primera vez (o si se te olvidó la clave) con un código de 6 dígitos que llega al correo, y enseguida creas tu clave; desde ahí, con correo y clave. Luego, en **Grupo**, creas el grupo del box.
 2. **Invitar a tu gente** comparte un link `…/?join=código`. Quien lo abre pasa por la bienvenida, entra con su correo y queda dentro.
 3. Los récords nuevos y las skills logradas se publican solos en el grupo.
 4. Tu cumpleaños se pone en **Perfil** (toca tu inicial en Inicio).
