@@ -28,7 +28,9 @@ Boards often hold several parts (warm-up, skill, strength, WOD/metcon). Return t
 If the board only has a strength piece (e.g. 5x5 back squat, find a 1RM), that is the workout.
 Copy what is written: keep numbers, rep schemes (21-15-9), weights and units (95/65 lb, 24/16 kg), distances and calories exactly, in the board's language.
 Write movement names as CrossFitters write them. Put each line of the board on its own line. Mark an unreadable word with (?) instead of guessing.
-Do not add coaching notes, scaling suggestions or anything that is not on the board.`;
+Do not add coaching notes, scaling suggestions or anything that is not on the board.
+Set found to false only when the photo has no workout at all (it isn't a whiteboard or a written workout, or nothing on it can be read).
+Glare, angles, messy handwriting or several sections are not reasons to give up: transcribe what you can read and mark the rest with (?).`;
 
 type Result = { found: boolean; title: string; description: string; score_type: 'time' | 'reps' | 'kg' };
 
@@ -54,12 +56,13 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const client = new Anthropic();
-  try {
+  // One reading of the photo at a given effort, logged so a miss can be explained from Vercel's logs
+  // (never the image or the user's token).
+  const read = async (effort: 'low' | 'medium') => {
     const response = await client.beta.messages.create({
       model: 'claude-opus-5-5',
       max_tokens: 8000,
-      // Transcription is simple work: low effort keeps it quick and cheap.
-      output_config: { effort: 'low', format: { type: 'json_schema', schema: SCHEMA } },
+      output_config: { effort, format: { type: 'json_schema', schema: SCHEMA } },
       // If a safety classifier declines, Anthropic re-runs it on its recommended model instead of failing.
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
@@ -72,19 +75,24 @@ export async function POST(request: Request): Promise<Response> {
         ]
       }]
     });
-
-    // Why a photo didn't turn into a WOD shows up in Vercel's logs (never the image or the user's token).
-    const text0 = response.content.find(b => b.type === 'text');
-    console.log('wod-photo', JSON.stringify({
-      stop: response.stop_reason, model: response.model, refusal: response.stop_details ?? null,
-      usage: { in: response.usage.input_tokens, out: response.usage.output_tokens },
-      answer: text0 && text0.type === 'text' ? text0.text.slice(0, 300) : null
-    }));
-    if (response.stop_reason === 'refusal') return json({ error: 'No pudimos leer esta foto. Escribe el WOD a mano.' }, 422);
-    if (response.stop_reason === 'max_tokens') return json({ error: 'La pizarra traía demasiado. Prueba con una foto solo del WOD.' }, 422);
     const text = response.content.find(b => b.type === 'text');
-    if (!text || text.type !== 'text') return json({ error: 'No pudimos leer esta foto. Escribe el WOD a mano.' }, 502);
-    const result = JSON.parse(text.text) as Result;
+    const answer = text && text.type === 'text' ? text.text : null;
+    console.log('wod-photo', JSON.stringify({
+      effort, stop: response.stop_reason, model: response.model, refusal: response.stop_details ?? null,
+      usage: { in: response.usage.input_tokens, out: response.usage.output_tokens }, answer: answer?.slice(0, 300) ?? null
+    }));
+    return { stop: response.stop_reason, result: answer && response.stop_reason === 'end_turn' ? JSON.parse(answer) as Result : null };
+  };
+
+  try {
+    // Low effort reads most boards cheaply but sometimes gives up on a readable one (same photo: once "no workout",
+    // once a perfect transcription). A miss gets one more look at medium effort before telling the person.
+    let { stop, result } = await read('low');
+    if (stop === 'end_turn' && result && !result.found) ({ stop, result } = await read('medium'));
+
+    if (stop === 'refusal') return json({ error: 'No pudimos leer esta foto. Escribe el WOD a mano.' }, 422);
+    if (stop === 'max_tokens') return json({ error: 'La pizarra traía demasiado. Prueba con una foto solo del WOD.' }, 422);
+    if (!result) return json({ error: 'No pudimos leer esta foto. Escribe el WOD a mano.' }, 502);
     if (!result.found) return json({ error: 'No encontramos un WOD en la foto. Prueba más de cerca y con luz.' }, 422);
     return json({ title: result.title.slice(0, 80), description: result.description.slice(0, 600), score_type: result.score_type });
   } catch (error) {
