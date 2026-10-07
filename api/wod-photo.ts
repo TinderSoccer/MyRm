@@ -73,6 +73,13 @@ export async function POST(request: Request): Promise<Response> {
       }]
     });
 
+    // Why a photo didn't turn into a WOD shows up in Vercel's logs (never the image or the user's token).
+    const text0 = response.content.find(b => b.type === 'text');
+    console.log('wod-photo', JSON.stringify({
+      stop: response.stop_reason, model: response.model, refusal: response.stop_details ?? null,
+      usage: { in: response.usage.input_tokens, out: response.usage.output_tokens },
+      answer: text0 && text0.type === 'text' ? text0.text.slice(0, 300) : null
+    }));
     if (response.stop_reason === 'refusal') return json({ error: 'No pudimos leer esta foto. Escribe el WOD a mano.' }, 422);
     if (response.stop_reason === 'max_tokens') return json({ error: 'La pizarra traía demasiado. Prueba con una foto solo del WOD.' }, 422);
     const text = response.content.find(b => b.type === 'text');
@@ -81,6 +88,7 @@ export async function POST(request: Request): Promise<Response> {
     if (!result.found) return json({ error: 'No encontramos un WOD en la foto. Prueba más de cerca y con luz.' }, 422);
     return json({ title: result.title.slice(0, 80), description: result.description.slice(0, 600), score_type: result.score_type });
   } catch (error) {
+    console.error('wod-photo failed', error instanceof Anthropic.APIError ? `${error.status} ${error.message}` : String(error));
     if (error instanceof Anthropic.RateLimitError) return json({ error: 'Hay mucha gente leyendo fotos. Prueba en un minuto.' }, 429);
     if (error instanceof Anthropic.BadRequestError) return json({ error: 'La foto no se pudo procesar. Prueba con otra.' }, 400);
     if (error instanceof Anthropic.AuthenticationError) return json({ error: 'La lectura de fotos no está bien configurada en el servidor.' }, 503);

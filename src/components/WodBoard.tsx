@@ -41,7 +41,7 @@ function PostWod() {
     setReading(true); setError(null);
     const out = await cloud.readBoardPhoto(file);
     setReading(false);
-    if (typeof out === 'string') { setError(out); return; }
+    if (typeof out === 'string') { setError(out); flash('No se leyó la foto', out); return; }
     setTitle(out.title); setDescription(out.description); setType(out.score_type); setFromPhoto(true);
   };
   const post = async () => {
