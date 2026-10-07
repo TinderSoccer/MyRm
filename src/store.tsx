@@ -16,7 +16,7 @@ function load(): AppData {
   // Saves from before the flag existed: anyone past the welcome screens has onboarded.
   if (saved && saved.onboarded == null) data.onboarded = data.screen !== 'w1' && data.screen !== 'w2';
   // Screens that need context (or no longer exist, like the old reminders) reopen on Home.
-  if (!['w1', 'w2', 'home', 'sk', 'gr'].includes(data.screen)) data.screen = 'home';
+  if (!['w1', 'w2', 'home', 'sk', 'gr'].includes(data.screen)) data.screen = 'home';  // a timer never resumes after a reload
   // The week strip starts empty every Monday.
   if (data.weekStart !== week) data.done = [false, false, false, false, false, false, false];
   data.weekStart = week;

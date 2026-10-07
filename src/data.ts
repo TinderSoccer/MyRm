@@ -1,6 +1,6 @@
 export type DiscId = 'cf' | 'hx' | 'gap';
 export type PrType = 'kg' | 'time' | 'reps';
-export type Screen = 'w1' | 'w2' | 'home' | 'sk' | 'gr' | 'det';
+export type Screen = 'w1' | 'w2' | 'home' | 'sk' | 'gr' | 'det' | 'tm';
 export type Units = 'kg' | 'lb';
 
 export interface Disc { id: DiscId; label: string; color: string }

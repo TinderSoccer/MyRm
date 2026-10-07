@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { DeleteButton } from './DeleteButton';
 import { Segmented } from './Segmented';
+import { Icon } from './Icon';
+import { openTimerFrom } from '../screens/Timer';
 import type { Pr, PrType } from '../data';
 import { useCloud, type CloudWod, type WodScore } from '../cloud';
 import { joinRounds, logOf, shortDate, splitRounds, withLog } from '../format';
@@ -158,6 +160,9 @@ function Board({ nameOf }: Props) {
       </section>
 
       {editing && mine && form}
+      <button className="btn btn-secondary btn-block" onClick={() => { openTimerFrom('gr'); set(() => ({ screen: 'tm' })); }} style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <Icon name="timer" size={20} />Cronometrar este WOD
+      </button>
       <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
         {mine && !editing && <button className="btn btn-secondary" onClick={() => setEditing(true)} style={{ minHeight: 44 }}>Cambiar mi resultado</button>}
         {mine && <DeleteButton label="Quitar mi resultado" what="tu resultado de hoy" onDelete={() => { cloud.dropScore(); unMark(); setText(''); setExtraText(''); setEditing(true); }} />}

@@ -9,6 +9,7 @@ import { Login, SetPassword } from './screens/Login';
 import { useCloud } from './cloud';
 import { Home } from './screens/Home';
 import { Skills } from './screens/Skills';
+import { Timer } from './screens/Timer';
 import { Profile, Welcome } from './screens/Welcome';
 import { useStore } from './store';
 
@@ -42,7 +43,8 @@ export function App() {
         {s === 'sk' && <Skills />}
         {s === 'gr' && <GroupCloud />}
         {s === 'det' && <Detail />}
-        {!gate && s !== 'w1' && s !== 'w2' && <TabBar />}
+        {s === 'tm' && <Timer />}
+        {!gate && s !== 'w1' && s !== 'w2' && s !== 'tm' && <TabBar />}
         </div>
         <RecordSheet />
         <Toast />

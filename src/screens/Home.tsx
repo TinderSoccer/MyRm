@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Icon, type IconName } from '../components/Icon';
 import { TodayWod } from '../components/TodayWod';
+import { openTimerFrom } from './Timer';
 import { discOf, type Pr } from '../data';
 import { bestOf, bestWord, entriesOf, fixedKg, initialOf, logOf, longToday, mainSchemeOf, recordIsScaled, todayIndex } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
@@ -34,7 +35,10 @@ export function Home() {
           <h1 className="title" style={{ fontSize: 34 }}>¡Hola, {name || 'atleta'}!</h1>
           {data.aim?.trim() && <span className="aim-pill"><Icon name="trophy" size={15} /><span>{data.aim.trim()}</span></span>}
         </div>
-        <button className="flex-center avatar-btn" onClick={() => set(() => ({ screen: 'w2' }))} aria-label="Tu perfil y ajustes">{initialOf(name, 'A')}</button>
+        <div style={{ display: 'flex', gap: 10, flex: 'none' }}>
+          <button className="round-btn" style={{ width: 48, height: 48 }} onClick={() => { openTimerFrom('home'); set(() => ({ screen: 'tm' })); }} aria-label="Cronómetro de WOD"><Icon name="timer" size={22} /></button>
+          <button className="flex-center avatar-btn" onClick={() => set(() => ({ screen: 'w2' }))} aria-label="Tu perfil y ajustes">{initialOf(name, 'A')}</button>
+        </div>
       </header>
 
       {/* Your day: the week and today's WOD belong together. */}
