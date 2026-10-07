@@ -72,9 +72,6 @@ export function Home() {
           const entries = entriesOf(p, scheme);
           const best = bestOf(p, scheme) ?? 0;
           const recordAt = [...entries].reverse().find(e => e.v === best) ?? entries[entries.length - 1];
-          const h = entries.slice(-5).map(e => e.v);
-          const sc = p.better === 'down' ? h.map(v => -v) : h;
-          const min = Math.min(...sc), max = Math.max(...sc);
           const delta = fmt.gain(p, entries[0].v, best);
           const badge = entries.length === 1 ? 'Primera' : delta > 0 ? fmt.gainTxt(p, delta) : `${entries.length} intentos`;
           const disc = discOf(p.disc);
@@ -88,11 +85,6 @@ export function Home() {
                 {homeFilter === 'all' && <span className="kicker" style={{ color: disc.color }}>{disc.label}</span>}
                 <span style={{ fontWeight: 600, fontSize: 16 }}>{p.name}</span>
                 <span className="muted-13">Récord{scheme && scheme !== '1RM' ? ` ${scheme}` : ''} · {recordAt.date}</span>
-              </div>
-              <div aria-hidden="true" style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30 }}>
-                {sc.map((v, i) => (
-                  <span key={i} style={{ width: 6, borderRadius: 999, height: `${max === min ? 60 : 30 + 70 * (v - min) / (max - min)}%`, background: h[i] === best ? 'var(--color-accent)' : 'var(--color-neutral-400)' }} />
-                ))}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 76 }}>
                 <span style={{ fontFamily: 'var(--font-heading)', fontSize: 24, lineHeight: 1 }}>{fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, marginLeft: 3 }}>{fmt.unitOf(p)}</span></span>
