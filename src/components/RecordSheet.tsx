@@ -100,8 +100,7 @@ export function RecordSheet() {
     const day = weekIndexOf(dateISO, data.weekStart);
     set(d => ({
       prs: d.prs.map(x => x.id === selP.id ? withLog(x, [...logOf(x), entry]) : x),
-      done: day >= 0 ? d.done.map((x, i) => x || i === day) : d.done,
-      feed: isPR ? [{ id: Date.now(), who: 'me', kind: 'pr' as const, disc: selP.disc, what: selP.name, type: selP.type, unitLabel: selP.unitLabel, value: v, ago: 'Ahora', at: Date.now(), cheers: 0, cheered: false }, ...d.feed] : d.feed
+      done: day >= 0 ? d.done.map((x, i) => x || i === day) : d.done
     }));
     if (isPR) cloud.post({ kind: 'pr', disc: selP.disc, what: selP.name, type: selP.type, unit_label: selP.unitLabel ?? null, value: v });
     closeSheet();

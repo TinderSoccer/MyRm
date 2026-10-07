@@ -35,8 +35,3 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// Tapping a reminder brings the app forward.
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  e.waitUntil(self.clients.matchAll({ type: 'window' }).then(list => list[0] ? list[0].focus() : self.clients.openWindow('./')));
-});

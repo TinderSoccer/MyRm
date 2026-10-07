@@ -3,7 +3,6 @@ import { DeleteButton } from './DeleteButton';
 import { Icon } from './Icon';
 import type { EventKind } from '../data';
 import { countdown, dayOfMonth, daysUntil, longDate, monthShort, nextBirthdayISO, todayISO } from '../format';
-import { askNotify } from '../reminders';
 import { pillStyle } from '../store';
 
 const KINDS: [EventKind, string][] = [['carrete', 'Carrete'], ['competencia', 'Competencia'], ['otro', 'Otro']];
@@ -79,14 +78,13 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
       onAddBirthday(name.trim(), iso.slice(5));
     }
     reset();
-    askNotify();
   };
 
   return (
     <div className="stack-3">
       <h2 className="section-title">Próximos</h2>
       {items.length === 0 && !adding && (
-        <div className="empty">Cumpleaños, carretes y competencias del box. Agrega el primero y te avisamos el día. {scopeNote}</div>
+        <div className="empty">Cumpleaños, carretes y competencias del box. Agrega el primero. {scopeNote}</div>
       )}
       {visible.map(it => {
         const n = daysUntil(it.iso);

@@ -2,18 +2,14 @@ import { RecordSheet } from './components/RecordSheet';
 import { TabBar } from './components/TabBar';
 import { Toast } from './components/Toast';
 import { Detail } from './screens/Detail';
-import { Group } from './screens/Group';
 import { GroupCloud } from './screens/GroupCloud';
-import { useCloud } from './cloud';
 import { Home } from './screens/Home';
-import { Reminders } from './screens/Reminders';
 import { Skills } from './screens/Skills';
 import { Profile, Welcome } from './screens/Welcome';
 import { useStore } from './store';
 
 export function App() {
   const { data, sheet } = useStore();
-  const cloud = useCloud();
   const s = data.screen;
   return (
     <div className="stage">
@@ -27,9 +23,8 @@ export function App() {
         {s === 'w1' && <Welcome />}
         {s === 'w2' && <Profile />}
         {s === 'home' && <Home />}
-        {s === 'rem' && <Reminders />}
         {s === 'sk' && <Skills />}
-        {s === 'gr' && (cloud.enabled ? <GroupCloud /> : <Group />)}
+        {s === 'gr' && <GroupCloud />}
         {s === 'det' && <Detail />}
         {s !== 'w1' && s !== 'w2' && <TabBar />}
         </div>

@@ -2,16 +2,28 @@ import { useState } from 'react';
 import { DeleteButton } from '../components/DeleteButton';
 import { FeedCard, GroupTabs, MemberCircles, type GroupView } from '../components/GroupParts';
 import { Icon } from '../components/Icon';
-import { Upcoming } from '../components/Upcoming';
+import { Upcoming, type UpBirthday } from '../components/Upcoming';
 import { useCloud } from '../cloud';
 import { MEMBER_COLORS } from '../data';
 import { countdown, timeAgo } from '../format';
 import { useStore } from '../store';
-import { useLocalBirthdays } from './Group';
 
-/** The shared group, backed by Supabase. Same look as the local one; people, feed and events come from the server. */
+/** Birthdays you add by hand (people outside the app); they travel with your account backup. */
+function useLocalBirthdays() {
+  const { data, set, flash } = useStore();
+  const birthdays: UpBirthday[] = data.birthdays.map(b => ({ ...b, canDelete: true }));
+  const addBirthday = (name: string, md: string) => {
+    set(d => ({ birthdays: [...d.birthdays, { id: String(Date.now()), name, md }] }));
+    flash('Cumple guardado', `El de ${name} ya aparece en Próximos.`);
+  };
+  const deleteBirthday = (id: string) => set(d => ({ birthdays: d.birthdays.filter(x => x.id !== id) }));
+  return { birthdays, addBirthday, deleteBirthday };
+}
+
+/** The group, backed by Supabase: people, feed, events and the day's WOD come from the server. */
 export function GroupCloud() {
   const cloud = useCloud();
+  if (!cloud.enabled) return <div className="screen"><Head title="Mi grupo" lede="El grupo necesita conexión con el servidor, y esta versión de la app no la tiene configurada." /></div>;
   if (!cloud.ready) return <div className="screen"><p className="lede">Cargando tu grupo…</p></div>;
   if (!cloud.userId) return <SignIn />;
   if (!cloud.group) return <Setup />;

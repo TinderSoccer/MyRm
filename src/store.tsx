@@ -2,7 +2,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { CATALOG_PRS, CATALOG_SKILLS, DISCS, MERGED_DISCS, seedData, type AppData, type DiscId, type Pr, type Skill } from './data';
 import { logOf } from './format';
 import { makeFormat, weekStartISO, type Format } from './format';
-import { fireDue } from './reminders';
 
 const KEY = 'myrm.v2';
 
@@ -12,10 +11,12 @@ function load(): AppData {
   let saved: Partial<AppData> | null = null;
   try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* private mode or corrupt */ }
   const data = { ...base, ...(saved || {}) };
-  data.outgoing ??= [];
+  // Left over from the phone-only group, reminders and the celebrate switch.
+  for (const k of ['members', 'incoming', 'outgoing', 'feed', 'events', 'reminders', 'celebrate']) delete (data as Record<string, unknown>)[k];
   // Saves from before the flag existed: anyone past the welcome screens has onboarded.
   if (saved && saved.onboarded == null) data.onboarded = data.screen !== 'w1' && data.screen !== 'w2';
-  if (data.screen === 'det') data.screen = 'home';
+  // Screens that need context (or no longer exist, like the old reminders) reopen on Home.
+  if (!['w1', 'w2', 'home', 'sk', 'gr'].includes(data.screen)) data.screen = 'home';
   // The week strip starts empty every Monday.
   if (data.weekStart !== week) data.done = [false, false, false, false, false, false, false];
   data.weekStart = week;
@@ -42,7 +43,6 @@ function withCatalog(data: AppData): AppData {
       ...CATALOG_SKILLS.map(c => { const k = skills.get(c.id); return k && working(k) ? { ...k, disc: c.disc } : c; }),
       ...data.skills.filter(k => !CATALOG_SKILLS.some(c => c.id === k.id) && (k.id.startsWith('k') || working(k))).map(k => ({ ...k, disc: discFix(k.disc) }))
     ],
-    feed: data.feed.map(f => ({ ...f, disc: discFix(f.disc) }))
   };
 }
 
@@ -85,12 +85,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return () => { clearTimeout(t); document.removeEventListener('visibilitychange', onHide); window.removeEventListener('pagehide', save); };
   }, [data]);
 
-  // A clock for things that depend on the time while the app stays open: the Monday reset and due reminders.
+  // The week strip resets on Monday even if the app stays open over the weekend.
   useEffect(() => {
     const tick = () => {
       const week = weekStartISO();
       if (latest.current.weekStart !== week) setData(d => ({ ...d, weekStart: week, done: d.done.map(() => false) }));
-      fireDue(latest.current.reminders, latest.current.events, latest.current.birthdays);
     };
     tick();
     const id = window.setInterval(tick, 30_000);

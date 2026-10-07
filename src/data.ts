@@ -1,6 +1,6 @@
 export type DiscId = 'cf' | 'hx' | 'gap';
 export type PrType = 'kg' | 'time' | 'reps';
-export type Screen = 'w1' | 'w2' | 'home' | 'rem' | 'sk' | 'gr' | 'det';
+export type Screen = 'w1' | 'w2' | 'home' | 'sk' | 'gr' | 'det';
 export type Units = 'kg' | 'lb';
 
 export interface Disc { id: DiscId; label: string; color: string }
@@ -24,34 +24,10 @@ export interface Pr {
 
 /** `tracked`: the user is working on it. Untracked skills are just the catalog offered when adding one. */
 export interface Skill { id: string; disc: DiscId; name: string; stage: number; tracked?: boolean }
-export interface Member { id: string; name: string; color: string }
-export interface Invite { id: string; name: string }
 
-export interface FeedItem {
-  id: number | string;
-  who: string;
-  kind: 'pr' | 'skill';
-  disc: DiscId;
-  what: string;
-  type?: PrType;
-  unitLabel?: string;
-  value?: number;
-  stage?: string;
-  ago: string;
-  /** When it happened (ms). Older items only carry the `ago` label. */
-  at?: number;
-  cheers: number;
-  cheered: boolean;
-}
-
-/** `days` are Mon=0..Sun=6; reminders saved before it existed only carry `sub`. */
 export type EventKind = 'carrete' | 'competencia' | 'otro';
-/** A get-together the user plans for their box crew. Local to this phone until the group has a backend. */
-export interface GroupEvent { id: string; kind: EventKind; title: string; iso: string; time: string; place: string }
 /** `md` is MM-DD: the year doesn't matter for a birthday. */
 export interface Birthday { id: string; name: string; md: string }
-
-export interface Reminder { id: number; title: string; sub: string; time: string; on: boolean; days?: number[] }
 
 export interface AppData {
   screen: Screen;
@@ -68,13 +44,7 @@ export interface AppData {
   bar: 'big' | 'small';
   prs: Pr[];
   skills: Skill[];
-  members: Member[];
-  incoming: Invite[];
-  /** Invites the user wrote down; there is no shared backend yet, so they stay on this phone. */
-  outgoing: Invite[];
-  feed: FeedItem[];
-  reminders: Reminder[];
-  events: GroupEvent[];
+  /** Birthdays added by hand, for people who aren't in the app. */
   birthdays: Birthday[];
 }
 
@@ -161,12 +131,6 @@ export function seedData(weekStart: string): AppData {
     bar: 'big',
     prs: CATALOG_PRS,
     skills: CATALOG_SKILLS,
-    members: [],
-    incoming: [],
-    outgoing: [],
-    feed: [],
-    reminders: [],
-    events: [],
     birthdays: []
   };
 }
