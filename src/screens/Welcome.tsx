@@ -92,6 +92,11 @@ export function Profile() {
         ))}
       </div>
     </div>
+    <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+      <label htmlFor="classtime" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>¿A qué hora entrenas normalmente?</label>
+      <input id="classtime" className="input" type="time" value={data.classTime ?? ''} onChange={e => set(() => ({ classTime: e.target.value }))} style={{ height: 48, width: 150, borderRadius: 999 }} />
+      <span className="muted-13">La usamos para tu check-in y para el WOD de tu clase. Si un día vas a otra hora, la cambias ahí mismo.</span>
+    </div>
     <div style={group} role="group" aria-labelledby="level-l">
       <span id="level-l" style={label}>¿Cómo haces los WODs hoy?</span>
       <Segmented label="¿Cómo haces los WODs hoy?" fit size="lg" value={data.level || 'RX'} onChange={v => set(() => ({ level: v }))} options={[['RX', 'RX'], ['Escalado', 'Escalado']]} />

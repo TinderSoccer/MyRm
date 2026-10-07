@@ -6,7 +6,7 @@ import { openTimerFrom } from '../screens/Timer';
 import type { Pr, PrType } from '../data';
 import { useCloud, type CloudWod, type WodScore } from '../cloud';
 import { joinRounds, logOf, shortDate, splitRounds, withLog } from '../format';
-import { useStore } from '../store';
+import { pillStyle, useStore } from '../store';
 
 const TYPES: [PrType, string][] = [['time', 'Tiempo'], ['reps', 'Rondas o reps'], ['kg', 'Peso']];
 /** What each person will write as their result, and who wins: said in words under the choice. */
@@ -26,15 +26,37 @@ interface Props { nameOf: (id: string) => string }
 /** Today's WOD for the whole group: someone posts it, everyone writes their score, the board ranks RX first like the box whiteboard. */
 export function WodBoard({ nameOf }: Props) {
   const cloud = useCloud();
+  const [adding, setAdding] = useState(false);
   if (!cloud.wodBoard) return <div className="empty">La pizarra todavía no está activada en el servidor del grupo.</div>;
-  // Keyed by WOD so a new day (or a deleted WOD) starts the score form fresh.
-  return cloud.wod ? <Board key={cloud.wod.id} nameOf={nameOf} /> : <WodForm />;
+  if (!cloud.wods.length) return <WodForm />;
+  return (
+    <>
+      {/* Each class can have its own WOD: pick whose board to see, or post your class's. */}
+      <div className="chip-row" role="group" aria-label="Clase">
+        {cloud.wods.map(w => (
+          <button key={w.id} className="pill" aria-pressed={!adding && cloud.wod?.id === w.id} style={pillStyle(!adding && cloud.wod?.id === w.id)}
+            onClick={() => { setAdding(false); cloud.selectClass(w.class_time); }}>
+            {w.class_time ? `${w.class_time.replace(/^0/, '')} · ` : ''}{w.title.length > 18 ? w.title.slice(0, 17) + '…' : w.title}
+          </button>
+        ))}
+        <button className="new-mov hit" aria-expanded={adding} onClick={() => setAdding(a => !a)}>+ Otra clase</button>
+      </div>
+      {adding
+        ? <WodForm onDone={() => setAdding(false)} />
+        // Keyed by WOD so another class (or a deleted WOD) starts the score form fresh.
+        : cloud.wod && <Board key={cloud.wod.id} nameOf={nameOf} />}
+    </>
+  );
 }
 
 /** Posting today's WOD, or (for whoever posted it) fixing it. Can start from a photo of the real whiteboard. */
 function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
   const cloud = useCloud();
   const { flash } = useStore();
+  const myClass = cloud.checkins.find(c => c.user_id === cloud.userId)?.class_time;
+  // The class this WOD is for: yours from today's check-in, else your usual one, else this hour.
+  const { data } = useStore();
+  const [classTime, setClassTime] = useState(() => myClass || data.classTime || `${String(new Date().getHours()).padStart(2, '0')}:00`);
   const [title, setTitle] = useState(edit?.title ?? '');
   const [description, setDescription] = useState(edit?.description ?? '');
   const [type, setType] = useState<PrType>(edit?.score_type ?? 'time');
@@ -57,7 +79,7 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
     if (!title.trim() || busy) return;
     setBusy(true); setError(null);
     const w = { title: title.trim(), description: description.trim(), score_type: type };
-    const err = edit ? await cloud.updateWod(w) : await cloud.postWod(w);
+    const err = edit ? await cloud.updateWod(w) : await cloud.postWod(w, classTime);
     setBusy(false);
     // The board may already have replaced this form (someone posted first), so the message also goes in a toast.
     if (err) { setError(err); flash(edit ? 'No se guardó el cambio' : 'No se subió tu WOD', err); return; }
@@ -66,8 +88,14 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
   };
   return (
     <div className="dashed">
-      <label htmlFor="wod-title" className="label-600">{edit ? 'Corregir el WOD' : 'Nadie ha subido el WOD de hoy'}</label>
-      <p className="note">{edit ? 'Los resultados que ya anotaron se mantienen.' : 'Súbelo tú y el grupo anota sus resultados en la misma pizarra.'}</p>
+      <label htmlFor="wod-title" className="label-600">{edit ? 'Corregir el WOD' : cloud.wods.length ? 'WOD de otra clase' : 'Nadie ha subido el WOD de hoy'}</label>
+      <p className="note">{edit ? 'Los resultados que ya anotaron se mantienen.' : 'Súbelo tú y los de tu clase anotan sus resultados en la misma pizarra.'}</p>
+      {!edit && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, fontSize: 14 }}>
+          ¿De qué clase es?
+          <input className="input" type="time" value={classTime} onChange={e => setClassTime(e.target.value)} style={{ width: 150, height: 44, borderRadius: 999 }} />
+        </label>
+      )}
       <label className="btn btn-secondary" style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: reading ? 'progress' : 'pointer', position: 'relative' }} aria-busy={reading}>
         <Icon name="board" size={20} />{reading ? 'Leyendo la pizarra…' : edit ? 'Leer otra foto' : 'Foto de la pizarra'}
         <input type="file" accept="image/*" capture="environment" disabled={reading} onChange={e => { readPhoto(e.target.files?.[0]); e.target.value = ''; }}
@@ -109,6 +137,7 @@ function Board({ nameOf }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const ranked = rankWod(w);
+  const copyFrom = cloud.otherScores.find(o => o.score_type === w.score_type);
 
   // A benchmark with the same name as one of your marks (Fran, Cindy…) also lands in your history.
   const BOARD_NOTE = 'De la pizarra';
@@ -167,6 +196,18 @@ function Board({ nameOf }: Props) {
   return (
     <div className="stack-3">
       {/* Not scored yet: the action comes first, where the thumb is. */}
+      {/* Already scored this in another of your groups (same kind of score): bring it here in one tap. */}
+      {!mine && copyFrom && (
+        <div className="checkin" style={{ gap: 10 }}>
+          <span style={{ fontWeight: 600 }}>Ya anotaste <strong>{fmt.val(measure, copyFrom.value)}{unit && !(isReps && splitRounds(copyFrom.value)[1]) ? ` ${unit}` : ''}</strong> en {copyFrom.group} ({copyFrom.title}).</span>
+          <button className="btn btn-primary" disabled={busy} onClick={async () => {
+            setBusy(true);
+            const err = await cloud.saveScore({ value: copyFrom.value, scaled: copyFrom.scaled, note: '' });
+            setBusy(false);
+            if (err) flash('No se anotó', err); else { setEditing(false); flash('Resultado anotado', `Lo copiamos de ${copyFrom.group}.`); }
+          }} style={{ minHeight: 48 }}>Agregarlo aquí también</button>
+        </div>
+      )}
       {editing && !mine && form}
 
       {/* The fix form opens above the board: bring it into view instead of leaving it off-screen. */}

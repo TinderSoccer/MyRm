@@ -2,7 +2,7 @@ import type { AppData, LogEntry, Pr, Skill } from './data';
 import { logOf, withLog } from './format';
 
 /** What a person keeps in their account: their marks, skills, settings and hand-added birthdays. Group things already live in the group. */
-const KEYS = ['name', 'goals', 'freq', 'units', 'bar', 'level', 'theme', 'aim', 'prs', 'skills', 'birthdays'] as const;
+const KEYS = ['name', 'goals', 'freq', 'units', 'bar', 'level', 'classTime', 'theme', 'aim', 'prs', 'skills', 'birthdays'] as const;
 export type Personal = Pick<AppData, typeof KEYS[number]>;
 
 export const personalOf = (d: AppData): Personal => Object.fromEntries(KEYS.map(k => [k, d[k]])) as Personal;

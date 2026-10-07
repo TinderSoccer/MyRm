@@ -24,6 +24,7 @@ Supabase → *SQL Editor* → pega y ejecuta, en orden:
 4. [`supabase/migrations/0004_wod_policies.sql`](supabase/migrations/0004_wod_policies.sql): ajusta las reglas de la pizarra para que nadie pueda mover un WOD o un resultado a otro grupo.
 5. [`supabase/migrations/0005_event_policies.sql`](supabase/migrations/0005_event_policies.sql): lo mismo para los eventos, ahora que se pueden editar.
 6. [`supabase/migrations/0006_checkins.sql`](supabase/migrations/0006_checkins.sql): el check-in de clase ("¿Cómo llegas hoy?" / "¿Cómo terminaste?"), que el grupo ve en "Hoy vinieron".
+7. [`supabase/migrations/0007_wod_per_class.sql`](supabase/migrations/0007_wod_per_class.sql): un WOD por clase (7:00, 19:00…) en vez de uno por día.
 
 ## 3. Login por correo
 

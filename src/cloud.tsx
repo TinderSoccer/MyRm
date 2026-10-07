@@ -34,12 +34,15 @@ export interface CloudEvent {
 }
 export interface WodScore { user_id: string; value: number; scaled: boolean; note: string }
 export interface CloudWod {
-  id: string; day: string; title: string; description: string; score_type: PrType; created_by: string;
+  /** class_time: 'HH:MM' of the class this WOD is for ('' when posted without one). */
+  id: string; day: string; class_time: string; title: string; description: string; score_type: PrType; created_by: string;
   scores: WodScore[];
 }
 /** "I came today": class time (HH:MM, or '' if not said), mood arriving and (later) leaving, 1 low – 5 high. */
 export interface Checkin { user_id: string; class_time: string; mood_in: number; mood_out: number | null }
 export type NewWod = Pick<CloudWod, 'title' | 'description' | 'score_type'>;
+/** One of your own results today in another group, offered to copy over. */
+export interface OtherScore { group: string; title: string; class_time: string; score_type: PrType; value: number; scaled: boolean }
 export type NewFeedItem = Pick<CloudFeedItem, 'kind' | 'disc' | 'what'> & Partial<Pick<CloudFeedItem, 'type' | 'unit_label' | 'value' | 'stage'>>;
 
 interface Cloud {
@@ -49,12 +52,20 @@ interface Cloud {
   ready: boolean;
   userId: string | null;
   email: string | null;
+  /** All your groups; `group` is the one you're looking at (you can be in several: your 7 AM crew, the whole box…). */
+  groups: CloudGroup[];
   group: CloudGroup | null;
+  selectGroup: (id: string) => void;
   members: CloudMember[];
   feed: CloudFeedItem[];
   events: CloudEvent[];
-  /** Today's WOD on the group board; `wodBoard` is false while the board's tables aren't created yet. */
+  /** Today's WODs in the group, one per class, and the one on screen (by default your class, from your check-in).
+   *  `wodBoard` is false while the board's tables aren't created yet. */
+  wods: CloudWod[];
   wod: CloudWod | null;
+  selectClass: (classTime: string) => void;
+  /** Your results today in your other groups, to copy here in one tap. */
+  otherScores: OtherScore[];
   wodBoard: boolean;
   /** Today's check-ins in the group; `checkinsOn` is false until their table exists (migration 0006). */
   checkins: Checkin[];
@@ -92,7 +103,7 @@ interface Cloud {
   updateEvent: (id: string, e: Pick<CloudEvent, 'kind' | 'title' | 'day' | 'time' | 'place'>) => Promise<string | null>;
   rsvp: (id: string, going: boolean) => void;
   saveProfile: (name: string, birthday: string | null) => void;
-  postWod: (w: NewWod) => Promise<string | null>;
+  postWod: (w: NewWod, classTime: string) => Promise<string | null>;
   /** A photo of the box's whiteboard read into a WOD (server-side AI); a string is an error to show. */
   readBoardPhoto: (photo: Blob) => Promise<NewWod | string>;
   deleteWod: () => void;
@@ -134,7 +145,13 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<CloudMember[]>([]);
   const [feed, setFeed] = useState<CloudFeedItem[]>([]);
   const [events, setEvents] = useState<CloudEvent[]>([]);
-  const [wod, setWod] = useState<CloudWod | null>(null);
+  const [wods, setWods] = useState<CloudWod[]>([]);
+  const [pickedClass, setPickedClass] = useState<string | null>(null);
+  const [groups, setGroups] = useState<CloudGroup[]>([]);
+  const [otherScores, setOtherScores] = useState<OtherScore[]>([]);
+  // Which group is on screen, per account, across restarts.
+  const groupKey = `myrm.group.${userId ?? ''}`;
+  const [groupPick, setGroupPick] = useState<string | null>(null);
   const [wodBoard, setWodBoard] = useState(true);
   const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [checkinsOn, setCheckinsOn] = useState(true);
@@ -169,10 +186,15 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId]);
 
   const refresh = useCallback(async () => {
-    if (!sb || !userId) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); setWod(null); return; }
-    const { data: mine } = await sb.from('group_members').select('group_id').eq('user_id', userId).order('joined_at').limit(1);
-    const gid = mine?.[0]?.group_id as string | undefined;
-    if (!gid) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); setWod(null); return; }
+    const clear = () => { setGroups([]); setGroup(null); setMembers([]); setFeed([]); setEvents([]); setWods([]); setCheckins([]); setOtherScores([]); };
+    if (!sb || !userId) { clear(); return; }
+    const { data: mine } = await sb.from('group_members').select('group_id, groups(id, name, invite_code, created_by)').eq('user_id', userId).order('joined_at');
+    const all = (mine ?? []).map(r => r.groups as unknown as CloudGroup).filter(Boolean);
+    setGroups(all);
+    let stored: string | null = null;
+    try { stored = groupPick ?? localStorage.getItem(groupKey); } catch { /* private mode */ }
+    const gid = (all.find(g => g.id === stored) ?? all[0])?.id;
+    if (!gid) { clear(); return; }
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     const [g, mem, fd, ev, wd, ck] = await Promise.all([
       sb.from('groups').select('id, name, invite_code, created_by').eq('id', gid).single(),
@@ -180,7 +202,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       sb.from('feed_items').select('*, cheers(user_id)').eq('group_id', gid).order('created_at', { ascending: false }).limit(60),
       sb.from('events').select('*, rsvps(user_id, going)').eq('group_id', gid).gte('day', yesterday).order('day'),
       // The phone's own date: a 7 AM class in Chile is still "today", whatever the UTC date says.
-      sb.from('wods').select('*, wod_scores(user_id, value, scaled, note)').eq('group_id', gid).eq('day', todayISO()).maybeSingle(),
+      sb.from('wods').select('*, wod_scores(user_id, value, scaled, note)').eq('group_id', gid).eq('day', todayISO()),
       sb.from('checkins').select('user_id, class_time, mood_in, mood_out').eq('group_id', gid).eq('day', todayISO()).order('class_time')
     ]);
     // Same rule as the board: only a missing table turns check-ins off; a dropped connection keeps what was there.
@@ -190,9 +212,17 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     if (wd.error) { if (wd.error.code === '42P01' || wd.error.code === 'PGRST205') setWodBoard(false); }
     else {
       setWodBoard(true);
-      const w = wd.data as (Omit<CloudWod, 'scores'> & { wod_scores: WodScore[] }) | null;
-      setWod(w ? { ...w, scores: w.wod_scores.map(s => ({ ...s, value: Number(s.value) })) } : null);
+      const ws = (wd.data ?? []) as (Omit<CloudWod, 'scores'> & { wod_scores: WodScore[] })[];
+      setWods(ws.map(w => ({ ...w, class_time: w.class_time ?? '', scores: w.wod_scores.map(s => ({ ...s, value: Number(s.value) })) }))
+        .sort((a, b) => a.class_time.localeCompare(b.class_time)));
     }
+    // Your own results today in your other groups (one tap to copy them here).
+    if (all.length > 1) {
+      const { data: os } = await sb.from('wod_scores').select('value, scaled, wods!inner(group_id, day, title, class_time, score_type)')
+        .eq('user_id', userId).eq('wods.day', todayISO()).neq('wods.group_id', gid);
+      setOtherScores(((os ?? []) as unknown as { value: number; scaled: boolean; wods: { group_id: string; title: string; class_time: string; score_type: PrType } }[])
+        .map(o => ({ group: all.find(g => g.id === o.wods.group_id)?.name ?? '', title: o.wods.title, class_time: o.wods.class_time ?? '', score_type: o.wods.score_type, value: Number(o.value), scaled: o.scaled })));
+    } else setOtherScores([]);
     if (g.data) setGroup(g.data as CloudGroup);
     // Members reference auth.users, not profiles, so their names come in a second query.
     const ids = (mem.data ?? []).map(r => r.user_id as string);
@@ -204,7 +234,12 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     setEvents(((ev.data ?? []) as (Omit<CloudEvent, 'going' | 'notGoing'> & { rsvps: { user_id: string; going: boolean }[] })[]).map(e => ({
       ...e, going: e.rsvps.filter(r => r.going).map(r => r.user_id), notGoing: e.rsvps.filter(r => !r.going).map(r => r.user_id)
     })));
-  }, [userId]);
+  }, [userId, groupPick]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The WOD on screen: the class you picked, else the class you checked in to, else the first of the day.
+  const myClass = checkins.find(c => c.user_id === userId)?.class_time;
+  const wod = wods.find(w => w.class_time === pickedClass) ?? wods.find(w => w.class_time === myClass) ?? wods[0] ?? null;
+  useEffect(() => { if (groupPick) refresh(); }, [groupPick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // On sign-in: make sure there's a profile with the name from onboarding, use a pending invite, then load.
   useEffect(() => {
@@ -227,7 +262,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   // fingerprint of the content. Comparing both sides against it says who changed: only the phone → upload; only the
   // account → download; both → join them. Nothing is uploaded before the account has been checked in this session.
   const mine = useMemo(() => canon(personalOf(data)),
-    [data.name, data.goals, data.freq, data.units, data.bar, data.level, data.theme, data.aim, data.prs, data.skills, data.birthdays]); // eslint-disable-line react-hooks/exhaustive-deps
+    [data.name, data.goals, data.freq, data.units, data.bar, data.level, data.classTime, data.theme, data.aim, data.prs, data.skills, data.birthdays]); // eslint-disable-line react-hooks/exhaustive-deps
   const latest = useRef({ mine, owner: data.owner });
   latest.current = { mine, owner: data.owner };
   const [mark, setMarkState] = useState<SyncMark | null>(null);
@@ -306,7 +341,12 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId, refresh]);
 
   const value = useMemo<Cloud>(() => ({
-    enabled: !!sb, ready, userId, email, hasPassword, needsPassword: !!userId && (wantsPassword || (!hasPassword && !skippedPassword)), group, members, feed, events, wod, wodBoard, checkins, checkinsOn, pendingJoin, backedUp,
+    enabled: !!sb, ready, userId, email, hasPassword, needsPassword: !!userId && (wantsPassword || (!hasPassword && !skippedPassword)), groups, group, members, feed, events, wods, wod, wodBoard, otherScores, checkins, checkinsOn, pendingJoin, backedUp,
+    selectGroup: id => {
+      try { localStorage.setItem(groupKey, id); } catch { /* private mode */ }
+      setPickedClass(null); setGroupPick(id);
+    },
+    selectClass: t => setPickedClass(t),
     sendCode: async addr => {
       if (!sb) return null;
       const { error } = await sb.auth.signInWithOtp({ email: addr, options: { emailRedirectTo: location.origin + location.pathname } });
@@ -343,16 +383,19 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     },
     createGroup: async name => {
       if (!sb) return null;
-      const { error } = await sb.rpc('create_group', { group_name: name });
-      if (!error) await refresh();
+      const { data: g, error } = await sb.rpc('create_group', { group_name: name });
+      // The new group is the one you want to see next.
+      if (!error && g) { try { localStorage.setItem(groupKey, (g as CloudGroup).id); } catch { /* */ } setPickedClass(null); setGroupPick((g as CloudGroup).id); }
+      else if (!error) await refresh();
       return explain(error);
     },
     joinGroup: async code => {
       if (!sb) return null;
       // Accept either the bare code or the whole invite link pasted in.
       const bare = code.includes('join=') ? new URL(code, location.href).searchParams.get('join') ?? code : code;
-      const { error } = await sb.rpc('join_group', { code: bare });
-      if (!error) await refresh();
+      const { data: g, error } = await sb.rpc('join_group', { code: bare });
+      if (!error && g) { try { localStorage.setItem(groupKey, (g as CloudGroup).id); } catch { /* */ } setPickedClass(null); setGroupPick((g as CloudGroup).id); }
+      else if (!error) await refresh();
       return explain(error);
     },
     leaveGroup: async () => {
@@ -414,12 +457,16 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       if (!sb || !userId) return;
       sb.from('profiles').upsert({ id: userId, name: name.trim(), birthday, updated_at: new Date().toISOString() }).then(() => refresh());
     },
-    postWod: async w => {
+    postWod: async (w, classTime) => {
       if (!sb || !group || !userId) return null;
-      const { error } = await sb.from('wods').insert({ ...w, group_id: group.id, day: todayISO(), created_by: userId });
+      const row = { ...w, group_id: group.id, day: todayISO(), created_by: userId };
+      let { error } = await sb.from('wods').insert({ ...row, class_time: classTime });
+      // Before migration 0007 there is no class_time column: post as the day's single WOD, as before.
+      if (error && /class_time/.test(error.message)) ({ error } = await sb.from('wods').insert(row));
+      if (!error) setPickedClass(classTime);
       await refresh();
-      // Someone else posted it a moment earlier: theirs is the board now, and the person should know.
-      return error?.code === '23505' ? 'Alguien subió el WOD de hoy justo antes que tú: es el que ves en la pizarra.' : explain(error);
+      // Someone posted this class's WOD a moment earlier: theirs is the board now, and the person should know.
+      return error?.code === '23505' ? 'Alguien subió el WOD de esa clase justo antes que tú: es el que ves en la pizarra.' : explain(error);
     },
     readBoardPhoto: async photo => {
       if (!sb) return 'La lectura de fotos necesita conexión.';
@@ -435,25 +482,26 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         return { title: out.title, description: out.description ?? '', score_type: out.score_type ?? 'time' };
       } catch { return 'Sin conexión. Revisa tu internet e intenta de nuevo.'; }
     },
+    // One trip to the box is one check-in: it goes to every group you're in, so each crew sees you came.
     checkIn: async (classTime, moodIn) => {
       if (!sb || !group || !userId) return null;
-      const row = { group_id: group.id, user_id: userId, day: todayISO(), class_time: classTime, mood_in: moodIn };
+      const rows = groups.map(g => ({ group_id: g.id, user_id: userId, day: todayISO(), class_time: classTime, mood_in: moodIn }));
       setCheckins(cs => [...cs.filter(c => c.user_id !== userId), { user_id: userId, class_time: classTime, mood_in: moodIn, mood_out: null }]);
-      const { error } = await sb.from('checkins').upsert(row);
+      const { error } = await sb.from('checkins').upsert(rows);
       if (error) await refresh();
       return explain(error);
     },
     checkOut: async moodOut => {
       if (!sb || !group || !userId) return null;
       setCheckins(cs => cs.map(c => c.user_id === userId ? { ...c, mood_out: moodOut } : c));
-      const { error } = await sb.from('checkins').update({ mood_out: moodOut }).eq('group_id', group.id).eq('user_id', userId).eq('day', todayISO());
+      const { error } = await sb.from('checkins').update({ mood_out: moodOut }).eq('user_id', userId).eq('day', todayISO()).in('group_id', groups.map(g => g.id));
       if (error) await refresh();
       return explain(error);
     },
     undoCheckin: () => {
       if (!sb || !group || !userId) return;
       setCheckins(cs => cs.filter(c => c.user_id !== userId));
-      sb.from('checkins').delete().eq('group_id', group.id).eq('user_id', userId).eq('day', todayISO()).then(() => refresh());
+      sb.from('checkins').delete().eq('user_id', userId).eq('day', todayISO()).in('group_id', groups.map(g => g.id)).then(() => refresh());
     },
     updateWod: async w => {
       if (!sb || !wod) return null;
@@ -463,7 +511,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     },
     deleteWod: () => {
       if (!sb || !wod) return;
-      setWod(null);
+      setWods(ws => ws.filter(x => x.id !== wod.id)); setPickedClass(null);
       sb.from('wods').delete().eq('id', wod.id).then(() => refresh());
     },
     saveScore: async s => {
@@ -474,11 +522,11 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     },
     dropScore: () => {
       if (!sb || !wod || !userId) return;
-      setWod({ ...wod, scores: wod.scores.filter(x => x.user_id !== userId) });
+      setWods(ws => ws.map(x => x.id === wod.id ? { ...x, scores: x.scores.filter(sc => sc.user_id !== userId) } : x));
       sb.from('wod_scores').delete().eq('wod_id', wod.id).eq('user_id', userId).then(() => refresh());
     },
     inviteLink: () => group ? `${location.origin}${location.pathname}?join=${group.invite_code}` : ''
-  }), [set, push, mine, mineIsSynced, data.owner, ready, userId, email, hasPassword, wantsPassword, skippedPassword, group, members, feed, events, wod, wodBoard, checkins, checkinsOn, pendingJoin, backedUp, refresh]);
+  }), [set, push, mine, mineIsSynced, data.owner, ready, userId, email, hasPassword, wantsPassword, skippedPassword, groups, group, members, feed, events, wods, wod, wodBoard, otherScores, groupKey, checkins, checkinsOn, pendingJoin, backedUp, refresh]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

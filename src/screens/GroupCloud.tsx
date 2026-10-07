@@ -8,7 +8,7 @@ import { CheckinCard, TodayAttendance } from '../components/Checkin';
 import { useCloud } from '../cloud';
 import { MEMBER_COLORS } from '../data';
 import { countdown, timeAgo } from '../format';
-import { useStore } from '../store';
+import { pillStyle, useStore } from '../store';
 
 /** Birthdays you add by hand (people outside the app); they travel with your account backup. */
 function useLocalBirthdays() {
@@ -43,7 +43,7 @@ function Head({ title, lede }: { title: string; lede: string }) {
 }
 
 /** Signed in, no group yet: start one or join with a link. */
-function Setup() {
+function Setup({ onCancel }: { onCancel?: () => void }) {
   const { createGroup, joinGroup } = useCloud();
   const { flash } = useStore();
   const [name, setName] = useState('');
@@ -55,12 +55,13 @@ function Setup() {
     setBusy(true); setError(null);
     const err = await fn();
     setBusy(false);
-    if (err) setError(err); else flash(ok, 'Ahora invita a tu gente con el link del grupo.');
+    if (err) setError(err); else { flash(ok, 'Ahora invita a tu gente con el link del grupo.'); onCancel?.(); }
   };
 
   return (
     <div className="screen" data-screen-label="06 Grupo · Crear">
-      <Head title="Mi grupo" lede="Crea el grupo de tu box o súmate al de alguien con su link." />
+      {onCancel && <button className="round-btn" aria-label="Volver a mis grupos" onClick={onCancel} style={{ alignSelf: 'flex-start' }}><Icon name="chevronLeft" size={20} /></button>}
+      <Head title={onCancel ? 'Otro grupo' : 'Mi grupo'} lede={onCancel ? 'Puedes estar en varios: tu clase de las 7, el box completo, tus amigos. Crea uno o súmate con un link.' : 'Crea el grupo de tu box o súmate al de alguien con su link.'} />
       <div className="dashed">
         <label htmlFor="gname" className="label-600">Crear un grupo</label>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -82,11 +83,13 @@ function Setup() {
 
 function SharedGroup() {
   const cloud = useCloud();
+  const [another, setAnother] = useState(false);
   const { fmt, flash } = useStore();
   const local = useLocalBirthdays();
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState<GroupView>('today');
   const group = cloud.group!;
+  if (another) return <Setup onCancel={() => setAnother(false)} />;
 
   // Stable colors per person, "Tú" always in ink and first.
   const colorOf = (id: string) => id === cloud.userId ? 'var(--color-text)' : MEMBER_COLORS[Math.max(0, cloud.members.findIndex(m => m.id === id)) % MEMBER_COLORS.length];
@@ -114,7 +117,14 @@ function SharedGroup() {
 
   return (
     <div className="screen" data-screen-label="06 Grupo">
-      <Head title={group.name} lede={`${cloud.members.length} ${cloud.members.length === 1 ? 'persona' : 'personas'} del box. Lo que publicas aquí lo ve solo este grupo.`} />
+      {/* Your groups, to switch between; and the way into another one. */}
+      <div className="chip-row" role="group" aria-label="Mis grupos">
+        {cloud.groups.length > 1 && cloud.groups.map(g => (
+          <button key={g.id} className="pill" aria-pressed={g.id === group.id} style={pillStyle(g.id === group.id)} onClick={() => cloud.selectGroup(g.id)}>{g.name}</button>
+        ))}
+        <button className="new-mov hit" onClick={() => setAnother(true)}>+ Otro grupo</button>
+      </div>
+      <Head title={group.name} lede={`${cloud.members.length} ${cloud.members.length === 1 ? 'persona' : 'personas'}. Lo que publicas aquí lo ve solo este grupo.`} />
 
       <button className="invite-btn" onClick={invite}>
         <Icon name="share" size={20} />

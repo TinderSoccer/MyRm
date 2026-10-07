@@ -28,9 +28,10 @@ function Faces({ set: faces, label, picked, onPick }: { set: [string, string][];
  *  On Home it's the first thing you see; in Grupo → Hoy it sits above the board. */
 export function CheckinCard({ where }: { where: 'home' | 'group' }) {
   const cloud = useCloud();
-  const { set, flash } = useStore();
+  const { data, set, flash } = useStore();
   const [skip, setSkip] = useState(skippedToday);
-  const [time, setTime] = useState(() => `${String(new Date().getHours()).padStart(2, '0')}:00`);
+  // Your usual class from the profile, else this hour.
+  const [time, setTime] = useState(() => data.classTime || `${String(new Date().getHours()).padStart(2, '0')}:00`);
   const [changing, setChanging] = useState(false);
   if (!cloud.group || !cloud.checkinsOn) return null;
   const mine = cloud.checkins.find(c => c.user_id === cloud.userId);

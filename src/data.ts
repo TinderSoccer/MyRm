@@ -51,6 +51,8 @@ export interface AppData {
   skills: Skill[];
   /** Pastel look of the app (see theme.ts). */
   theme: string;
+  /** The class you usually go to ('HH:MM', '' if not said): the default for check-ins and posting a WOD. */
+  classTime: string;
   /** How you usually train: the default for RX/Escalado when logging and on the WOD board. */
   level: 'RX' | 'Escalado';
   /** What you're training for, in your words ("mi primer muscle-up"); shown on Home. */
@@ -143,6 +145,7 @@ export function seedData(weekStart: string): AppData {
     bar: 'big',
     prs: CATALOG_PRS,
     skills: CATALOG_SKILLS,
+    classTime: '',
     level: 'RX',
     theme: 'crema',
     aim: '',
