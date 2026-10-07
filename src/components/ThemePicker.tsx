@@ -1,7 +1,7 @@
 import { THEMES } from '../theme';
 import { useStore } from '../store';
 
-/** Pastel swatches: each shows the paper it gives the app (background with a card inside), so you see the look, not a dot. */
+/** Theme swatches: the paper with the two accents inside, so you see the palette you get, not a dot. */
 export function ThemePicker() {
   const { data, set } = useStore();
   return (
@@ -15,7 +15,8 @@ export function ThemePicker() {
               width: 48, height: 48, borderRadius: '50%', background: t.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: on ? '0 0 0 3px var(--color-bg), 0 0 0 6px var(--color-text)' : 'inset 0 0 0 1.5px var(--color-divider)', transition: 'box-shadow .15s'
             }}>
-              <span style={{ width: 22, height: 22, borderRadius: '50%', background: t.surface }} />
+              {/* The theme's two accents, half and half: the whole palette, not just the paper. */}
+              <span style={{ width: 26, height: 26, borderRadius: '50%', background: `conic-gradient(${t.accent} 0 50%, ${t.accent2} 0 100%)` }} />
             </span>
             <span style={{ fontSize: 12, fontWeight: on ? 700 : 600 }}>{t.name}</span>
           </button>
