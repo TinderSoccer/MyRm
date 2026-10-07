@@ -8,7 +8,13 @@ import { useCloud, type CloudWod, type WodScore } from '../cloud';
 import { joinRounds, logOf, shortDate, splitRounds, withLog } from '../format';
 import { useStore } from '../store';
 
-const TYPES: [PrType, string][] = [['time', 'Tiempo'], ['reps', 'Reps / rondas'], ['kg', 'Peso']];
+const TYPES: [PrType, string][] = [['time', 'Tiempo'], ['reps', 'Rondas o reps'], ['kg', 'Peso']];
+/** What each person will write as their result, and who wins: said in words under the choice. */
+const TYPE_HELP: Record<PrType, string> = {
+  time: 'For Time: cada uno anota cuánto se demoró, como 7:45. Gana el menor tiempo.',
+  reps: 'AMRAP o máximo de reps: cada uno anota sus rondas (y reps extra) o sus reps. Gana el que hizo más.',
+  kg: 'Fuerza: cada uno anota el peso que levantó. Gana el más pesado.'
+};
 const MODES = [[false, 'RX'], [true, 'Escalado']] as const;
 
 /** The box whiteboard order: RX before scaled, then fastest time or most reps/weight. */
@@ -71,9 +77,11 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
       <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 16 }} />
       <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'21-15-9\nThrusters 95/65 lb\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
         style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 16, resize: 'vertical', height: 'auto', minHeight: edit ? 180 : 96 }} />
-      {typeLocked
-        ? <p className="note">Se mide por {TYPES.find(t => t[0] === type)?.[1].toLowerCase()}: ya hay resultados anotados así.</p>
-        : <Segmented label="Cómo se mide" value={type} onChange={setType} options={TYPES} />}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <span className="field-label">¿Cómo anota cada uno su resultado?</span>
+        {!typeLocked && <Segmented label="¿Cómo anota cada uno su resultado?" value={type} onChange={setType} options={TYPES} />}
+        <p className="note">{TYPE_HELP[type]}{typeLocked ? ' Ya hay resultados anotados así, por eso no se puede cambiar.' : ''}</p>
+      </div>
       <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
         {edit && <button className="btn btn-secondary" onClick={onDone} style={{ height: 48, flex: 1 }}>Cancelar</button>}
         <button className="btn btn-primary" onClick={save} disabled={busy || !title.trim()} style={{ height: 48, flex: 2 }}>{busy ? 'Guardando…' : edit ? 'Guardar cambios' : 'Subir a la pizarra'}</button>
@@ -166,7 +174,7 @@ function Board({ nameOf }: Props) {
       <section className="board" aria-labelledby="board-title">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <h2 id="board-title" className="board-title">{w.title}</h2>
-          <span className="board-meta">{TYPES.find(t => t[0] === w.score_type)?.[1]} · {w.created_by === cloud.userId ? 'lo subiste tú' : `lo subió ${nameOf(w.created_by)}`}</span>
+          <span className="board-meta">{{ time: 'Por tiempo', reps: 'Por rondas o reps', kg: 'Por peso' }[w.score_type]} · {w.created_by === cloud.userId ? 'lo subiste tú' : `lo subió ${nameOf(w.created_by)}`}</span>
         </div>
         {w.description && <BoardText text={w.description} />}
         {ranked.length === 0
