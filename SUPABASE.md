@@ -20,6 +20,7 @@ Supabase → *SQL Editor* → pega y ejecuta, en orden:
 
 1. [`supabase/migrations/0001_group.sql`](supabase/migrations/0001_group.sql): perfiles, grupos, miembros, feed, felicitaciones, eventos y asistencia, con reglas (RLS) para que cada persona vea solo su grupo y solo pueda escribir a su nombre.
 2. [`supabase/migrations/0002_user_data.sql`](supabase/migrations/0002_user_data.sql): el respaldo personal de marcas y ajustes. Solo su dueño lo puede leer.
+3. [`supabase/migrations/0003_wod.sql`](supabase/migrations/0003_wod.sql): la pizarra del WOD de cada día y los resultados de cada uno.
 
 ## 3. Login por correo
 

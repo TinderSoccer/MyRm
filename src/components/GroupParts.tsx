@@ -2,11 +2,11 @@ import { Icon } from './Icon';
 import { discOf, type DiscId } from '../data';
 import { initialOf } from '../format';
 
-export type GroupView = 'feed' | 'next';
+export type GroupView = 'today' | 'feed' | 'next';
 
-/** Two views of the group so the screen is not one long scroll: achievements, or what is coming up. */
+/** Views of the group so the screen is not one long scroll: today's WOD board, achievements, what is coming up. */
 export function GroupTabs({ view, setView }: { view: GroupView; setView: (v: GroupView) => void }) {
-  const tabs: [GroupView, string][] = [['feed', 'Logros'], ['next', 'Próximos']];
+  const tabs: [GroupView, string][] = [['today', 'Hoy'], ['feed', 'Logros'], ['next', 'Próximos']];
   return (
     <div role="group" aria-label="Vista del grupo" style={{ display: 'flex', padding: 4, borderRadius: 999, background: 'var(--color-surface)', gap: 4 }}>
       {tabs.map(([v, label]) => {

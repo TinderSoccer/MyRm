@@ -1,6 +1,6 @@
 ---
 name: MyRm
-description: Tu diario de box: marcas, skills, grupo y recordatorios para CrossFit, Hyrox y GAP.
+description: Tu diario de box: marcas, skills, grupo y pizarra del WOD para CrossFit, Hyrox y GAP.
 colors:
   chalk-cream: "#f5ead8"
   worn-plywood: "#ebddc5"
@@ -200,7 +200,7 @@ Es plano por defecto y la profundidad es tonal: crema → madera → tinta. Solo
 
 ## Shapes
 
-Todo es redondo. Las tarjetas usan 28px de radio. La hoja inferior usa 36px en las esquinas de arriba. Botones, inputs, chips y tabbar son píldoras (999px), y los avatares, steppers, el FAB y los puntos de skill son círculos. Las únicas formas decorativas son círculos sólidos que se salen del borde de la pizarra o de la bienvenida, como gotas de tiza de color. Los bordes punteados de 2px marcan las zonas donde se crea algo ("Nuevo recordatorio", "Invitar", "+ Nuevo").
+Todo es redondo. Las tarjetas usan 28px de radio. La hoja inferior usa 36px en las esquinas de arriba. Botones, inputs, chips y tabbar son píldoras (999px), y los avatares, steppers, el FAB y los puntos de skill son círculos. Las únicas formas decorativas son círculos sólidos que se salen del borde de la pizarra o de la bienvenida, como gotas de tiza de color. Los bordes punteados de 2px marcan las zonas donde se crea algo ("Subir el WOD", "Invitar", "+ Nuevo").
 
 ## Components
 

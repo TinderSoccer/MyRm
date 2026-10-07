@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { DiscId, EventKind, PrType } from './data';
+import { todayISO } from './format';
 import { useStore } from './store';
 import { canon, mergePersonal, personalOf, type Personal } from './sync';
 
@@ -26,6 +27,12 @@ export interface CloudEvent {
   id: string; kind: EventKind; title: string; day: string; time: string; place: string; created_by: string;
   going: string[]; notGoing: string[];
 }
+export interface WodScore { user_id: string; value: number; scaled: boolean; note: string }
+export interface CloudWod {
+  id: string; day: string; title: string; description: string; score_type: PrType; created_by: string;
+  scores: WodScore[];
+}
+export type NewWod = Pick<CloudWod, 'title' | 'description' | 'score_type'>;
 export type NewFeedItem = Pick<CloudFeedItem, 'kind' | 'disc' | 'what'> & Partial<Pick<CloudFeedItem, 'type' | 'unit_label' | 'value' | 'stage'>>;
 
 interface Cloud {
@@ -39,6 +46,9 @@ interface Cloud {
   members: CloudMember[];
   feed: CloudFeedItem[];
   events: CloudEvent[];
+  /** Today's WOD on the group board; `wodBoard` is false while the board's tables aren't created yet. */
+  wod: CloudWod | null;
+  wodBoard: boolean;
   /** An invite code from a link, waiting for the user to sign in. */
   pendingJoin: string | null;
   /** Marks and settings are saved to the account (signed in and the first sync went through). */
@@ -55,6 +65,10 @@ interface Cloud {
   deleteEvent: (id: string) => void;
   rsvp: (id: string, going: boolean) => void;
   saveProfile: (name: string, birthday: string | null) => void;
+  postWod: (w: NewWod) => Promise<string | null>;
+  deleteWod: () => void;
+  saveScore: (s: Omit<WodScore, 'user_id'>) => Promise<string | null>;
+  dropScore: () => void;
   inviteLink: () => string;
 }
 
@@ -80,6 +94,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<CloudMember[]>([]);
   const [feed, setFeed] = useState<CloudFeedItem[]>([]);
   const [events, setEvents] = useState<CloudEvent[]>([]);
+  const [wod, setWod] = useState<CloudWod | null>(null);
+  const [wodBoard, setWodBoard] = useState(true);
   const [pendingJoin, setPendingJoin] = useState<string | null>(() => {
     // An invite link looks like …/?join=CODE. Keep the code until the person signs in, and clean the address bar.
     const code = new URLSearchParams(location.search).get('join');
@@ -104,17 +120,22 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refresh = useCallback(async () => {
-    if (!sb || !userId) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); return; }
+    if (!sb || !userId) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); setWod(null); return; }
     const { data: mine } = await sb.from('group_members').select('group_id').eq('user_id', userId).order('joined_at').limit(1);
     const gid = mine?.[0]?.group_id as string | undefined;
-    if (!gid) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); return; }
+    if (!gid) { setGroup(null); setMembers([]); setFeed([]); setEvents([]); setWod(null); return; }
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    const [g, mem, fd, ev] = await Promise.all([
+    const [g, mem, fd, ev, wd] = await Promise.all([
       sb.from('groups').select('id, name, invite_code, created_by').eq('id', gid).single(),
       sb.from('group_members').select('user_id').eq('group_id', gid),
       sb.from('feed_items').select('*, cheers(user_id)').eq('group_id', gid).order('created_at', { ascending: false }).limit(60),
-      sb.from('events').select('*, rsvps(user_id, going)').eq('group_id', gid).gte('day', yesterday).order('day')
+      sb.from('events').select('*, rsvps(user_id, going)').eq('group_id', gid).gte('day', yesterday).order('day'),
+      // The phone's own date: a 7 AM class in Chile is still "today", whatever the UTC date says.
+      sb.from('wods').select('*, wod_scores(user_id, value, scaled, note)').eq('group_id', gid).eq('day', todayISO()).maybeSingle()
     ]);
+    setWodBoard(!wd.error);
+    const w = wd.data as (Omit<CloudWod, 'scores'> & { wod_scores: WodScore[] }) | null;
+    setWod(w ? { ...w, scores: w.wod_scores.map(s => ({ ...s, value: Number(s.value) })) } : null);
     if (g.data) setGroup(g.data as CloudGroup);
     // Members reference auth.users, not profiles, so their names come in a second query.
     const ids = (mem.data ?? []).map(r => r.user_id as string);
@@ -206,7 +227,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId, refresh]);
 
   const value = useMemo<Cloud>(() => ({
-    enabled: !!sb, ready, userId, email, group, members, feed, events, pendingJoin, backedUp,
+    enabled: !!sb, ready, userId, email, group, members, feed, events, wod, wodBoard, pendingJoin, backedUp,
     sendCode: async addr => {
       if (!sb) return null;
       const { error } = await sb.auth.signInWithOtp({ email: addr, options: { emailRedirectTo: location.origin + location.pathname } });
@@ -276,8 +297,31 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       if (!sb || !userId) return;
       sb.from('profiles').upsert({ id: userId, name: name.trim(), birthday, updated_at: new Date().toISOString() }).then(() => refresh());
     },
+    postWod: async w => {
+      if (!sb || !group || !userId) return null;
+      const { error } = await sb.from('wods').insert({ ...w, group_id: group.id, day: todayISO(), created_by: userId });
+      await refresh();
+      // Someone else posted it a moment earlier: theirs is the board now.
+      return error?.code === '23505' ? null : explain(error);
+    },
+    deleteWod: () => {
+      if (!sb || !wod) return;
+      setWod(null);
+      sb.from('wods').delete().eq('id', wod.id).then(() => refresh());
+    },
+    saveScore: async s => {
+      if (!sb || !wod || !userId) return null;
+      const { error } = await sb.from('wod_scores').upsert({ ...s, wod_id: wod.id, user_id: userId });
+      await refresh();
+      return explain(error);
+    },
+    dropScore: () => {
+      if (!sb || !wod || !userId) return;
+      setWod({ ...wod, scores: wod.scores.filter(x => x.user_id !== userId) });
+      sb.from('wod_scores').delete().eq('wod_id', wod.id).eq('user_id', userId).then(() => refresh());
+    },
     inviteLink: () => group ? `${location.origin}${location.pathname}?join=${group.invite_code}` : ''
-  }), [ready, userId, email, group, members, feed, events, pendingJoin, backedUp, refresh]);
+  }), [ready, userId, email, group, members, feed, events, wod, wodBoard, pendingJoin, backedUp, refresh]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

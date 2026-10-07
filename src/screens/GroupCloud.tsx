@@ -3,6 +3,7 @@ import { DeleteButton } from '../components/DeleteButton';
 import { FeedCard, GroupTabs, MemberCircles, type GroupView } from '../components/GroupParts';
 import { Icon } from '../components/Icon';
 import { Upcoming, type UpBirthday } from '../components/Upcoming';
+import { WodBoard } from '../components/WodBoard';
 import { useCloud } from '../cloud';
 import { MEMBER_COLORS } from '../data';
 import { countdown, timeAgo } from '../format';
@@ -135,7 +136,7 @@ function SharedGroup() {
   const { fmt, flash } = useStore();
   const local = useLocalBirthdays();
   const [filter, setFilter] = useState('all');
-  const [view, setView] = useState<GroupView>('feed');
+  const [view, setView] = useState<GroupView>('today');
   const group = cloud.group!;
 
   // Stable colors per person, "Tú" always in ink and first.
@@ -173,6 +174,8 @@ function SharedGroup() {
       </button>
 
       <GroupTabs view={view} setView={setView} />
+
+      {view === 'today' && <WodBoard nameOf={nameOf} colorOf={colorOf} />}
 
       {view === 'next' && <Upcoming
         events={cloud.events.map(e => ({
