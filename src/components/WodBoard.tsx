@@ -22,19 +22,22 @@ export function WodBoard({ nameOf }: Props) {
   const cloud = useCloud();
   if (!cloud.wodBoard) return <div className="empty">La pizarra todavía no está activada en el servidor del grupo.</div>;
   // Keyed by WOD so a new day (or a deleted WOD) starts the score form fresh.
-  return cloud.wod ? <Board key={cloud.wod.id} nameOf={nameOf} /> : <PostWod />;
+  return cloud.wod ? <Board key={cloud.wod.id} nameOf={nameOf} /> : <WodForm />;
 }
 
-function PostWod() {
+/** Posting today's WOD, or (for whoever posted it) fixing it. Can start from a photo of the real whiteboard. */
+function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
   const cloud = useCloud();
   const { flash } = useStore();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [type, setType] = useState<PrType>('time');
+  const [title, setTitle] = useState(edit?.title ?? '');
+  const [description, setDescription] = useState(edit?.description ?? '');
+  const [type, setType] = useState<PrType>(edit?.score_type ?? 'time');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reading, setReading] = useState(false);
   const [fromPhoto, setFromPhoto] = useState(false);
+  // Scores already on the board were written as times (or reps, or weights): the type can't change under them.
+  const typeLocked = !!edit && edit.scores.length > 0;
   // A photo of the real whiteboard, read by AI into the fields below; the person checks it before posting.
   const readPhoto = async (file: File | undefined) => {
     if (!file) return;
@@ -42,31 +45,39 @@ function PostWod() {
     const out = await cloud.readBoardPhoto(file);
     setReading(false);
     if (typeof out === 'string') { setError(out); flash('No se leyó la foto', out); return; }
-    setTitle(out.title); setDescription(out.description); setType(out.score_type); setFromPhoto(true);
+    setTitle(out.title); setDescription(out.description); if (!typeLocked) setType(out.score_type); setFromPhoto(true);
   };
-  const post = async () => {
+  const save = async () => {
     if (!title.trim() || busy) return;
     setBusy(true); setError(null);
-    const err = await cloud.postWod({ title: title.trim(), description: description.trim(), score_type: type });
+    const w = { title: title.trim(), description: description.trim(), score_type: type };
+    const err = edit ? await cloud.updateWod(w) : await cloud.postWod(w);
     setBusy(false);
     // The board may already have replaced this form (someone posted first), so the message also goes in a toast.
-    if (err) { setError(err); flash('No se subió tu WOD', err); } else flash('WOD en la pizarra', 'Ahora todos pueden anotar su resultado.');
+    if (err) { setError(err); flash(edit ? 'No se guardó el cambio' : 'No se subió tu WOD', err); return; }
+    flash(edit ? 'WOD corregido' : 'WOD en la pizarra', edit ? 'Los resultados siguen ahí.' : 'Ahora todos pueden anotar su resultado.');
+    onDone?.();
   };
   return (
     <div className="dashed">
-      <label htmlFor="wod-title" className="label-600">Nadie ha subido el WOD de hoy</label>
-      <p className="note">Súbelo tú y el grupo anota sus resultados en la misma pizarra.</p>
-      <label className="btn btn-secondary" style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: reading ? 'progress' : 'pointer' }} aria-busy={reading}>
-        <Icon name="board" size={20} />{reading ? 'Leyendo la pizarra…' : 'Foto de la pizarra'}
+      <label htmlFor="wod-title" className="label-600">{edit ? 'Corregir el WOD' : 'Nadie ha subido el WOD de hoy'}</label>
+      <p className="note">{edit ? 'Los resultados que ya anotaron se mantienen.' : 'Súbelo tú y el grupo anota sus resultados en la misma pizarra.'}</p>
+      <label className="btn btn-secondary" style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: reading ? 'progress' : 'pointer', position: 'relative' }} aria-busy={reading}>
+        <Icon name="board" size={20} />{reading ? 'Leyendo la pizarra…' : edit ? 'Leer otra foto' : 'Foto de la pizarra'}
         <input type="file" accept="image/*" capture="environment" disabled={reading} onChange={e => { readPhoto(e.target.files?.[0]); e.target.value = ''; }}
           style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
       </label>
-      {fromPhoto && <p className="note" role="status" style={{ color: 'var(--color-accent-2-700)', fontWeight: 600 }}>Lo leímos de la foto. Revisa que esté bien antes de subirlo.</p>}
+      {fromPhoto && <p className="note" role="status" style={{ color: 'var(--color-accent-2-700)', fontWeight: 600 }}>Lo leímos de la foto. Revisa que esté bien antes de {edit ? 'guardar' : 'subirlo'}.</p>}
       <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 16 }} />
       <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'21-15-9\nThrusters 95/65 lb\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
-        style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 16, resize: 'none', height: 'auto', minHeight: 96 }} />
-      <Segmented label="Cómo se mide" value={type} onChange={setType} options={TYPES} />
-      <button className="btn btn-primary" onClick={post} disabled={busy || !title.trim()} style={{ height: 48 }}>{busy ? 'Subiendo…' : 'Subir a la pizarra'}</button>
+        style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 16, resize: 'vertical', height: 'auto', minHeight: edit ? 180 : 96 }} />
+      {typeLocked
+        ? <p className="note">Se mide por {TYPES.find(t => t[0] === type)?.[1].toLowerCase()}: ya hay resultados anotados así.</p>
+        : <Segmented label="Cómo se mide" value={type} onChange={setType} options={TYPES} />}
+      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+        {edit && <button className="btn btn-secondary" onClick={onDone} style={{ height: 48, flex: 1 }}>Cancelar</button>}
+        <button className="btn btn-primary" onClick={save} disabled={busy || !title.trim()} style={{ height: 48, flex: 2 }}>{busy ? 'Guardando…' : edit ? 'Guardar cambios' : 'Subir a la pizarra'}</button>
+      </div>
       {error && <p className="note" role="alert" style={{ color: 'var(--color-accent-800)' }}>{error}</p>}
     </div>
   );
@@ -80,6 +91,7 @@ function Board({ nameOf }: Props) {
   const asPr = { ...measure, hist: [] } as unknown as Pr;
   const mine = w.scores.find(s => s.user_id === cloud.userId);
   const [editing, setEditing] = useState(!mine);
+  const [fixing, setFixing] = useState(false);  // the author correcting the WOD itself
   const isReps = w.score_type === 'reps';
   // Reps WODs take rounds and extra reps in two number fields: a phone's number pad has no "+" key.
   const [text, setText] = useState(mine ? (isReps ? String(splitRounds(mine.value)[0]) : fmt.val(measure, mine.value)) : '');
@@ -149,6 +161,8 @@ function Board({ nameOf }: Props) {
       {/* Not scored yet: the action comes first, where the thumb is. */}
       {editing && !mine && form}
 
+      {/* The fix form opens above the board: bring it into view instead of leaving it off-screen. */}
+      {fixing && <div ref={el => el?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><WodForm edit={w} onDone={() => setFixing(false)} /></div>}
       <section className="board" aria-labelledby="board-title">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <h2 id="board-title" className="board-title">{w.title}</h2>
@@ -183,6 +197,7 @@ function Board({ nameOf }: Props) {
       <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
         {mine && !editing && <button className="btn btn-secondary" onClick={() => setEditing(true)} style={{ minHeight: 44 }}>Cambiar mi resultado</button>}
         {mine && <DeleteButton label="Quitar mi resultado" what="tu resultado de hoy" onDelete={() => { cloud.dropScore(); unMark(); setText(''); setExtraText(''); setEditing(true); }} />}
+        {w.created_by === cloud.userId && !fixing && <button className="del-btn" onClick={() => setFixing(true)}>Editar WOD</button>}
         {w.created_by === cloud.userId && <DeleteButton label="Borrar WOD" what={`el WOD ${w.title} y sus resultados`} onDelete={cloud.deleteWod} />}
       </div>
     </div>

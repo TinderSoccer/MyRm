@@ -179,6 +179,9 @@ export function mainSchemeOf(p: Pr): string | null {
   return SCHEMES.find(s => used.has(s)) ?? '1RM';
 }
 
+/** How a record is named on the group's feed: the reps go with the name, so a best set of 5 never reads as a max. */
+export const postedName = (p: Pr, scheme: string | null) => scheme && scheme !== '1RM' ? `${p.name} (${repsWord(scheme)})` : p.name;
+
 /** The last weight logged for a scheme: where the stepper starts when you switch to it. */
 export const lastOf = (p: Pr, scheme: string | null) => { const es = logOf(p).filter(e => (e.scheme || null) === (scheme || null)); return es.length ? es[es.length - 1].v : null; };
 

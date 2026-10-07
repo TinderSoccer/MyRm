@@ -1,14 +1,17 @@
 import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
 import { BarPicker, UnitPicker, countsWords } from '../components/BarSetup';
-import { discOf, type Pr } from '../data';
-import { SCHEMES, barLoad, barWeight, bestOf, bestWord, estimatedMaxOf, repsWord, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
+import { discOf, type LogEntry, type Pr } from '../data';
+import { SCHEMES, postedName, barLoad, barWeight, bestOf, bestWord, estimatedMaxOf, repsWord, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
 import { useStore } from '../store';
+import { useCloud } from '../cloud';
+import { Rename } from '../components/Rename';
 
 const PCTS = [50, 60, 65, 70, 75, 80, 85, 90, 95];
 
 export function Detail() {
   const { data, set, fmt, detId, openSheet, flash } = useStore();
+  const cloud = useCloud();
   const p = data.prs.find(x => x.id === detId);
   const goHome = () => set(() => ({ screen: 'home' }));
   if (!p) return null;
@@ -26,13 +29,17 @@ export function Detail() {
 
   const update = (fn: (x: Pr) => Pr) => set(d => ({ prs: d.prs.map(x => x.id === p.id ? fn(x) : x) }));
   // Index into the log as stored (the list below shows it newest first).
+  // A deleted entry takes its record post off the group's feed too (when it was one).
+  const unpostEntry = (e: LogEntry) => { if (e.mode !== 'Escalado') cloud.unpost(postedName(p, e.scheme), e.v); };
   const removeEntry = (at: number) => {
+    unpostEntry(log[at]);
     const next = log.filter((_, i) => i !== at);
     update(x => withLog(x, next));
     if (!next.length) goHome();
     flash('Registro borrado', `${p.name}: quedan ${next.length} ${next.length === 1 ? 'registro' : 'registros'}.`);
   };
   const removeAll = () => {
+    log.forEach(unpostEntry);
     if (custom) set(d => ({ prs: d.prs.filter(x => x.id !== p.id), screen: 'home' }));
     else { update(x => withLog(x, [])); goHome(); }
     flash(custom ? 'Movimiento borrado' : 'Historial borrado', p.name);
@@ -56,6 +63,7 @@ export function Detail() {
           <h1 className="title" style={{ fontSize: 28 }}>{p.name}</h1>
         </div>
       </div>
+      {custom && <Rename name={p.name} what={p.name} onSave={name => { update(x => ({ ...x, name })); flash('Nombre cambiado', `Ahora es ${name}. Su historial sigue igual.`); }} />}
 
       <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 4, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', width: 140, height: 140, borderRadius: '50%', background: 'var(--color-accent-2)', right: -40, bottom: -60 }} />

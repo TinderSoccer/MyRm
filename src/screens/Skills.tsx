@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DeleteButton } from '../components/DeleteButton';
+import { Rename } from '../components/Rename';
 import { STAGES, discOf, type DiscId, type Skill } from '../data';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
@@ -86,7 +87,9 @@ export function Skills() {
                   );
                 })}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -4 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 4, marginTop: -4, flexWrap: 'wrap' }}>
+                {/* Skills you wrote yourself can be renamed; catalog ones keep their standard names. */}
+                {k.id.startsWith('k') && <Rename name={k.name} what={`la skill ${k.name}`} onSave={name => set(d => ({ skills: d.skills.map(x => x.id === k.id ? { ...x, name } : x) }))} />}
                 <DeleteButton label="Quitar" what={`la skill ${k.name}`} onDelete={() => remove(k)} />
               </div>
             </div>

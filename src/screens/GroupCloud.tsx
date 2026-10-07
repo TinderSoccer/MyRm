@@ -139,6 +139,11 @@ function SharedGroup() {
           return err;
         }}
         onDeleteEvent={cloud.deleteEvent}
+        onEditEvent={async (id, e) => {
+          const err = await cloud.updateEvent(id, { kind: e.kind, title: e.title, day: e.iso, time: e.time, place: e.place });
+          if (!err) flash('Evento actualizado', `${e.title}: ${countdown(e.iso).toLowerCase()}. Los que dijeron "Voy" siguen anotados.`);
+          return err;
+        }}
         onAddBirthday={local.addBirthday}
         onDeleteBirthday={local.deleteBirthday}
         onRsvp={cloud.rsvp}
@@ -157,7 +162,8 @@ function SharedGroup() {
           return (
             <FeedCard key={f.id} name={nameOf(f.user_id)} color={colorOf(f.user_id)} isMe={f.user_id === cloud.userId} ago={timeAgo(Date.parse(f.created_at))} disc={f.disc}
               isPr={f.kind === 'pr'} what={f.what} result={f.kind === 'pr' ? `${fmt.val(m, f.value ?? 0)} ${fmt.unitOf(m)}`.trim() : f.stage ?? ''}
-              cheers={f.cheers} cheered={f.cheered} onCheer={() => cloud.toggleCheer(f.id)} />
+              cheers={f.cheers} cheered={f.cheered} onCheer={() => cloud.toggleCheer(f.id)}
+              onDelete={f.user_id === cloud.userId ? () => cloud.deleteFeedItem(f.id) : undefined} />
           );
         })}
       </div>

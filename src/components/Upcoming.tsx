@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { DeleteButton } from './DeleteButton';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
@@ -25,6 +25,8 @@ interface Props {
   people: string[];
   onAddEvent: (e: NewEvent) => Promise<string | null> | void;
   onDeleteEvent: (id: string) => void;
+  /** Present when events can be changed (shared group): only on the ones you created. RSVPs stay. */
+  onEditEvent?: (id: string, e: NewEvent) => Promise<string | null>;
   onAddBirthday: (name: string, md: string) => void;
   onDeleteBirthday: (id: string) => void;
   onRsvp?: (id: string, going: boolean) => void;
@@ -47,7 +49,7 @@ const namesLine = (names: string[]) =>
   names.length <= 3 ? names.join(', ') : `${names.slice(0, 3).join(', ')} y ${names.length - 3} más`;
 
 /** Upcoming birthdays and get-togethers of the box crew, plus the form to add them. */
-export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent, onAddBirthday, onDeleteBirthday, onRsvp, scopeNote }: Props) {
+export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent, onEditEvent, onAddBirthday, onDeleteBirthday, onRsvp, scopeNote }: Props) {
   const [all, setAll] = useState(false);
   const [adding, setAdding] = useState<null | 'event' | 'birthday'>(null);
   const [kind, setKind] = useState<EventKind>('carrete');
@@ -58,6 +60,13 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const form = useRef<HTMLDivElement>(null);
+  // Editing reuses the add form, filled with the event, and brings it into view.
+  const startEdit = (ev: UpEvent) => {
+    setEditingId(ev.id); setAdding('event'); setKind(ev.kind); setTitle(ev.title); setIso(ev.iso); setTime(ev.time); setPlace(ev.place); setError(null);
+    requestAnimationFrame(() => form.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  };
 
   const items: Item[] = [
     ...events.filter(e => daysUntil(e.iso) >= 0).map(ev => ({ key: 'e' + ev.id, iso: ev.iso, kind: 'event' as const, ev })),
@@ -65,13 +74,14 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
   ].sort((a, b) => a.iso.localeCompare(b.iso));
   const visible = all ? items : items.slice(0, SHOWN);
 
-  const reset = () => { setAdding(null); setTitle(''); setIso(''); setTime(''); setPlace(''); setName(''); setKind('carrete'); setError(null); };
+  const reset = () => { setEditingId(null); setAdding(null); setTitle(''); setIso(''); setTime(''); setPlace(''); setName(''); setKind('carrete'); setError(null); };
   const canSave = !busy && (adding === 'event' ? !!title.trim() && !!iso : !!name.trim() && !!iso);
   const save = async () => {
     if (!canSave) return;
     if (adding === 'event') {
       setBusy(true);
-      const err = await onAddEvent({ kind, title: title.trim(), iso, time, place: place.trim() });
+      const e = { kind, title: title.trim(), iso, time, place: place.trim() };
+      const err = editingId && onEditEvent ? await onEditEvent(editingId, e) : await onAddEvent(e);
       setBusy(false);
       if (err) { setError(err); return; }
     } else {
@@ -109,6 +119,9 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
                 {it.kind === 'event' && (
                   <button className="round-btn" onClick={() => share(it.ev)} aria-label={`Compartir ${it.ev.title}`}><Icon name="share" size={18} /></button>
                 )}
+                {canDelete && it.kind === 'event' && onEditEvent && (
+                  <button className="del-btn" onClick={() => startEdit(it.ev)} aria-label={`Editar ${it.ev.title}`}>Editar</button>
+                )}
                 {canDelete && (
                   <DeleteButton label="Borrar" what={head}
                     onDelete={() => it.kind === 'event' ? onDeleteEvent(it.ev.id) : onDeleteBirthday(it.bd.id)} />
@@ -137,8 +150,8 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
           <button className="new-mov hit" onClick={() => setAdding('birthday')}>+ Cumpleaños</button>
         </div>
       ) : (
-        <div className="dashed">
-          <span className="label-600">{adding === 'event' ? 'Nuevo evento' : 'Nuevo cumpleaños'}</span>
+        <div className="dashed" ref={form}>
+          <span className="label-600">{adding === 'event' ? (editingId ? 'Editar evento' : 'Nuevo evento') : 'Nuevo cumpleaños'}</span>
           {adding === 'event' ? (
             <>
               <Segmented label="Tipo de evento" value={kind} onChange={setKind} options={KINDS} />

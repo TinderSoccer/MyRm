@@ -74,14 +74,22 @@ interface Cloud {
   leaveGroup: () => Promise<void>;
   post: (item: NewFeedItem) => void;
   toggleCheer: (id: string) => void;
+  /** Takes one of your own posts off the group's feed. */
+  deleteFeedItem: (id: string) => void;
+  /** Takes back the record post that matches a mark entry you deleted or corrected (same name and value). */
+  unpost: (what: string, value: number) => void;
   addEvent: (e: Pick<CloudEvent, 'kind' | 'title' | 'day' | 'time' | 'place'>) => Promise<string | null>;
   deleteEvent: (id: string) => void;
+  /** Changes an event you created; RSVPs stay. */
+  updateEvent: (id: string, e: Pick<CloudEvent, 'kind' | 'title' | 'day' | 'time' | 'place'>) => Promise<string | null>;
   rsvp: (id: string, going: boolean) => void;
   saveProfile: (name: string, birthday: string | null) => void;
   postWod: (w: NewWod) => Promise<string | null>;
   /** A photo of the box's whiteboard read into a WOD (server-side AI); a string is an error to show. */
   readBoardPhoto: (photo: Blob) => Promise<NewWod | string>;
   deleteWod: () => void;
+  /** Fixes the WOD you posted (a misread line from a photo) without touching anyone's scores. */
+  updateWod: (w: NewWod) => Promise<string | null>;
   saveScore: (s: Omit<WodScore, 'user_id'>) => Promise<string | null>;
   dropScore: () => void;
   inviteLink: () => string;
@@ -364,6 +372,21 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       setEvents(es => es.filter(e => e.id !== id));
       sb.from('events').delete().eq('id', id).then(() => refresh());
     },
+    updateEvent: async (id, e) => {
+      if (!sb) return null;
+      const { error } = await sb.from('events').update(e).eq('id', id);
+      await refresh();
+      return explain(error);
+    },
+    deleteFeedItem: id => {
+      if (!sb) return;
+      setFeed(fs => fs.filter(f => f.id !== id));
+      sb.from('feed_items').delete().eq('id', id).then(() => refresh());
+    },
+    unpost: (what, value) => {
+      if (!sb || !userId || !group) return;
+      sb.from('feed_items').delete().eq('group_id', group.id).eq('user_id', userId).eq('kind', 'pr').eq('what', what).eq('value', value).then(() => refresh());
+    },
     rsvp: (id, going) => {
       if (!sb || !userId) return;
       setEvents(es => es.map(e => e.id !== id ? e : {
@@ -397,6 +420,12 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         if (!res.ok || !out.title) return out.error ?? 'No pudimos leer esta foto. Escribe el WOD a mano.';
         return { title: out.title, description: out.description ?? '', score_type: out.score_type ?? 'time' };
       } catch { return 'Sin conexión. Revisa tu internet e intenta de nuevo.'; }
+    },
+    updateWod: async w => {
+      if (!sb || !wod) return null;
+      const { error } = await sb.from('wods').update(w).eq('id', wod.id);
+      await refresh();
+      return explain(error);
     },
     deleteWod: () => {
       if (!sb || !wod) return;

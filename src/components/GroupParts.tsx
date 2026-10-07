@@ -1,3 +1,4 @@
+import { DeleteButton } from './DeleteButton';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
 import { discOf, type DiscId } from '../data';
@@ -34,10 +35,12 @@ interface FeedCardProps {
   name: string; color: string; isMe: boolean; ago: string; disc: DiscId;
   isPr: boolean; what: string; result: string;
   cheers: number; cheered: boolean; onCheer: () => void;
+  /** Your own posts can be taken off the feed. */
+  onDelete?: () => void;
 }
 
 /** One achievement in the group feed, with the flame to cheer it. */
-export function FeedCard({ name, color, isMe, ago, disc, isPr, what, result, cheers, cheered, onCheer }: FeedCardProps) {
+export function FeedCard({ name, color, isMe, ago, disc, isPr, what, result, cheers, cheered, onCheer, onDelete }: FeedCardProps) {
   const d = discOf(disc);
   return (
     <div className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '16px 18px' }}>
@@ -62,6 +65,7 @@ export function FeedCard({ name, color, isMe, ago, disc, isPr, what, result, che
           <Icon name="flame" size={18} />{cheers}
         </button>
       </div>
+      {onDelete && <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -4 }}><DeleteButton label="Quitar" what={`tu publicación de ${what}`} onDelete={onDelete} /></div>}
     </div>
   );
 }

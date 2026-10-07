@@ -3,7 +3,7 @@ import { Icon } from './Icon';
 import { Segmented } from './Segmented';
 import { PlateCounter, UnitPicker, countsFromLoad, countsWords, totalKgOf, type Counts } from './BarSetup';
 import { discOf, type DiscId, type Pr, type PrType } from '../data';
-import { SCHEMES, barLoad, barWeight, fixedKg, bestOf, bestWord, currentOf, joinRounds, lastOf, repsWord, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
+import { SCHEMES, postedName, barLoad, barWeight, fixedKg, bestOf, bestWord, currentOf, joinRounds, lastOf, repsWord, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
 
@@ -153,6 +153,9 @@ export function RecordSheet() {
     const entry = { v, date: keepDate ? editingEntry!.date : shortDate(dateISO), ...(keepDate ? {} : { iso: dateISO }), scheme: schemeKey, mode, note: note.trim(), ...(plateMode ? { plates: { bar: data.bar, lb, side } } : {}) };
     if (editingEntry) {
       set(d => ({ prs: d.prs.map(x => x.id === selRaw.id ? withLog(x, logOf(x).map((e, i) => i === editAt ? entry : e)) : x) }));
+      // The group sees the corrected number: the old post (if this entry was one) goes, and a corrected record is posted.
+      if (editingEntry.mode !== 'Escalado') cloud.unpost(postedName(selP, editingEntry.scheme), editingEntry.v);
+      if (better && !scaled) cloud.post({ kind: 'pr', disc: selP.disc, what: postedName(selP, schemeKey), type: selP.type, unit_label: selP.unitLabel ?? null, value: v });
       closeSheet(); setDraftText(null);
       flash('Registro corregido', `${selP.name}: ${fmt.val(selP, v)} ${unit}${schemeKey && schemeKey !== '1RM' ? ` a ${repsWord(schemeKey)}` : ''}.`);
       return;
@@ -163,8 +166,7 @@ export function RecordSheet() {
       prs: d.prs.map(x => x.id === selP.id ? withLog(x, [...logOf(x), entry]) : x),
       done: day >= 0 ? d.done.map((x, i) => x || i === day) : d.done
     }));
-    // The group must not read a best set of 5 as a max: the reps go with the name.
-    const what = schemeKey && schemeKey !== '1RM' ? `${selP.name} (${repsWord(schemeKey)})` : selP.name;
+    const what = postedName(selP, schemeKey);
     if (isPR) cloud.post({ kind: 'pr', disc: selP.disc, what, type: selP.type, unit_label: selP.unitLabel ?? null, value: v });
     closeSheet();
     setDraftText(null);
