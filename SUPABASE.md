@@ -46,3 +46,13 @@ Supabase → *Authentication*:
 2. **Invitar a tu gente** comparte un link `…/?join=código`. Quien lo abre pasa por la bienvenida, entra con su correo y queda dentro.
 3. Los récords nuevos y las skills logradas se publican solos en el grupo.
 4. Tu cumpleaños se pone en **Perfil** (toca tu inicial en Inicio).
+
+## Foto de la pizarra (opcional)
+
+El botón **Foto de la pizarra** al subir el WOD lee una foto de la pizarra del box con IA (función `api/wod-photo.ts` en Vercel). Para activarlo:
+
+1. Crea una clave en https://platform.claude.com → *API Keys*.
+2. En Vercel → proyecto → *Settings → Environment Variables*, agrega `ANTHROPIC_API_KEY` (Production) con esa clave. Nunca con prefijo `VITE_` ni `NEXT_PUBLIC_`: quedaría a la vista en la app.
+3. Despliega de nuevo para que la tome.
+
+Solo la pueden usar personas con sesión iniciada en MyRm. Cada foto es una llamada a Claude con esfuerzo bajo.
