@@ -26,7 +26,8 @@ export function GroupCloud() {
   const cloud = useCloud();
   if (!cloud.enabled) return <div className="screen"><Head title="Mi grupo" lede="El grupo necesita conexión con el servidor, y esta versión de la app no la tiene configurada." /></div>;
   if (!cloud.ready) return <div className="screen"><p className="lede">Cargando tu grupo…</p></div>;
-  if (!cloud.userId) return <SignIn />;
+  // Signing in happens when the app opens (see Login); this only covers the moment the session drops.
+  if (!cloud.userId) return null;
   if (!cloud.group) return <Setup />;
   return <SharedGroup />;
 }
@@ -36,59 +37,6 @@ function Head({ title, lede }: { title: string; lede: string }) {
     <div className="screen-head">
       <h1 className="title">{title}</h1>
       <p className="lede">{lede}</p>
-    </div>
-  );
-}
-
-/** Email → link + 6-digit code. The code matters on iPhone: the link opens in Safari, not in the installed app. */
-function SignIn() {
-  const { sendCode, verifyCode, pendingJoin } = useCloud();
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [sentTo, setSentTo] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const send = async () => {
-    const addr = email.trim();
-    if (!/^\S+@\S+\.\S+$/.test(addr)) { setError('Revisa el correo: falta algo.'); return; }
-    setBusy(true); setError(null);
-    const err = await sendCode(addr);
-    setBusy(false);
-    if (err) setError(err); else setSentTo(addr);
-  };
-  const verify = async () => {
-    if (!sentTo || code.trim().length < 6) return;
-    setBusy(true); setError(null);
-    const err = await verifyCode(sentTo, code);
-    setBusy(false);
-    if (err) setError(err);
-  };
-
-  return (
-    <div className="screen" data-screen-label="06 Grupo · Entrar">
-      <Head title="Mi grupo" lede={pendingJoin ? 'Te invitaron a un grupo del box. Entra con tu correo para sumarte.' : 'Comparte tus récords con tu gente del box, organiza carretes y no te pierdas ningún cumple. Además, tus marcas quedan respaldadas en tu cuenta.'} />
-      <div className="dashed">
-        {!sentTo ? (
-          <>
-            <label htmlFor="email" className="label-600">Entra con tu correo</label>
-            <p className="note">Te mandamos un link y un código. Sin contraseñas.</p>
-            <input id="email" className="input" type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com" value={email}
-              onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} style={{ height: 48, fontSize: 15 }} />
-            <button className="btn btn-primary" onClick={send} disabled={busy} style={{ height: 48 }}>{busy ? 'Enviando…' : 'Enviarme el código'}</button>
-          </>
-        ) : (
-          <>
-            <label htmlFor="otp" className="label-600">Revisa tu correo</label>
-            <p className="note">Lo enviamos a <strong>{sentTo}</strong>. Toca el link, o escribe aquí el código.</p>
-            <input id="otp" className="input" inputMode="numeric" autoComplete="one-time-code" placeholder="Código de 6 dígitos" value={code} maxLength={8}
-              onChange={e => setCode(e.target.value.replace(/\D/g, ''))} onKeyDown={e => e.key === 'Enter' && verify()} style={{ height: 52, fontSize: 22, letterSpacing: '0.2em', textAlign: 'center' }} />
-            <button className="btn btn-primary" onClick={verify} disabled={busy || code.length < 6} style={{ height: 48 }}>{busy ? 'Entrando…' : 'Entrar'}</button>
-            <button className="btn btn-ghost" onClick={() => { setSentTo(null); setCode(''); setError(null); }} style={{ minHeight: 44 }}>Usar otro correo</button>
-          </>
-        )}
-        {error && <p className="note" role="alert" style={{ color: 'var(--color-accent-800)' }}>{error}</p>}
-      </div>
     </div>
   );
 }

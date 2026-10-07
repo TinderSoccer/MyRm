@@ -188,7 +188,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     if (!row) { await push(local); }
     else if (firstTime) {
       const merged = canon(mergePersonal(JSON.parse(local) as Personal, row.data as Personal));
-      set(() => JSON.parse(merged));
+      // An account that already has data is a returning athlete: skip the profile questions on this phone.
+      set(d => ({ ...JSON.parse(merged), ...(d.onboarded ? {} : { onboarded: true, screen: 'home' as const }) }));
       await push(merged);
     } else if (local !== sent.current) {
       await push(local);  // unsent changes on this phone are the newest

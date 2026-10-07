@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
-import { DISCS } from '../data';
+import { DISCS, seedData } from '../data';
+import { weekStartISO } from '../format';
 import { pillStyle, useStore } from '../store';
 import { useCloud } from '../cloud';
 
@@ -47,6 +48,11 @@ export function Profile() {
     // Arrived through an invite link: go straight to the group to sign in and join.
     set(() => ({ screen: !settings && cloud.pendingJoin ? 'gr' : 'home', onboarded: true }));
   };
+  // Your marks live in the account; signing out leaves this phone clean for whoever signs in next.
+  const signOut = async () => {
+    await cloud.signOut();
+    set(() => seedData(weekStartISO()));
+  };
   const toggleGoal = (id: typeof DISCS[number]['id']) =>
     set(d => ({ goals: d.goals.includes(id) ? d.goals.filter(x => x !== id) : [...d.goals, id] }));
 
@@ -88,17 +94,10 @@ export function Profile() {
           <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 15 }} />
         </div>
       )}
-      {settings && cloud.enabled && !cloud.userId && (
-        <div className="dashed">
-          <span className="label-600">Respalda tus marcas</span>
-          <p className="note">Hoy viven solo en este teléfono. Entra con tu correo y no las pierdes si cambias de teléfono.</p>
-          <button className="btn btn-primary" onClick={() => set(() => ({ screen: 'gr' }))} style={{ height: 48 }}>Entrar con mi correo</button>
-        </div>
-      )}
       {cloud.userId && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}</span>
-          <button className="btn btn-secondary" onClick={() => cloud.signOut()} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
+          <button className="btn btn-secondary" onClick={signOut} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
         </div>
       )}
       <div style={{ flex: 1 }} />

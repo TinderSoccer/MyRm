@@ -3,6 +3,8 @@ import { TabBar } from './components/TabBar';
 import { Toast } from './components/Toast';
 import { Detail } from './screens/Detail';
 import { GroupCloud } from './screens/GroupCloud';
+import { Login } from './screens/Login';
+import { useCloud } from './cloud';
 import { Home } from './screens/Home';
 import { Skills } from './screens/Skills';
 import { Profile, Welcome } from './screens/Welcome';
@@ -10,7 +12,10 @@ import { useStore } from './store';
 
 export function App() {
   const { data, sheet } = useStore();
-  const s = data.screen;
+  const cloud = useCloud();
+  // Past the welcome screen you need an account: until the session is known, nothing; without one, the sign-in.
+  const gate = cloud.enabled && data.screen !== 'w1' ? (!cloud.ready ? 'wait' : !cloud.userId ? 'login' : null) : null;
+  const s = gate ? gate : data.screen;
   return (
     <div className="stage">
       <div className="phone" data-screen-label="Teléfono">
@@ -20,13 +25,14 @@ export function App() {
           <span style={{ display: 'flex', gap: 5, alignItems: 'center' }}><span className="status-batt" /></span>
         </div>
         <div className="app-layer" inert={sheet != null}>
+        {s === 'login' && <Login />}
         {s === 'w1' && <Welcome />}
         {s === 'w2' && <Profile />}
         {s === 'home' && <Home />}
         {s === 'sk' && <Skills />}
         {s === 'gr' && <GroupCloud />}
         {s === 'det' && <Detail />}
-        {s !== 'w1' && s !== 'w2' && <TabBar />}
+        {!gate && s !== 'w1' && s !== 'w2' && <TabBar />}
         </div>
         <RecordSheet />
         <Toast />

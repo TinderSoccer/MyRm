@@ -29,7 +29,8 @@ Supabase → *Authentication*:
 1. **URL Configuration**
    - *Site URL*: la dirección de Vercel, p. ej. `https://myrm.vercel.app`
    - *Redirect URLs*: esa misma y `http://localhost:4173`
-2. **Email Templates → Magic Link**: agrega el código al mensaje, para que en iPhone se pueda entrar escribiéndolo (con la app instalada, el link se abre en Safari y no en la app):
+2. **SMTP propio (primero):** en el plan gratis, Supabase solo deja editar los correos con un SMTP propio, y el suyo de fábrica manda muy pocos por hora. Con Gmail: crea una [contraseña de aplicación](https://myaccount.google.com/apppasswords) (pide verificación en dos pasos) y en *Authentication → SMTP Settings* pon host `smtp.gmail.com`, puerto `587`, tu Gmail como usuario y remitente, y esa contraseña. Alcanza para ~500 correos al día.
+3. **Email Templates → Confirm signup y Magic Link** (las dos): agrega el código al mensaje, para que en iPhone se pueda entrar escribiéndolo (con la app instalada, el link se abre en Safari y no en la app):
 
    ```html
    <h2>Entra a MyRm</h2>
@@ -37,11 +38,10 @@ Supabase → *Authentication*:
    <p>O toca este link: <a href="{{ .ConfirmationURL }}">Entrar</a></p>
    ```
 
-3. **Ojo con el límite de correos:** el correo que trae Supabase de fábrica manda muy pocos por hora y es solo para pruebas. Antes de invitar al box, configura un SMTP propio en *Authentication → SMTP Settings* (p. ej. [Resend](https://resend.com), gratis hasta 3.000 correos al mes).
 
 ## Cómo se usa
 
-1. Entras a **Grupo** con tu correo y creas el grupo del box.
+1. Al abrir la app, después de la bienvenida, entras con tu correo (código de 6 dígitos). Luego, en **Grupo**, creas el grupo del box.
 2. **Invitar a tu gente** comparte un link `…/?join=código`. Quien lo abre pasa por la bienvenida, entra con su correo y queda dentro.
 3. Los récords nuevos y las skills logradas se publican solos en el grupo.
 4. Tu cumpleaños se pone en **Perfil** (toca tu inicial en Inicio).
