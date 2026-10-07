@@ -131,7 +131,7 @@ export function SetPassword() {
       <Err error={error} />
       {/* Never a dead end: offline at the box, or just not now, the app stays usable. */}
       <button className="btn btn-ghost" onClick={() => changePassword(false)} style={{ minHeight: 44 }}>{hasPassword ? 'Dejar la clave que tenía' : 'Ahora no'}</button>
-      <button className="btn btn-ghost" onClick={signOut} style={{ minHeight: 44 }}>Cerrar sesión</button>
+      <button className="btn btn-ghost" onClick={() => run(signOut)} style={{ minHeight: 44 }}>Cerrar sesión</button>
     </Frame>
   );
 }

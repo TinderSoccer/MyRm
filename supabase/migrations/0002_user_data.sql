@@ -1,4 +1,4 @@
--- MyRm · personal backup: each person's marks, skills, reminders and settings, as one JSON copy per account.
+-- MyRm · personal backup: each person's marks, skills, settings and hand-added birthdays, as one JSON copy per account.
 -- Only the owner can read or write it. Run once in the Supabase SQL editor, after 0001_group.sql.
 
 create table public.user_data (

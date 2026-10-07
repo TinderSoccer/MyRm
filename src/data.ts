@@ -33,6 +33,8 @@ export interface AppData {
   screen: Screen;
   /** False until the welcome + profile flow is finished once. */
   onboarded: boolean;
+  /** Account these marks belong to; null before signing in (or after signing out). Another account never merges into them. */
+  owner: string | null;
   name: string;
   goals: DiscId[];
   freq: number;
@@ -124,6 +126,7 @@ export function seedData(weekStart: string): AppData {
   return {
     screen: 'w1',
     onboarded: false,
+    owner: null,
     name: '', goals: [], freq: 4,
     done: [false, false, false, false, false, false, false],
     weekStart,

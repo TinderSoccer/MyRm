@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { RecordSheet } from './components/RecordSheet';
 import { TabBar } from './components/TabBar';
 import { Toast } from './components/Toast';
@@ -15,7 +16,10 @@ export function App() {
   const cloud = useCloud();
   // Past the welcome screen you need an account: until the session is known, nothing; without one, the sign-in;
   // signed in without a password yet (or asked to change it), choosing one.
-  const gate = cloud.enabled && data.screen !== 'w1'
+  // Offline with an expired session (no signal at the box), whoever's marks these are keeps using them.
+  const online = useOnline();
+  const offlineOwner = !!data.owner && !online;
+  const gate = cloud.enabled && data.screen !== 'w1' && !offlineOwner
     ? (!cloud.ready ? 'wait' : !cloud.userId ? 'login' : cloud.needsPassword ? 'password' : null)
     : null;
   const s = gate ? gate : data.screen;
@@ -43,4 +47,15 @@ export function App() {
       </div>
     </div>
   );
+}
+
+function useOnline() {
+  const [online, setOnline] = useState(navigator.onLine);
+  useEffect(() => {
+    const on = () => setOnline(navigator.onLine);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', on);
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', on); };
+  }, []);
+  return online;
 }

@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { seedData, type DiscId, type EventKind, type PrType } from './data';
 import { todayISO, weekStartISO } from './format';
 import { useStore } from './store';
-import { canon, mergePersonal, personalOf, type Personal } from './sync';
+import { canon, hashOf, mergePersonal, personalOf, type Personal } from './sync';
 
 // The shared group lives in Supabase. Without these variables the app keeps working fully on the phone, as before.
 const URL_ = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,8 +14,10 @@ const sb: SupabaseClient | null = URL_ && KEY_ ? createClient(URL_, KEY_) : null
 
 const JOIN_KEY = 'myrm.join';
 const REFRESH_MS = 60_000;
-/** Set once a phone has joined its marks with the account's; from then on the newest copy wins. */
-const SYNCED_KEY = 'myrm.synced.';
+/** Per account: the version of the backup this phone last agreed on with the server. */
+const SYNC_KEY = 'myrm.sync.';
+interface SyncMark { at: string; hash: string }
+const readMark = (uid: string): SyncMark | null => { try { return JSON.parse(localStorage.getItem(SYNC_KEY + uid) || 'null'); } catch { return null; } };
 const PUSH_DELAY_MS = 2000;
 
 export interface CloudGroup { id: string; name: string; invite_code: string; created_by: string }
@@ -64,7 +66,8 @@ interface Cloud {
   /** From Profile: ask for a new password now (`false` cancels). */
   changePassword: (on: boolean) => void;
   hasPassword: boolean;
-  signOut: () => Promise<void>;
+  /** Null when done; otherwise why it didn't sign out. */
+  signOut: () => Promise<string | null>;
   createGroup: (name: string) => Promise<string | null>;
   joinGroup: (code: string) => Promise<string | null>;
   leaveGroup: () => Promise<void>;
@@ -158,9 +161,13 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       // The phone's own date: a 7 AM class in Chile is still "today", whatever the UTC date says.
       sb.from('wods').select('*, wod_scores(user_id, value, scaled, note)').eq('group_id', gid).eq('day', todayISO()).maybeSingle()
     ]);
-    setWodBoard(!wd.error);
-    const w = wd.data as (Omit<CloudWod, 'scores'> & { wod_scores: WodScore[] }) | null;
-    setWod(w ? { ...w, scores: w.wod_scores.map(s => ({ ...s, value: Number(s.value) })) } : null);
+    // Only a missing table turns the board off; a dropped connection just keeps what was there.
+    if (wd.error) { if (wd.error.code === '42P01' || wd.error.code === 'PGRST205') setWodBoard(false); }
+    else {
+      setWodBoard(true);
+      const w = wd.data as (Omit<CloudWod, 'scores'> & { wod_scores: WodScore[] }) | null;
+      setWod(w ? { ...w, scores: w.wod_scores.map(s => ({ ...s, value: Number(s.value) })) } : null);
+    }
     if (g.data) setGroup(g.data as CloudGroup);
     // Members reference auth.users, not profiles, so their names come in a second query.
     const ids = (mem.data ?? []).map(r => r.user_id as string);
@@ -191,44 +198,64 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Personal backup: marks, skills and settings follow the account ───
-  const [backedUp, setBackedUp] = useState(false);
-  const mine = useMemo(() => canon(personalOf(data)), [data]);
-  const latestMine = useRef(mine);
-  latestMine.current = mine;
-  const sent = useRef<string | null>(null);     // last copy the server has (or that came from it)
-  const remoteAt = useRef<string | null>(null);  // updated_at of that copy
+  // Each phone remembers (across restarts) the version it last agreed on with the account: its server timestamp and a
+  // fingerprint of the content. Comparing both sides against it says who changed: only the phone → upload; only the
+  // account → download; both → join them. Nothing is uploaded before the account has been checked in this session.
+  const mine = useMemo(() => canon(personalOf(data)),
+    [data.name, data.goals, data.freq, data.units, data.bar, data.prs, data.skills, data.birthdays]); // eslint-disable-line react-hooks/exhaustive-deps
+  const latest = useRef({ mine, owner: data.owner });
+  latest.current = { mine, owner: data.owner };
+  const [mark, setMarkState] = useState<SyncMark | null>(null);
+  const [checked, setChecked] = useState(false);
+  const saveMark = useCallback((m: SyncMark) => {
+    setMarkState(m);
+    try { localStorage.setItem(SYNC_KEY + userId, JSON.stringify(m)); } catch { /* private mode */ }
+  }, [userId]);
+  const mineIsSynced = data.owner === userId && !!mark && hashOf(mine) === mark.hash;
 
   const push = useCallback(async (json: string) => {
-    if (!sb || !userId) return;
+    if (!sb || !userId) return false;
     const { data: row, error } = await sb.from('user_data').upsert({ user_id: userId, data: JSON.parse(json), updated_at: new Date().toISOString() }).select('updated_at').single();
-    if (!error) { sent.current = json; remoteAt.current = row.updated_at; setBackedUp(true); }
-  }, [userId]);
+    if (error) return false;
+    saveMark({ at: row.updated_at, hash: hashOf(json) });
+    return true;
+  }, [userId, saveMark]);
 
   const pull = useCallback(async () => {
     if (!sb || !userId) return;
     const { data: row, error } = await sb.from('user_data').select('data, updated_at').eq('user_id', userId).maybeSingle();
-    if (error) return; // table not created yet, or offline: the phone keeps working on its own
-    const local = latestMine.current;
-    const firstTime = (() => { try { return !localStorage.getItem(SYNCED_KEY + userId); } catch { return true; } })();
-    if (!row) { await push(local); }
-    else if (firstTime) {
-      const merged = canon(mergePersonal(JSON.parse(local) as Personal, row.data as Personal));
+    if (error) return; // offline (or table missing): the phone keeps working and checks again later
+    const { mine: local, owner } = latest.current;
+    const remote = (row?.data ?? null) as Personal | null;
+    const m = readMark(userId);
+    if (owner && owner !== userId) {
+      // Another account's marks are on this phone: never mix them. Start from this account's copy.
+      set(() => ({ ...seedData(weekStartISO()), ...(remote ?? {}), owner: userId, onboarded: !!remote, screen: remote ? 'home' : 'w2' }));
+      if (row) saveMark({ at: row.updated_at, hash: hashOf(canon(remote)) });
+    } else if (!owner) {
+      // Marks from before signing in (or a clean phone): they join the account, nothing lost.
+      const merged = remote ? mergePersonal(JSON.parse(local) as Personal, remote) : JSON.parse(local) as Personal;
       // An account that already has data is a returning athlete: skip the profile questions on this phone.
-      set(d => ({ ...JSON.parse(merged), ...(d.onboarded ? {} : { onboarded: true, screen: 'home' as const }) }));
-      await push(merged);
-    } else if (local !== sent.current) {
-      await push(local);  // unsent changes on this phone are the newest
-    } else if (row.updated_at !== remoteAt.current) {
-      const json = canon(row.data);
-      sent.current = json; remoteAt.current = row.updated_at;
-      set(() => row.data as Personal);  // logged from another phone
-      setBackedUp(true);
-    } else setBackedUp(true);
-    try { localStorage.setItem(SYNCED_KEY + userId, '1'); } catch { /* private mode */ }
-  }, [userId, push, set]);
+      set(d => ({ ...merged, owner: userId, ...(remote && !d.onboarded ? { onboarded: true, screen: 'home' as const } : {}) }));
+      await push(canon(merged));
+    } else {
+      const phoneChanged = !m || hashOf(local) !== m.hash;
+      const accountChanged = !!row && (!m || row.updated_at !== m.at);
+      if (!row || (phoneChanged && !accountChanged)) await push(local);
+      else if (phoneChanged && accountChanged) {
+        const merged = mergePersonal(JSON.parse(local) as Personal, remote!);
+        set(() => merged);
+        await push(canon(merged));
+      } else if (accountChanged) {
+        set(() => remote!);  // logged from another phone
+        saveMark({ at: row.updated_at, hash: hashOf(canon(remote)) });
+      } else setMarkState(m);
+    }
+    setChecked(true);
+  }, [userId, push, set, saveMark]);
 
   useEffect(() => {
-    sent.current = null; remoteAt.current = null; setBackedUp(false);
+    setChecked(false); setMarkState(userId ? readMark(userId) : null);
     pull();
     if (!sb || !userId) return;
     const onVis = () => { if (document.visibilityState === 'visible') pull(); };
@@ -236,12 +263,13 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('visibilitychange', onVis);
   }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Every change goes up shortly after it settles.
+  // Every change goes up shortly after it settles, once the account has been checked this session.
   useEffect(() => {
-    if (!backedUp || mine === sent.current) return;
+    if (!checked || data.owner !== userId || mineIsSynced) return;
     const t = window.setTimeout(() => push(mine), PUSH_DELAY_MS);
     return () => clearTimeout(t);
-  }, [mine, backedUp, push]);
+  }, [mine, checked, data.owner, userId, mineIsSynced, push]);
+  const backedUp = checked && mineIsSynced;
 
   // Stay fresh while open: on return to the app and once a minute.
   useEffect(() => {
@@ -279,7 +307,15 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     },
     changePassword: on => { setWantsPassword(on); if (!on) setSkippedPassword(true); },
     // Your marks live in the account; signing out leaves this phone clean for whoever signs in next.
-    signOut: async () => { setWantsPassword(false); setSkippedPassword(false); await sb?.auth.signOut(); set(() => seedData(weekStartISO())); },
+    // Unsent changes go up first; without a connection the session stays, so nothing is lost.
+    signOut: async () => {
+      if (!sb) return null;
+      if (data.owner === userId && !mineIsSynced && !(await push(mine))) return 'Tienes cambios sin respaldar y no hay conexión. Conéctate y vuelve a intentar.';
+      await sb.auth.signOut({ scope: 'local' });
+      setWantsPassword(false); setSkippedPassword(false);
+      set(() => seedData(weekStartISO()));
+      return null;
+    },
     createGroup: async name => {
       if (!sb) return null;
       const { error } = await sb.rpc('create_group', { group_name: name });
@@ -342,8 +378,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       if (!sb || !group || !userId) return null;
       const { error } = await sb.from('wods').insert({ ...w, group_id: group.id, day: todayISO(), created_by: userId });
       await refresh();
-      // Someone else posted it a moment earlier: theirs is the board now.
-      return error?.code === '23505' ? null : explain(error);
+      // Someone else posted it a moment earlier: theirs is the board now, and the person should know.
+      return error?.code === '23505' ? 'Alguien subió el WOD de hoy justo antes que tú: es el que ves en la pizarra.' : explain(error);
     },
     deleteWod: () => {
       if (!sb || !wod) return;
@@ -362,7 +398,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       sb.from('wod_scores').delete().eq('wod_id', wod.id).eq('user_id', userId).then(() => refresh());
     },
     inviteLink: () => group ? `${location.origin}${location.pathname}?join=${group.invite_code}` : ''
-  }), [set, ready, userId, email, hasPassword, wantsPassword, skippedPassword, group, members, feed, events, wod, wodBoard, pendingJoin, backedUp, refresh]);
+  }), [set, push, mine, mineIsSynced, data.owner, ready, userId, email, hasPassword, wantsPassword, skippedPassword, group, members, feed, events, wod, wodBoard, pendingJoin, backedUp, refresh]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

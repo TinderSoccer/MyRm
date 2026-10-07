@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DeleteButton } from './DeleteButton';
 import type { Pr, PrType } from '../data';
 import { useCloud, type WodScore } from '../cloud';
-import { initialOf, logOf, shortDate, todayISO, withLog } from '../format';
+import { initialOf, logOf, shortDate, withLog } from '../format';
 import { pillStyle, useStore } from '../store';
 
 const TYPES: [PrType, string][] = [['time', 'Por tiempo'], ['reps', 'Reps / rondas'], ['kg', 'Peso']];
@@ -31,7 +31,8 @@ function PostWod() {
     setBusy(true); setError(null);
     const err = await cloud.postWod({ title: title.trim(), description: description.trim(), score_type: type });
     setBusy(false);
-    if (err) setError(err); else flash('WOD en la pizarra', 'Ahora todos pueden anotar su resultado.');
+    // The board may already have replaced this form (someone posted first), so the message also goes in a toast.
+    if (err) { setError(err); flash('No se subió tu WOD', err); } else flash('WOD en la pizarra', 'Ahora todos pueden anotar su resultado.');
   };
   return (
     <div className="dashed">
@@ -66,14 +67,17 @@ function Board({ nameOf, colorOf }: Props) {
     a.scaled !== b.scaled ? (a.scaled ? 1 : -1) : w.score_type === 'time' ? a.value - b.value : b.value - a.value);
 
   // A benchmark with the same name as one of your marks (Fran, Cindy…) also lands in your history.
+  const BOARD_NOTE = 'De la pizarra';
+  const benchmark = data.prs.find(x => x.name.trim().toLowerCase() === w.title.trim().toLowerCase() && x.type === w.score_type && x.type !== 'kg');
+  const withoutToday = (p: Pr) => logOf(p).filter(e => !(e.iso === w.day && e.note === BOARD_NOTE));
   const alsoMark = (s: Omit<WodScore, 'user_id'>) => {
-    const p = data.prs.find(x => x.name.trim().toLowerCase() === w.title.trim().toLowerCase() && x.type === w.score_type && x.type !== 'kg');
-    if (!p) return false;
-    const iso = todayISO();
-    const entry = { v: s.value, date: shortDate(iso), iso, scheme: null, mode: s.scaled ? 'Escalado' : 'RX', note: 'De la pizarra' };
-    set(d => ({ prs: d.prs.map(x => x.id === p.id ? withLog(x, [...logOf(x).filter(e => !(e.iso === iso && e.note === 'De la pizarra')), entry]) : x) }));
+    if (!benchmark) return false;
+    const entry = { v: s.value, date: shortDate(w.day), iso: w.day, scheme: null, mode: s.scaled ? 'Escalado' : 'RX', note: BOARD_NOTE };
+    set(d => ({ prs: d.prs.map(x => x.id === benchmark.id ? withLog(x, [...withoutToday(x), entry]) : x) }));
     return true;
   };
+  // Taking the score off the board takes it out of your history too.
+  const unMark = () => { if (benchmark) set(d => ({ prs: d.prs.map(x => x.id === benchmark.id ? withLog(x, withoutToday(x)) : x) })); };
 
   const save = async () => {
     const value = fmt.parse(asPr, text);
@@ -117,7 +121,7 @@ function Board({ nameOf, colorOf }: Props) {
       ) : (
         <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
           <button className="btn btn-secondary" onClick={() => setEditing(true)} style={{ minHeight: 44 }}>Cambiar mi resultado</button>
-          <DeleteButton label="Quitar" what="tu resultado de hoy" onDelete={() => { cloud.dropScore(); setText(''); setEditing(true); }} />
+          <DeleteButton label="Quitar" what="tu resultado de hoy" onDelete={() => { cloud.dropScore(); unMark(); setText(''); setEditing(true); }} />
         </div>
       )}
 

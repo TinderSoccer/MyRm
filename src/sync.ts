@@ -11,6 +11,18 @@ export const personalOf = (d: AppData): Personal => Object.fromEntries(KEYS.map(
 export const canon = (x: unknown) => JSON.stringify(x, (_k, v) =>
   v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map(k => [k, v[k]])) : v);
 
+/** Short fingerprint of a canon() copy, to remember which version this phone and the account last agreed on. */
+export function hashOf(s: string) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
+}
+
 const byId = <T extends { id: string | number }>(a: T[], b: T[], both: (x: T, y: T) => T) => {
   const out = new Map(a.map(x => [x.id, x]));
   for (const y of b) { const x = out.get(y.id); out.set(y.id, x ? both(x, y) : y); }
@@ -19,7 +31,7 @@ const byId = <T extends { id: string | number }>(a: T[], b: T[], both: (x: T, y:
 
 const entryKey = (e: LogEntry) => [e.iso ?? e.date, e.v, e.scheme, e.mode, e.note].join('|');
 
-/** First sync on a phone: nothing on either side is lost. Logs are joined, skills keep the furthest stage. */
+/** When both sides changed (or a phone joins an account): nothing on either side is lost. Logs are joined, skills keep the furthest stage. */
 export function mergePersonal(local: Personal, remote: Personal): Personal {
   return {
     ...remote,

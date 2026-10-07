@@ -32,7 +32,7 @@ const label = { fontWeight: 600, fontSize: 14 } as const;
 const group = { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' } as const;
 
 export function Profile() {
-  const { data, set, setHomeFilter } = useStore();
+  const { data, set, setHomeFilter, flash } = useStore();
   // The same screen is the second onboarding step and, afterwards, the profile/settings reached from Home's avatar.
   const settings = data.onboarded;
   const cloud = useCloud();
@@ -94,7 +94,7 @@ export function Profile() {
           <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}<br />
             <button className="btn btn-ghost" onClick={() => { saveCloudProfile(); cloud.changePassword(true); }} style={{ minHeight: 44, padding: 0 }}>Cambiar mi clave</button>
           </span>
-          <button className="btn btn-secondary" onClick={cloud.signOut} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
+          <button className="btn btn-secondary" onClick={async () => { const err = await cloud.signOut(); if (err) flash('No se cerró la sesión', err); }} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
         </div>
       )}
       <div style={{ flex: 1 }} />
