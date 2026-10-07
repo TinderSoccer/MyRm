@@ -55,4 +55,4 @@ El botón **Foto de la pizarra** al subir el WOD lee una foto de la pizarra del 
 2. En Vercel → proyecto → *Settings → Environment Variables*, agrega `ANTHROPIC_API_KEY` (Production) con esa clave. Nunca con prefijo `VITE_` ni `NEXT_PUBLIC_`: quedaría a la vista en la app.
 3. Despliega de nuevo para que la tome.
 
-Solo la pueden usar personas con sesión iniciada en MyRm. Cada foto es una llamada a Claude con esfuerzo bajo.
+Solo la pueden usar personas con sesión iniciada en MyRm. Cada foto es una llamada a Claude Sonnet 5.5 con esfuerzo bajo (unos US$0,01).

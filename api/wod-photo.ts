@@ -60,7 +60,8 @@ export async function POST(request: Request): Promise<Response> {
   // (never the image or the user's token).
   const read = async (effort: 'low' | 'medium') => {
     const response = await client.beta.messages.create({
-      model: 'claude-opus-5-5',
+      // Sonnet: reading a whiteboard is simple work, and it costs half of Opus.
+      model: 'claude-sonnet-5-5',
       max_tokens: 8000,
       output_config: { effort, format: { type: 'json_schema', schema: SCHEMA } },
       // If a safety classifier declines, Anthropic re-runs it on its recommended model instead of failing.
