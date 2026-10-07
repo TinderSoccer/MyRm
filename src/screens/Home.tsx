@@ -1,4 +1,5 @@
 import { Icon } from '../components/Icon';
+import { TodayWod } from '../components/TodayWod';
 import { discOf } from '../data';
 import { bestOf, entriesOf, initialOf, logOf, longToday, mainSchemeOf, recordIsScaled, todayIndex } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
@@ -26,13 +27,14 @@ export function Home() {
       </div>
 
       <div style={{ background: 'var(--color-text)', color: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', padding: 22, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', width: 160, height: 160, borderRadius: '50%', background: 'var(--color-accent)', right: -50, top: -60, opacity: 0.9 }} />
+        {/* Decorative, and kept clear of the text: cream on orange doesn't reach 4.5:1. */}
+        <div aria-hidden="true" style={{ position: 'absolute', width: 110, height: 110, borderRadius: '50%', background: 'var(--color-accent)', right: -36, top: -44 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
           <div className="flex-center" style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-bg)', color: 'var(--color-accent-600)', flex: 'none' }}><Icon name="flame" size={30} /></div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontFamily: 'var(--font-heading)', fontSize: 30, lineHeight: 1 }}>{weekDone} de {data.freq}</span>
-            <span style={{ fontSize: 15, color: 'var(--color-neutral-300)' }}>
-              entrenos esta semana · {weekDone >= data.freq ? '¡meta cumplida!' : `te faltan ${data.freq - weekDone}`}
+            <span style={{ fontSize: 15, color: 'var(--color-neutral-300)', maxWidth: 165 }}>
+              entrenos esta semana<br />{weekDone >= data.freq ? '¡meta cumplida!' : `te faltan ${data.freq - weekDone}`}
             </span>
           </div>
         </div>
@@ -49,6 +51,8 @@ export function Home() {
           })}
         </div>
       </div>
+
+      <TodayWod />
 
       <div className="stack-3">
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>

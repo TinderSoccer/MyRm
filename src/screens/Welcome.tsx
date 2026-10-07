@@ -20,7 +20,7 @@ export function Welcome() {
         <span className="tag tag-accent-2" style={{ alignSelf: 'flex-start' }}>MyRm · tu diario de box</span>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 48, lineHeight: 1.02, margin: 0, textWrap: 'pretty' }}>Cada marca<br />cuenta.</h1>
         <p style={{ margin: 0, fontSize: 17, lineHeight: 1.5, maxWidth: 290, color: 'var(--color-neutral-800)' }}>
-          CrossFit, Hyrox o GAP: anota tus marcas, mira cómo creces y deja que te recordemos ir al box (con cariño).
+          CrossFit, Hyrox o GAP: anota tus marcas, mira cómo creces y mide tu WOD con el resto del box.
         </p>
         <button className="btn btn-primary btn-block" onClick={() => set(() => ({ screen: 'w2' }))} style={{ height: 56, fontSize: 17 }}>Empezar</button>
       </div>

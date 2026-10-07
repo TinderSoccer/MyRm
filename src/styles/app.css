@@ -80,6 +80,13 @@ button { font-family: inherit; }
 .chip[aria-pressed='false'] { background: var(--color-surface); color: var(--color-text); }
 .pill:hover, .pill-sm:hover { filter: brightness(0.96); }
 
+/* — quiet text action (sign-in alternatives): a real button with a 44px target, underlined like a link — */
+.link-btn {
+  min-height: 44px; padding: 0 4px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 14px;
+  color: var(--color-accent-700); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px;
+}
+.link-btn:hover { color: var(--color-accent-800); }
+
 /* — round icon button (back, close) — */
 .round-btn {
   width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--color-surface); flex: none;
@@ -190,6 +197,26 @@ button { font-family: inherit; }
 .date-chip-day { font-family: var(--font-heading); font-size: 24px; line-height: 1; }
 .date-chip-month { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .field-date { height: 48px; font-size: 15px; flex: 1; min-width: 0; }
+
+/* — WOD board: the box's chalkboard. Ink surface, chalk-cream type, the ranking in the display face. — */
+.board {
+  display: flex; flex-direction: column; gap: 18px; padding: 22px; border-radius: var(--radius-lg);
+  background: var(--color-text); color: var(--color-bg); position: relative; overflow: hidden;
+}
+.board-title { font-family: var(--font-heading); font-weight: 400; font-size: 32px; line-height: 1.05; margin: 0; text-wrap: balance; }
+.board-meta { font-size: 14px; color: var(--color-neutral-400); }
+.board-desc { margin: 0; white-space: pre-wrap; font-size: 16px; line-height: 1.5; }
+.board-rows { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 14px 0 0; list-style: none; border-top: 1px solid var(--color-neutral-700); }
+.board-row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; margin: 0 -12px; border-radius: var(--radius-md); }
+.board-row[data-me='true'] { background: var(--color-accent-500); color: var(--color-text); }
+.board-row[data-scaled='true']:not([data-me='true']) { color: var(--color-neutral-400); }
+.board-rank { width: 28px; flex: none; text-align: center; font-family: var(--font-heading); font-size: 22px; line-height: 1; }
+.board-row:first-child:not([data-me='true']) .board-rank { color: var(--color-accent-400); }
+.board-name { flex: 1; min-width: 0; font-weight: 600; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-tag { flex: none; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid currentColor; }
+.board-score { flex: none; font-family: var(--font-heading); font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
+.board-unit { font-family: var(--font-body); font-size: 12px; font-weight: 600; margin-left: 3px; }
+.board-empty { margin: 0; padding-top: 14px; border-top: 1px solid var(--color-neutral-700); color: var(--color-neutral-400); font-size: 15px; }
 
 /* — toast — */
 .toast {

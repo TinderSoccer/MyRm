@@ -123,7 +123,7 @@ function SharedGroup() {
 
       <GroupTabs view={view} setView={setView} />
 
-      {view === 'today' && <WodBoard nameOf={nameOf} colorOf={colorOf} />}
+      {view === 'today' && <WodBoard nameOf={nameOf} />}
 
       {view === 'next' && <Upcoming
         events={cloud.events.map(e => ({
