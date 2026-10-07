@@ -61,7 +61,7 @@ export function RecordSheet() {
     const target = (sheet.prId && data.prs.find(p => p.id === sheet.prId))
       || (sheet.disc && firstOf(sheet.disc))
       || data.prs.find(p => p.id === sel) || data.prs[0];
-    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX'); setMore(false); setTyping(false);
+    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode(data.level || 'RX'); setMore(false); setTyping(false);
     const editing = target && sheet.editAt != null ? logOf(target)[sheet.editAt] : undefined;
     if (target && editing) {
       // Correcting a past entry: everything as it was saved, plates included when they were counted in today's unit.

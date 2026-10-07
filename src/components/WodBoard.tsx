@@ -65,7 +65,7 @@ function Board({ nameOf }: Props) {
   // Reps WODs take rounds and extra reps in two number fields: a phone's number pad has no "+" key.
   const [text, setText] = useState(mine ? (isReps ? String(splitRounds(mine.value)[0]) : fmt.val(measure, mine.value)) : '');
   const [extraText, setExtraText] = useState(mine && isReps && splitRounds(mine.value)[1] ? String(splitRounds(mine.value)[1]) : '');
-  const [scaled, setScaled] = useState(mine?.scaled ?? false);
+  const [scaled, setScaled] = useState(mine?.scaled ?? data.level === 'Escalado');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
