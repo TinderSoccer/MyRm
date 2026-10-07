@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { applyTheme } from './theme';
 import { RecordSheet } from './components/RecordSheet';
 import { TabBar } from './components/TabBar';
 import { Toast } from './components/Toast';
@@ -14,6 +15,7 @@ import { useStore } from './store';
 export function App() {
   const { data, sheet } = useStore();
   const cloud = useCloud();
+  useEffect(() => applyTheme(data.theme), [data.theme]);
   // Past the welcome screen you need an account: until the session is known, nothing; without one, the sign-in;
   // signed in without a password yet (or asked to change it), choosing one.
   // Offline with an expired session (no signal at the box), whoever's marks these are keeps using them.

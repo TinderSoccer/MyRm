@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
 import { BarPicker, UnitPicker } from '../components/BarSetup';
+import { ThemePicker } from '../components/ThemePicker';
 import { DISCS } from '../data';
 import { pillStyle, useStore } from '../store';
 import { useCloud } from '../cloud';
@@ -60,6 +61,17 @@ export function Profile() {
         <label htmlFor="name" style={{ ...label, color: 'var(--color-text)', marginBottom: 0 }}>¿Cómo te llamamos?</label>
         <input id="name" className="input" placeholder="Tu nombre" value={data.name} onChange={e => set(() => ({ name: e.target.value }))} style={{ height: 52, fontSize: 17 }} />
       </div>
+      {cloud.userId && (
+        <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+          <label htmlFor="bday" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>¿Cuándo es tu cumpleaños?</label>
+          <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 16 }} />
+          <span className="muted-13">Tu grupo lo ve en Próximos para saludarte ese día. El año no se muestra.</span>
+        </div>
+      )}
+      <div style={group} role="group" aria-labelledby="theme-l">
+        <span id="theme-l" style={label}>Elige tu color</span>
+        <ThemePicker />
+      </div>
       <div style={group} role="group" aria-labelledby="goals-l">
         <span id="goals-l" style={label}>¿Qué entrenas?</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
@@ -88,12 +100,12 @@ export function Profile() {
         <span style={label}>¿Con qué barra entrenas?</span>
         <BarPicker />
       </div>
-      {cloud.userId && (
-        <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          <label htmlFor="bday" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>Tu cumpleaños (lo ve tu grupo)</label>
-          <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 16 }} />
-        </div>
-      )}
+      <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <label htmlFor="aim" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>¿Cuál es tu meta? <span style={{ fontWeight: 400, color: 'var(--color-neutral-700)' }}>(opcional)</span></label>
+        <input id="aim" className="input" maxLength={60} placeholder="P. ej. mi primer muscle-up, o Fran bajo 5 minutos" value={data.aim ?? ''}
+          onChange={e => set(() => ({ aim: e.target.value }))} style={{ height: 48, fontSize: 16 }} />
+        <span className="muted-13">La verás en Inicio, para no olvidar por qué entrenas.</span>
+      </div>
       {cloud.userId && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}<br />

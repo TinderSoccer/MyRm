@@ -49,6 +49,10 @@ export interface AppData {
   bar: 'big' | 'small' | 'tech';
   prs: Pr[];
   skills: Skill[];
+  /** Pastel look of the app (see theme.ts). */
+  theme: string;
+  /** What you're training for, in your words ("mi primer muscle-up"); shown on Home. */
+  aim: string;
   /** Birthdays added by hand, for people who aren't in the app. */
   birthdays: Birthday[];
 }
@@ -137,6 +141,8 @@ export function seedData(weekStart: string): AppData {
     bar: 'big',
     prs: CATALOG_PRS,
     skills: CATALOG_SKILLS,
+    theme: 'crema',
+    aim: '',
     birthdays: []
   };
 }

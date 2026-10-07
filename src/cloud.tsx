@@ -202,7 +202,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   // fingerprint of the content. Comparing both sides against it says who changed: only the phone → upload; only the
   // account → download; both → join them. Nothing is uploaded before the account has been checked in this session.
   const mine = useMemo(() => canon(personalOf(data)),
-    [data.name, data.goals, data.freq, data.units, data.bar, data.prs, data.skills, data.birthdays]); // eslint-disable-line react-hooks/exhaustive-deps
+    [data.name, data.goals, data.freq, data.units, data.bar, data.theme, data.aim, data.prs, data.skills, data.birthdays]); // eslint-disable-line react-hooks/exhaustive-deps
   const latest = useRef({ mine, owner: data.owner });
   latest.current = { mine, owner: data.owner };
   const [mark, setMarkState] = useState<SyncMark | null>(null);

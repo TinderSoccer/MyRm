@@ -28,6 +28,7 @@ export function Home() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <span style={{ fontSize: 14, color: 'var(--color-neutral-700)', fontWeight: 500 }}>{longToday()}</span>
           <h1 className="title" style={{ fontSize: 32 }}>¡Hola, {name || 'atleta'}!</h1>
+          {data.aim?.trim() && <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-accent-700)' }}>Tu meta: {data.aim.trim()}</span>}
         </div>
         <button className="flex-center avatar-btn" onClick={() => set(() => ({ screen: 'w2' }))} aria-label="Tu perfil y ajustes">{initialOf(name, 'A')}</button>
       </div>
