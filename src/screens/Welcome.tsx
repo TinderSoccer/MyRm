@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
-import { Switch } from '../components/Switch';
 import { DISCS } from '../data';
 import { pillStyle, useStore } from '../store';
 import { useCloud } from '../cloud';
@@ -21,7 +20,7 @@ export function Welcome() {
         <span className="tag tag-accent-2" style={{ alignSelf: 'flex-start' }}>MyRm · tu diario de box</span>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 48, lineHeight: 1.02, margin: 0, textWrap: 'pretty' }}>Cada marca<br />cuenta.</h1>
         <p style={{ margin: 0, fontSize: 17, lineHeight: 1.5, maxWidth: 290, color: 'var(--color-neutral-800)' }}>
-          CrossFit, Hyrox, Metcon, GAP, Bar Mastery: anota tus marcas, mira cómo creces y deja que te recordemos ir al box (con cariño).
+          CrossFit, Hyrox o GAP: anota tus marcas, mira cómo creces y deja que te recordemos ir al box (con cariño).
         </p>
         <button className="btn btn-primary btn-block" onClick={() => set(() => ({ screen: 'w2' }))} style={{ height: 56, fontSize: 17 }}>Empezar</button>
       </div>
@@ -86,15 +85,6 @@ export function Profile() {
         <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           <label htmlFor="bday" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>Tu cumpleaños (lo ve tu grupo)</label>
           <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 15 }} />
-        </div>
-      )}
-      {settings && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={label}>Celebrar mis récords</span>
-            <span className="muted-13">Mensajes con más fiesta al superar una marca.</span>
-          </div>
-          <Switch on={data.celebrate} label="Celebrar mis récords" onToggle={() => set(d => ({ celebrate: !d.celebrate }))} />
         </div>
       )}
       {cloud.userId && (

@@ -27,7 +27,7 @@ export function Skills() {
   const setStage = (k: Skill, i: number) => {
     set(d => ({ skills: d.skills.map(x => x.id === k.id ? { ...x, stage: i } : x) }));
     if (i >= 3 && k.stage < 3) cloud.post({ kind: 'skill', disc: k.disc, what: k.name, stage: STAGES[i] });
-    if (i >= 3 && k.stage < 3) flash(data.celebrate ? '¡Skill desbloqueada!' : 'Skill lograda', `${k.name}. Eso no se olvida.`);
+    if (i >= 3 && k.stage < 3) flash('¡Skill desbloqueada!', `${k.name}. Eso no se olvida.`);
   };
   const add = () => {
     const name = newSkill.trim();

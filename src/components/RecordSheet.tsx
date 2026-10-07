@@ -102,7 +102,7 @@ export function RecordSheet() {
     closeSheet();
     setDraftText(null);
     flash(
-      isPR ? (data.celebrate ? '¡Nuevo récord!' : 'Récord guardado') : 'Guardado',
+      isPR ? '¡Nuevo récord!' : 'Guardado',
       isPR
         ? (best == null
           ? `${selP.name}${schemeKey ? ' ' + schemeKey : ''}: ${fmt.val(selP, v)} ${unit}. ¡Primera marca!`

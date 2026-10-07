@@ -46,7 +46,9 @@ export function makeFormat(lb: boolean) {
   };
   /** True when two kg values print the same in the current unit (so lb rounding never fakes a PR). */
   const sameShown = (a: number, b: number) => lb && Math.abs(Math.round(a * LB) - Math.round(b * LB)) < 1;
-  return { wu, fmtD, val, unitOf, gain, gainTxt, stepOf, parse, sameShown };
+  /** A load you can build on the bar: nearest 2.5 kg, or nearest 5 lb. */
+  const plate = (kg: number) => lb ? String(Math.round(kg * LB / 5) * 5) : fmtKg(Math.round(kg / 2.5) * 2.5);
+  return { wu, fmtD, val, unitOf, gain, gainTxt, stepOf, parse, sameShown, plate };
 }
 
 export type Format = ReturnType<typeof makeFormat>;
@@ -83,6 +85,16 @@ export function mainSchemeOf(p: Pr): string | null {
   const log = logOf(p);
   if (!log.length || log.some(e => e.scheme === '1RM')) return '1RM';
   return log[log.length - 1].scheme ?? '1RM';
+}
+
+/** The 1RM that percentages are worked from: the real one, or else estimated (Epley) from the best 3RM/5RM/10RM. */
+export function oneRepMaxOf(p: Pr): { kg: number; estimated: boolean } | null {
+  if (p.type !== 'kg') return null;
+  const real = bestOf(p, '1RM');
+  if (real != null) return { kg: real, estimated: false };
+  const est = logOf(p).map(e => { const n = parseInt(e.scheme ?? '', 10); return n > 1 ? e.v * (1 + n / 30) : 0; });
+  const kg = Math.max(0, ...est);
+  return kg > 0 ? { kg, estimated: true } : null;
 }
 
 /** Entries of one scheme, in the order they were logged. */

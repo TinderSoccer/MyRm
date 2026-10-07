@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { DISCS, seedData, type AppData, type DiscId } from './data';
+import { CATALOG_PRS, CATALOG_SKILLS, DISCS, MERGED_DISCS, seedData, type AppData, type DiscId, type Pr, type Skill } from './data';
+import { logOf } from './format';
 import { makeFormat, weekStartISO, type Format } from './format';
 import { fireDue } from './reminders';
 
@@ -18,7 +19,31 @@ function load(): AppData {
   // The week strip starts empty every Monday.
   if (data.weekStart !== week) data.done = [false, false, false, false, false, false, false];
   data.weekStart = week;
-  return data;
+  return withCatalog(data);
+}
+
+const discFix = (id: string) => (MERGED_DISCS[id] ?? id) as DiscId;
+
+/** Brings a save up to the current catalog: merged disciplines move into CrossFit, new movements and skills appear,
+ *  and anything the user has logged or is working on keeps its name and history. */
+function withCatalog(data: AppData): AppData {
+  const prs = new Map(data.prs.map(p => [p.id, p]));
+  const skills = new Map(data.skills.map(k => [k.id, k]));
+  const used = (p: Pr) => logOf(p).length > 0;
+  const working = (k: Skill) => k.tracked ?? k.stage > 0;
+  return {
+    ...data,
+    goals: [...new Set(data.goals.map(discFix))].filter(g => DISCS.some(d => d.id === g)),
+    prs: [
+      ...CATALOG_PRS.map(c => { const p = prs.get(c.id); return p && used(p) ? { ...p, disc: c.disc } : c; }),
+      ...data.prs.filter(p => !CATALOG_PRS.some(c => c.id === p.id) && (p.id.startsWith('u') || used(p))).map(p => ({ ...p, disc: discFix(p.disc) }))
+    ],
+    skills: [
+      ...CATALOG_SKILLS.map(c => { const k = skills.get(c.id); return k && working(k) ? { ...k, disc: c.disc } : c; }),
+      ...data.skills.filter(k => !CATALOG_SKILLS.some(c => c.id === k.id) && (k.id.startsWith('k') || working(k))).map(k => ({ ...k, disc: discFix(k.disc) }))
+    ],
+    feed: data.feed.map(f => ({ ...f, disc: discFix(f.disc) }))
+  };
 }
 
 export interface SheetRequest { prId?: string; disc?: DiscId }

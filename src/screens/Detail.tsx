@@ -1,8 +1,10 @@
 import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
 import { discOf, type Pr } from '../data';
-import { bestOf, entriesOf, logOf, mainSchemeOf, withLog } from '../format';
+import { bestOf, entriesOf, logOf, mainSchemeOf, oneRepMaxOf, withLog } from '../format';
 import { useStore } from '../store';
+
+const PCTS = [50, 60, 65, 70, 75, 80, 85, 90, 95];
 
 export function Detail() {
   const { data, set, fmt, detId, openSheet, flash } = useStore();
@@ -36,6 +38,7 @@ export function Detail() {
   const sc = mainLog.map(e => p.better === 'down' ? -e.v : e.v);
   const mn = Math.min(...sc), mx = Math.max(...sc);
   const unit = fmt.unitOf(p);
+  const rm = oneRepMaxOf(p);
 
   return (
     <div className="screen" data-screen-label="07 Detalle de marca">
@@ -59,6 +62,23 @@ export function Detail() {
           {mainEntries.length <= 1 ? 'Tu primer registro' : delta > 0 ? `${fmt.gainTxt(p, delta)} desde ${first.date}` : `Sin mejora desde ${first.date}`}
         </span>
       </div>
+
+      {rm && (
+        <div className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+            <h2 style={{ fontWeight: 600, fontSize: 15, margin: 0 }}>Porcentajes</h2>
+            <span className="muted-13">{rm.estimated ? 'de tu 1RM estimado' : 'de tu 1RM'} · {fmt.val(p, rm.kg)} {unit}</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {PCTS.map(pct => (
+              <div key={pct} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '10px 4px', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-neutral-700)' }}>{pct}%</span>
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: 20, lineHeight: 1.1 }}>{fmt.plate(rm.kg * pct / 100)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{unit}</span></span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {mainLog.length > 0 && (
         <div className="surface" role="img" aria-label={`Progreso: ${mainLog.map(e => `${e.date}, ${fmt.val(p, e.v)} ${unit}`).join('; ')}`} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18 }}>

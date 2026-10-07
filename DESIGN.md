@@ -1,6 +1,6 @@
 ---
 name: MyRm
-description: Tu diario de box: marcas, skills, grupo y recordatorios para CrossFit, Hyrox, Metcon, GAP y Bar Mastery.
+description: Tu diario de box: marcas, skills, grupo y recordatorios para CrossFit, Hyrox y GAP.
 colors:
   chalk-cream: "#f5ead8"
   worn-plywood: "#ebddc5"
