@@ -71,7 +71,19 @@ export function makeFormat(lb: boolean) {
   };
   /** True when two kg values print the same in pounds (so lb rounding never fakes a PR). */
   const sameShown = (p: Measured, a: number, b: number) => inLb(p) && Math.abs(Math.round(a * LB) - Math.round(b * LB)) < 1;
-  return { fmtD, val, unitOf, gain, gainTxt, stepOf, parse, sameShown };
+  /** The stepper's next value. Bar weights move on the plate grid of the unit you load in (5 lb or 2.5 kg; bells 2 kg),
+   *  snapping odd values like 220.5 lb to 225 instead of walking 220.5 → 225.5. */
+  const nudge = (p: Pr, v: number, dir: 1 | -1) => {
+    if (p.type !== 'kg') return Math.max(0, v + dir * stepOf(p));
+    const perUnit = inLb(p) ? 1 / LB : 1;
+    const grid = fixedKg(p) ? 2 : inLb(p) ? 5 : 2.5;
+    const shown = v / perUnit;
+    const next = dir > 0 ? Math.floor(shown / grid + 1e-6) * grid + grid : Math.ceil(shown / grid - 1e-6) * grid - grid;
+    return Math.max(0, next * perUnit);
+  };
+  /** Where a mark with no history starts: an empty-ish bar in your unit, a mid bell, five minutes, ten reps. */
+  const startOf = (p: Pr) => p.type === 'kg' ? (fixedKg(p) ? 16 : inLb(p) ? 95 / LB : 40) : p.type === 'time' ? 300 : 10;
+  return { fmtD, val, unitOf, gain, gainTxt, stepOf, parse, sameShown, nudge, startOf };
 }
 
 export type BarSize = 'big' | 'small';

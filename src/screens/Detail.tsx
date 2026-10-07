@@ -69,12 +69,21 @@ export function Detail() {
 
       {rm && (
         <div className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
-            <h2 style={{ fontWeight: 600, fontSize: 15, margin: 0 }}>Porcentajes</h2>
-            <span className="muted-13">{rm.estimated ? 'de tu 1RM estimado' : 'de tu 1RM'} · {fmt.val(p, rm.kg)} {unit}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <h2 className="section-title" style={{ fontSize: 22 }}>Cuánto cargar</h2>
+            <p className="note">
+              {rm.estimated
+                ? <>Aún no tienes 1RM, así que lo estimamos de tu mejor serie: <strong>{fmt.val(p, rm.kg)} {unit}</strong>.</>
+                : <>Tu 1RM (lo máximo que levantas una vez) es <strong>{fmt.val(p, rm.kg)} {unit}</strong>. Cada fila es un % de eso.</>}
+            </p>
           </div>
-          <Segmented label="Barra" fit value={data.bar} onChange={b => set(() => ({ bar: b }))}
-            options={lb ? [['big', 'Barra 45 lb'], ['small', 'Barra 35 lb']] : [['big', 'Barra 20 kg'], ['small', 'Barra 15 kg']]} />
+          {/* Choosing the bar also chooses the unit: a 45 lb bar means pound plates. It's the app-wide setting. */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span className="field-label">Tu barra</span>
+            <Segmented label="Tu barra" value={`${data.units}-${data.bar}`}
+              onChange={v => { const [units, bar] = v.split('-') as ['lb' | 'kg', 'big' | 'small']; set(() => ({ units, bar })); }}
+              options={[['lb-big', '45 lb'], ['lb-small', '35 lb'], ['kg-big', '20 kg'], ['kg-small', '15 kg']]} />
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {PCTS.map(pct => {
               const l = barLoad(rm.kg * pct / 100, lb, data.bar);
@@ -113,9 +122,11 @@ export function Detail() {
         <h2 className="section-title" style={{ fontSize: 22 }}>Historial</h2>
         {log.map((e, at) => ({ e, at })).reverse().map(({ e, at }) => {
           const scaled = e.mode === 'Escalado';
+          // "Récord" alone would read as the 1RM; the best 5RM says so.
+          const isBest = e.v === bestOf(p, e.scheme, isScaled(e));
           const tags = [
-            ...(e.v === bestOf(p, e.scheme, isScaled(e)) ? [{ label: 'Récord', bg: 'var(--color-accent-2-700)', fg: 'var(--color-bg)' }] : []),
-            ...(e.scheme ? [{ label: e.scheme, bg: 'var(--color-bg)', fg: 'var(--color-text)' }] : []),
+            ...(isBest ? [{ label: e.scheme && e.scheme !== '1RM' ? `Mejor ${e.scheme}` : 'Récord', bg: 'var(--color-accent-2-700)', fg: 'var(--color-bg)' }] : []),
+            ...(e.scheme && !(isBest && e.scheme !== '1RM') ? [{ label: e.scheme, bg: 'var(--color-bg)', fg: 'var(--color-text)' }] : []),
             { label: e.mode || 'RX', bg: scaled ? 'var(--color-accent-200)' : 'var(--color-bg)', fg: scaled ? 'var(--color-accent-800)' : 'var(--color-text)' }
           ];
           return (

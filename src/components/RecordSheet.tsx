@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
-import { discOf, type DiscId, type PrType } from '../data';
+import { discOf, type DiscId, type Pr, type PrType } from '../data';
 import { bestOf, currentOf, joinRounds, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
@@ -34,7 +34,7 @@ export function RecordSheet() {
   const [more, setMore] = useState(false);
 
   const firstOf = (disc: DiscId) => data.prs.find(p => p.disc === disc);
-  const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); setDraft(currentOf(p)); setDraftText(null); } };
+  const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); setDraft(p.hist.length ? currentOf(p) : fmt.startOf(p)); setDraftText(null); } };
 
   // Every open starts a fresh attempt on the requested mark (or on the filtered discipline, or the last one used).
   useEffect(() => {
@@ -42,7 +42,7 @@ export function RecordSheet() {
     const target = (sheet.prId && data.prs.find(p => p.id === sheet.prId))
       || (sheet.disc && firstOf(sheet.disc))
       || data.prs.find(p => p.id === sel) || data.prs[0];
-    if (target) { setSel(target.id); setSheetDisc(target.disc); setDraft(currentOf(target)); }
+    if (target) { setSel(target.id); setSheetDisc(target.disc); setDraft(target.hist.length ? currentOf(target) : fmt.startOf(target)); }
     setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX'); setMore(false);
   }, [sheet]);
 
@@ -89,10 +89,9 @@ export function RecordSheet() {
     const kb = newMovType === 'kb';
     const type: PrType = kb ? 'kg' : newMovType;
     set(d => ({ prs: [...d.prs, { id, disc: sheetDisc, name, type, better: type === 'time' ? 'down' : undefined, unitLabel: kb ? 'kg' : undefined, hist: [], log: [], date: '—' }] }));
-    setSel(id); setDraft(kb ? 16 : type === 'kg' ? 40 : type === 'time' ? 300 : 10); setDraftText(null); setShowNewMov(false); setNewMovName('');
+    setSel(id); setDraft(fmt.startOf({ type, unitLabel: kb ? 'kg' : undefined, hist: [] } as unknown as Pr)); setDraftText(null); setShowNewMov(false); setNewMovName('');
   };
 
-  const step = fmt.stepOf(selP);
   // Marks scored in rounds (Cindy…): the stepper moves whole rounds, a small field takes the reps left over.
   const byRounds = selP.type === 'reps' && selP.unitLabel === 'rondas';
   const [rounds, extraReps] = splitRounds(draft);
@@ -159,7 +158,7 @@ export function RecordSheet() {
         )}
 
         <div className="surface" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 18 }}>
-          <button className="stepper-btn stepper-minus" aria-label="Menos" onClick={() => { setDraftText(null); setDraft(v => Math.max(0, v - step)); }}><Icon name="minus" size={22} /></button>
+          <button className="stepper-btn stepper-minus" aria-label="Menos" onClick={() => { setDraftText(null); setDraft(v => fmt.nudge(selP, v, -1)); }}><Icon name="minus" size={22} /></button>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4, width: '100%' }}>
               <input className="draft-input" aria-label={byRounds ? 'Rondas' : 'Valor'} inputMode={byRounds ? 'numeric' : 'decimal'}
@@ -184,7 +183,7 @@ export function RecordSheet() {
             )}
             <span style={{ fontSize: 13, fontWeight: 600, color: g > EPS ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
           </div>
-          <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => v + step); }}><Icon name="plus" size={22} /></button>
+          <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => fmt.nudge(selP, v, 1)); }}><Icon name="plus" size={22} /></button>
         </div>
 
         <button className="more-toggle" aria-expanded={more} aria-controls="sheet-more" onClick={() => setMore(v => !v)}>
