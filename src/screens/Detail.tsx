@@ -1,6 +1,6 @@
 import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
-import { Segmented } from '../components/Segmented';
+import { BarPicker, UnitPicker } from '../components/BarSetup';
 import { discOf, type Pr } from '../data';
 import { SCHEMES, barLoad, bestOf, bestWord, estimatedMaxOf, repsWord, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
 import { useStore } from '../store';
@@ -104,12 +104,11 @@ export function Detail() {
               </p>
             )}
           </div>
-          {/* Choosing the bar also chooses the unit: a 45 lb bar means pound plates. It's the app-wide setting. */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span className="field-label">Tu barra</span>
-            <Segmented label="Tu barra" value={`${data.units}-${data.bar}`}
-              onChange={v => { const [units, bar] = v.split('-') as ['lb' | 'kg', 'big' | 'small']; set(() => ({ units, bar })); }}
-              options={[['lb-big', '45 lb'], ['lb-small', '35 lb'], ['kg-big', '20 kg'], ['kg-small', '15 kg']]} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span className="field-label">Discos en</span>
+            <UnitPicker />
+            <span className="field-label" style={{ marginTop: 4 }}>Tu barra</span>
+            <BarPicker />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {PCTS.map(pct => {

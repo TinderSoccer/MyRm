@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
+import { PlateBuilder, UnitPicker } from './BarSetup';
 import { discOf, type DiscId, type Pr, type PrType } from '../data';
-import { SCHEMES, bestOf, bestWord, currentOf, joinRounds, lastOf, repsWord, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
+import { SCHEMES, fixedKg, bestOf, bestWord, currentOf, joinRounds, lastOf, repsWord, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
 
@@ -31,6 +32,7 @@ export function RecordSheet() {
   const [mode, setMode] = useState('RX');
   const [note, setNote] = useState('');
   const [more, setMore] = useState(false);
+  const [plates, setPlates] = useState(false);
 
   const firstOf = (disc: DiscId) => data.prs.find(p => p.disc === disc);
   const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); setDraft(lastOf(p, p.type === 'kg' ? scheme : null) ?? (p.hist.length ? currentOf(p) : fmt.startOf(p))); setDraftText(null); } };
@@ -42,7 +44,7 @@ export function RecordSheet() {
       || (sheet.disc && firstOf(sheet.disc))
       || data.prs.find(p => p.id === sel) || data.prs[0];
     if (target) { setSel(target.id); setSheetDisc(target.disc); setDraft(target.hist.length ? currentOf(target) : fmt.startOf(target)); }
-    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX'); setMore(false);
+    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX'); setMore(false); setPlates(false);
   }, [sheet]);
 
   // Modal focus: move into the sheet on open, close on Escape, hand focus back to whatever opened it.
@@ -174,6 +176,7 @@ export function RecordSheet() {
               {unit && <span style={{ fontSize: 18, fontWeight: 600 }}>{unit}</span>}
             </div>
             {selP.type === 'time' && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Formato m:ss</span>}
+            {isWeight && !fixedKg(selP) && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Peso total, con la barra</span>}
             {byRounds && (
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600 }}>
                 +
@@ -187,6 +190,17 @@ export function RecordSheet() {
           </div>
           <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => fmt.nudge(selP, v, 1)); }}><Icon name="plus" size={22} /></button>
         </div>
+
+        {isWeight && !fixedKg(selP) && (
+          // Whether the plates were pounds or kilos is part of the number; and adding up plates beats doing it in your head.
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+              <UnitPicker />
+              <button type="button" className="link-btn" aria-expanded={plates} onClick={() => setPlates(v => !v)}>{plates ? 'Cerrar discos' : 'Armar con discos'}</button>
+            </div>
+            {plates && <PlateBuilder onTotal={kg => { setDraft(kg); setDraftText(null); }} />}
+          </div>
+        )}
 
         {isWeight && (
           // Always in sight: a set of 5 logged as a 1-rep max would skew the record and every percentage.

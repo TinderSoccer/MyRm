@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
-import { Segmented } from '../components/Segmented';
+import { BarPicker, UnitPicker } from '../components/BarSetup';
 import { DISCS } from '../data';
 import { pillStyle, useStore } from '../store';
 import { useCloud } from '../cloud';
@@ -80,9 +80,13 @@ export function Profile() {
         </div>
       </div>
       <div style={group} role="group" aria-labelledby="units-l">
-        <span id="units-l" style={label}>¿Los discos de la barra son en libras o kilos?</span>
-        <UnitToggle />
-        <span className="muted-13">Kettlebells y mancuernas van siempre en kilos.</span>
+        <span id="units-l" style={label}>¿Los discos grandes de tu box son en libras o kilos?</span>
+        <UnitPicker />
+        <span className="muted-13">Los discos chicos, kettlebells y mancuernas van siempre en kilos.</span>
+      </div>
+      <div style={group} role="group" aria-label="Tu barra">
+        <span style={label}>¿Con qué barra entrenas?</span>
+        <BarPicker />
       </div>
       {cloud.userId && (
         <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
@@ -102,9 +106,4 @@ export function Profile() {
       <button className="btn btn-primary btn-block" onClick={finish} style={{ height: 56, fontSize: 17, flex: 'none' }}>{settings ? 'Listo' : '¡Vamos al box!'}</button>
     </div>
   );
-}
-
-export function UnitToggle() {
-  const { data, set } = useStore();
-  return <Segmented label="Unidad de la barra" fit size="lg" value={data.units} onChange={u => set(() => ({ units: u }))} options={[['lb', 'lb'], ['kg', 'kg']]} />;
 }

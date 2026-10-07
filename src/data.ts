@@ -42,8 +42,8 @@ export interface AppData {
   done: boolean[];
   weekStart: string;
   units: Units;
-  /** Which bar the percentage calculator loads: 45 lb / 20 kg, or 35 lb / 15 kg. */
-  bar: 'big' | 'small';
+  /** The bar you train with: men's 45 lb / 20 kg, women's 35 lb / 15 kg, or a technique bar (15 lb / 10 kg). */
+  bar: 'big' | 'small' | 'tech';
   prs: Pr[];
   skills: Skill[];
   /** Birthdays added by hand, for people who aren't in the app. */

@@ -86,11 +86,21 @@ export function makeFormat(lb: boolean) {
   return { fmtD, val, unitOf, gain, gainTxt, stepOf, parse, sameShown, nudge, startOf };
 }
 
-export type BarSize = 'big' | 'small';
+export type BarSize = 'big' | 'small' | 'tech';
+
+/** Standard bars, in each world's own numbers: an Olympic men's bar is 20 kg, sold in pound boxes as 45 lb.
+ *  Technique bars vary by brand (aluminium 15 lb, steel 10 kg), so the app says so where you pick one. */
+export const BARS: Record<BarSize, { name: string; who: string; lb: number; kg: number }> = {
+  big: { name: 'Hombre', who: 'Olímpica de hombre', lb: 45, kg: 20 },
+  small: { name: 'Mujer', who: 'Olímpica de mujer', lb: 35, kg: 15 },
+  tech: { name: 'Técnica', who: 'De técnica o de aprendizaje', lb: 15, kg: 10 }
+};
+export const barWeight = (lb: boolean, size: BarSize) => lb ? BARS[size].lb : BARS[size].kg;
+export const barKgOf = (lb: boolean, size: BarSize) => lb ? BARS[size].lb / LB : BARS[size].kg;
 
 /** Bumpers by bar unit (the heaviest can repeat, the rest one each per side); change plates are kilos, one of each. */
-const PLATES = { lb: [45, 35, 25, 15, 10], kg: [20, 15, 10, 5] };
-const SMALL_KG = [2.5, 2, 1.5, 1, 0.5];
+export const PLATES = { lb: [45, 35, 25, 15, 10], kg: [20, 15, 10, 5] };
+export const SMALL_KG = [2.5, 2, 1.5, 1, 0.5];
 /** Each extra plate on a side costs as much as being this many kg off: a box loads fewer plates over hitting it exactly. */
 const PLATE_COST = 0.3;
 
@@ -101,7 +111,7 @@ export interface BarLoad { totalKg: number; bar: string; big: string[]; small: s
 /** How to load a bar for a target weight: bumpers in the bar's unit plus kilo change plates, close to the target with few plates. */
 export function barLoad(targetKg: number, lb: boolean, size: BarSize): BarLoad {
   const unitKg = lb ? 1 / LB : 1;
-  const barKg = (lb ? (size === 'big' ? 45 : 35) : (size === 'big' ? 20 : 15)) * unitKg;
+  const barKg = barKgOf(lb, size);
   const side = Math.max(0, (targetKg - barKg) / 2);
   const [top, ...rest] = PLATES[lb ? 'lb' : 'kg'];
   const smalls = subsets(SMALL_KG).map(xs => ({ xs, kg: xs.reduce((a, x) => a + x, 0) }));
@@ -119,7 +129,7 @@ export function barLoad(targetKg: number, lb: boolean, size: BarSize): BarLoad {
     }
   }
   const n = (x: number) => String(x).replace('.', ',');
-  return { totalKg: barKg + 2 * best.kg, bar: lb ? `${size === 'big' ? 45 : 35} lb` : `${size === 'big' ? 20 : 15} kg`, big: best.big.map(n), small: best.small.map(n) };
+  return { totalKg: barKg + 2 * best.kg, bar: `${barWeight(lb, size)} ${lb ? 'lb' : 'kg'}`, big: best.big.map(n), small: best.small.map(n) };
 }
 
 export type Format = ReturnType<typeof makeFormat>;
