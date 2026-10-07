@@ -5,8 +5,11 @@ export type Units = 'kg' | 'lb';
 
 export interface Disc { id: DiscId; label: string; color: string }
 
+/** The plates on one side of the bar, by plate ('45lb', '2.5kg') → how many; with the bar and the unit it was loaded in. */
+export interface PlateSet { bar: 'big' | 'small' | 'tech'; lb: boolean; side: Record<string, number> }
+
 /** `iso` (YYYY-MM-DD) orders the history; entries saved before it existed only have the short `date` label. */
-export interface LogEntry { v: number; date: string; scheme: string | null; mode: string; note: string; iso?: string }
+export interface LogEntry { v: number; date: string; scheme: string | null; mode: string; note: string; iso?: string; plates?: PlateSet }
 
 export interface Pr {
   id: string;

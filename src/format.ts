@@ -106,7 +106,7 @@ const PLATE_COST = 0.3;
 
 const subsets = <T,>(xs: T[]) => Array.from({ length: 1 << xs.length }, (_, m) => xs.filter((_, i) => m & (1 << i)));
 
-export interface BarLoad { totalKg: number; bar: string; big: string[]; small: string[] }
+export interface BarLoad { totalKg: number; bar: string; big: string[]; small: string[]; bigN: number[]; smallN: number[] }
 
 /** How to load a bar for a target weight: bumpers in the bar's unit plus kilo change plates, close to the target with few plates. */
 export function barLoad(targetKg: number, lb: boolean, size: BarSize): BarLoad {
@@ -129,7 +129,7 @@ export function barLoad(targetKg: number, lb: boolean, size: BarSize): BarLoad {
     }
   }
   const n = (x: number) => String(x).replace('.', ',');
-  return { totalKg: barKg + 2 * best.kg, bar: `${barWeight(lb, size)} ${lb ? 'lb' : 'kg'}`, big: best.big.map(n), small: best.small.map(n) };
+  return { totalKg: barKg + 2 * best.kg, bar: `${barWeight(lb, size)} ${lb ? 'lb' : 'kg'}`, big: best.big.map(n), small: best.small.map(n), bigN: best.big, smallN: best.small };
 }
 
 export type Format = ReturnType<typeof makeFormat>;

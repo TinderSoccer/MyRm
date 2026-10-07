@@ -1,8 +1,8 @@
 import { DeleteButton } from '../components/DeleteButton';
 import { Icon } from '../components/Icon';
-import { BarPicker, UnitPicker } from '../components/BarSetup';
+import { BarPicker, UnitPicker, countsWords } from '../components/BarSetup';
 import { discOf, type Pr } from '../data';
-import { SCHEMES, barLoad, bestOf, bestWord, estimatedMaxOf, repsWord, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
+import { SCHEMES, barLoad, barWeight, bestOf, bestWord, estimatedMaxOf, repsWord, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
 import { useStore } from '../store';
 
 const PCTS = [50, 60, 65, 70, 75, 80, 85, 90, 95];
@@ -162,6 +162,7 @@ export function Detail() {
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {tags.map(t => <span key={t.label} style={{ padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: t.bg, color: t.fg }}>{t.label}</span>)}
                 </div>
+                {e.plates && <span className="muted-13">Barra {barWeight(e.plates.lb, e.plates.bar)} {e.plates.lb ? 'lb' : 'kg'} · por lado {countsWords(e.plates.side)}</span>}
                 {e.note && <span style={{ fontSize: 14, color: 'var(--color-neutral-800)', fontStyle: 'italic' }}>“{e.note}”</span>}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flex: 'none' }}>

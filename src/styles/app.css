@@ -102,15 +102,23 @@ button { font-family: inherit; }
 .seg-two { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 52px; line-height: 1.15; }
 .seg-sub { font-size: 12px; font-weight: 600; opacity: .8; }
 
-/* — plate buttons: round like the plates themselves; bumpers in ink, change plates in the board's olive — */
-.plate-btn {
-  width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; line-height: 1; font-family: var(--font-heading); font-size: 17px;
-  background: var(--color-accent-2-200); color: var(--color-accent-2-900); transition: transform .1s, background-color .15s;
+/* — plate counter: one row per plate, two columns; a small disc between − and + — */
+.plate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.plate-row { display: flex; align-items: center; gap: 6px; padding: 4px; border-radius: 999px; background: var(--color-bg); transition: background-color .15s; }
+.plate-row[data-on] { background: var(--color-accent-2-200); }
+.plate-step {
+  width: 36px; height: 36px; flex: none; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; font-weight: 700; line-height: 1;
+  background: var(--color-surface); color: var(--color-text); position: relative;
 }
-.plate-btn[data-big] { background: var(--color-text); color: var(--color-bg); font-size: 18px; }
-.plate-btn small { font-family: var(--font-body); font-size: 10px; font-weight: 700; margin-top: 2px; }
-.plate-btn:active { transform: scale(.94); }
+.plate-step::after { content: ''; position: absolute; inset: -4px; }
+.plate-step:disabled { opacity: .35; cursor: default; }
+.plate-chip {
+  width: 40px; height: 40px; flex: none; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  line-height: 1; font-family: var(--font-heading); font-size: 14px; background: var(--color-accent-2-300); color: var(--color-accent-2-900);
+}
+.plate-chip[data-big] { background: var(--color-text); color: var(--color-bg); font-size: 15px; }
+.plate-chip small { font-family: var(--font-body); font-size: 9px; font-weight: 700; margin-top: 1px; }
+.plate-count { flex: 1; min-width: 0; text-align: center; font-weight: 700; font-size: 15px; }
 
 /* — round icon button (back, close) — */
 .round-btn {

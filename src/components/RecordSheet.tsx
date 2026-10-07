@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
-import { PlateBuilder, UnitPicker } from './BarSetup';
+import { PlateCounter, UnitPicker, countsFromLoad, countsWords, totalKgOf, type Counts } from './BarSetup';
 import { discOf, type DiscId, type Pr, type PrType } from '../data';
-import { SCHEMES, fixedKg, bestOf, bestWord, currentOf, joinRounds, lastOf, repsWord, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
+import { SCHEMES, barLoad, barWeight, fixedKg, bestOf, bestWord, currentOf, joinRounds, lastOf, repsWord, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
 
@@ -32,10 +32,28 @@ export function RecordSheet() {
   const [mode, setMode] = useState('RX');
   const [note, setNote] = useState('');
   const [more, setMore] = useState(false);
-  const [plates, setPlates] = useState(false);
+  // Barbell lifts are logged by counting plates; `typing` is the way back to writing the number.
+  const [typing, setTyping] = useState(false);
+  const [counts, setCounts] = useState<Counts>({});
+  const lb = data.units === 'lb';
+  const onBar = (p: Pr) => p.type === 'kg' && !fixedKg(p);
+
+  /** Plates for a weight: the ones you used last time at this rep count, or else the calculator's pick for it. */
+  const suggestPlates = (p: Pr, scheme: string | null, kg: number): Counts => {
+    const prev = [...logOf(p)].reverse().find(e => (e.scheme || null) === (scheme || null) && e.plates);
+    if (prev?.plates && prev.plates.lb === lb && prev.plates.bar === data.bar) return prev.plates.side;
+    const l = barLoad(kg, lb, data.bar);
+    return countsFromLoad(l.bigN, l.smallN, lb);
+  };
+  /** A fresh attempt on a mark: your last weight at that rep count, as plates when it goes on a bar. */
+  const startAttempt = (p: Pr, scheme: string | null) => {
+    const v = lastOf(p, scheme) ?? (p.hist.length ? currentOf(p) : fmt.startOf(p));
+    setDraft(v); setDraftText(null);
+    if (onBar(p)) setCounts(suggestPlates(p, scheme, v));
+  };
 
   const firstOf = (disc: DiscId) => data.prs.find(p => p.disc === disc);
-  const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); setDraft(lastOf(p, p.type === 'kg' ? scheme : null) ?? (p.hist.length ? currentOf(p) : fmt.startOf(p))); setDraftText(null); } };
+  const pick = (id: string) => { const p = data.prs.find(x => x.id === id); if (p) { setSel(id); startAttempt(p, p.type === 'kg' ? scheme : null); } };
 
   // Every open starts a fresh attempt on the requested mark (or on the filtered discipline, or the last one used).
   useEffect(() => {
@@ -43,8 +61,8 @@ export function RecordSheet() {
     const target = (sheet.prId && data.prs.find(p => p.id === sheet.prId))
       || (sheet.disc && firstOf(sheet.disc))
       || data.prs.find(p => p.id === sel) || data.prs[0];
-    if (target) { setSel(target.id); setSheetDisc(target.disc); setDraft(target.hist.length ? currentOf(target) : fmt.startOf(target)); }
-    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX'); setMore(false); setPlates(false);
+    if (target) { setSel(target.id); setSheetDisc(target.disc); startAttempt(target, target.type === 'kg' ? '1RM' : null); }
+    setDraftText(null); setShowNewMov(false); setNote(''); setDateISO(todayISO()); setScheme('1RM'); setMode('RX'); setMore(false); setTyping(false);
   }, [sheet]);
 
   // Modal focus: move into the sheet on open, close on Escape, hand focus back to whatever opened it.
@@ -57,8 +75,21 @@ export function RecordSheet() {
     return () => { document.removeEventListener('keydown', onKey); opener?.focus?.({ preventScroll: true }); };
   }, [open, closeSheet]);
 
+  // Pound bumpers don't turn into kilo ones: when the unit flips, re-plate the same weight in the new unit.
+  useEffect(() => {
+    setCounts(c => {
+      const foreign = Object.keys(c).some(k => c[k] > 0 && (lb ? (k.endsWith('kg') && parseFloat(k) >= 5) : k.endsWith('lb')));
+      if (!foreign) return c;
+      const l = barLoad(totalKgOf(c, !lb, data.bar), lb, data.bar);
+      return countsFromLoad(l.bigN, l.smallN, lb);
+    });
+  }, [lb]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const selP = data.prs.find(p => p.id === sel) ?? data.prs[0];
   if (!selP) return null;
+  const plateMode = onBar(selP) && !typing;
+  // The attempt's weight: added up from the plates, or what was typed.
+  const value = plateMode ? totalKgOf(counts, lb, data.bar) : draft;
 
   const isWeight = selP.type === 'kg';
   const schemeKey = isWeight ? scheme : null;
@@ -66,8 +97,8 @@ export function RecordSheet() {
   const best = bestOf(selP, schemeKey, scaled);
   // What this attempt is compared with, in words: "tu récord", "tu mejor de 5 reps", "tu mejor escalado".
   const rec = scaled ? 'tu mejor escalado' : schemeKey && schemeKey !== '1RM' ? `tu mejor de ${repsWord(schemeKey)}` : 'tu récord';
-  const g0 = best == null ? 1 : fmt.gain(selP, best, draft);
-  const g = best != null && isWeight && fmt.sameShown(selP, best, draft) ? 0 : g0;
+  const g0 = best == null ? 1 : fmt.gain(selP, best, value);
+  const g = best != null && isWeight && fmt.sameShown(selP, best, value) ? 0 : g0;
   const unit = fmt.unitOf(selP);
   const sheetDiscLabel = discOf(sheetDisc).label;
   const dateLabel = dateISO === todayISO() ? 'Hoy' : dateISO === yesterdayISO() ? 'Ayer' : shortDate(dateISO);
@@ -75,7 +106,7 @@ export function RecordSheet() {
   const hint = best == null
     ? (schemeKey ? `¡Tu primera marca a ${repsWord(schemeKey)}${scaled ? ' escalada' : ''}!` : `¡Primer registro${scaled ? ' escalado' : ''}!`)
     : g > EPS
-      ? (selP.better === 'down' ? `¡${fmt.fmtD(g)} más rápido que ${rec}!` : `¡${fmt.gainTxt(selP, best, draft)} sobre ${rec}!`)
+      ? (selP.better === 'down' ? `¡${fmt.fmtD(g)} más rápido que ${rec}!` : `¡${fmt.gainTxt(selP, best, value)} sobre ${rec}!`)
       : g < -EPS ? `${scaled ? 'Mejor escalado' : bestWord(schemeKey)}: ${fmt.val(selP, best)} ${unit}` : `Igual a ${rec}`;
 
   const chooseDisc = (id: DiscId) => {
@@ -102,8 +133,9 @@ export function RecordSheet() {
     // Only RX records count as records: they go to the group. A better scaled attempt is celebrated here, not posted.
     const isPR = better && !scaled;
     // Kilos to 0.1, rounds + reps keep their extra reps (thousandths).
-    const v = selP.type === 'reps' ? Math.round(draft * 1000) / 1000 : Math.round(draft * 10) / 10;
-    const entry = { v, date: shortDate(dateISO), iso: dateISO, scheme: schemeKey, mode, note: note.trim() };
+    const v = selP.type === 'reps' ? Math.round(value * 1000) / 1000 : Math.round(value * 10) / 10;
+    const side = Object.fromEntries(Object.entries(counts).filter(([, c]) => c > 0));
+    const entry = { v, date: shortDate(dateISO), iso: dateISO, scheme: schemeKey, mode, note: note.trim(), ...(plateMode ? { plates: { bar: data.bar, lb, side } } : {}) };
     // Logging a mark means you trained that day.
     const day = weekIndexOf(dateISO, data.weekStart);
     set(d => ({
@@ -120,7 +152,7 @@ export function RecordSheet() {
       isPR ? '¡Nuevo récord!' : better ? '¡Mejor escalado!' : 'Guardado',
       better
         ? (best == null ? `${label}: ${fmt.val(selP, v)} ${unit}. ¡Primera marca${scaled ? ' escalada' : ''}!` : `${label}: ${fmt.gainTxt(selP, best, v)}. ${isPR ? '¡Qué bárbaro!' : 'Vas camino al RX.'}`)
-        : `${selP.name}: ${fmt.val(selP, draft)} ${unit}. Constancia es avance.`
+        : `${selP.name}: ${fmt.val(selP, v)} ${unit}. Constancia es avance.`
     );
   };
 
@@ -161,6 +193,18 @@ export function RecordSheet() {
           </div>
         )}
 
+        {plateMode ? (
+          <div className="surface" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '16px 18px' }}>
+            <div aria-live="polite" style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 44, lineHeight: 1 }}>{fmt.val(selP, value)}</span>
+              <span style={{ fontSize: 18, fontWeight: 600 }}>{unit}</span>
+            </div>
+            <span style={{ fontSize: 13, color: 'var(--color-neutral-700)', textAlign: 'center' }}>
+              Barra {barWeight(lb, data.bar)} {lb ? 'lb' : 'kg'} + 2 lados de {countsWords(counts)}
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: g > EPS ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
+          </div>
+        ) : (
         <div className="surface" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 18 }}>
           <button className="stepper-btn stepper-minus" aria-label="Menos" onClick={() => { setDraftText(null); setDraft(v => fmt.nudge(selP, v, -1)); }}><Icon name="minus" size={22} /></button>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 0 }}>
@@ -176,7 +220,7 @@ export function RecordSheet() {
               {unit && <span style={{ fontSize: 18, fontWeight: 600 }}>{unit}</span>}
             </div>
             {selP.type === 'time' && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Formato m:ss</span>}
-            {isWeight && !fixedKg(selP) && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Peso total, con la barra</span>}
+            {onBar(selP) && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Peso total, con la barra</span>}
             {byRounds && (
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600 }}>
                 +
@@ -190,15 +234,19 @@ export function RecordSheet() {
           </div>
           <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => fmt.nudge(selP, v, 1)); }}><Icon name="plus" size={22} /></button>
         </div>
+        )}
 
-        {isWeight && !fixedKg(selP) && (
-          // Whether the plates were pounds or kilos is part of the number; and adding up plates beats doing it in your head.
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {onBar(selP) && (
+          // Pounds or kilos is part of the number; counting plates beats adding them up in your head.
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
               <UnitPicker />
-              <button type="button" className="link-btn" aria-expanded={plates} onClick={() => setPlates(v => !v)}>{plates ? 'Cerrar discos' : 'Armar con discos'}</button>
+              <button type="button" className="link-btn" onClick={() => {
+                if (plateMode) { setDraft(value); setTyping(true); }
+                else { const l = barLoad(draft, lb, data.bar); setCounts(countsFromLoad(l.bigN, l.smallN, lb)); setTyping(false); }
+              }}>{plateMode ? 'Escribir el peso' : 'Contar discos'}</button>
             </div>
-            {plates && <PlateBuilder onTotal={kg => { setDraft(kg); setDraftText(null); }} />}
+            {plateMode && <PlateCounter counts={counts} onChange={setCounts} />}
           </div>
         )}
 
@@ -207,7 +255,7 @@ export function RecordSheet() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span className="field-label" id="reps-label">¿Cuántas reps hiciste con ese peso?</span>
             <Segmented label="¿Cuántas reps hiciste con ese peso?" value={scheme}
-              onChange={k => { setScheme(k); const last = lastOf(selP, k); if (last != null) { setDraft(last); setDraftText(null); } }}
+              onChange={k => { setScheme(k); if (lastOf(selP, k) != null) startAttempt(selP, k); }}
               options={SCHEMES.map(k => [k, k === '1RM' ? '1 · máx.' : String(parseInt(k, 10))] as const)} />
           </div>
         )}
