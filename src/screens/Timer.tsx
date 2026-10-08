@@ -192,7 +192,7 @@ export function Timer() {
       <span className="field-label">{label}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <button className="stepper-btn stepper-minus" aria-label={`${label}: menos`} onClick={() => setV(Math.max(opts.min, value - opts.step))}><Icon name="minus" size={20} /></button>
-        <span aria-live="polite" style={{ fontFamily: 'var(--font-heading)', fontSize: 30, minWidth: 92, textAlign: 'center' }}>{opts.show(value)}</span>
+        <span aria-live="polite" style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--display-lg)', minWidth: 92, textAlign: 'center' }}>{opts.show(value)}</span>
         <button className="stepper-btn stepper-plus" aria-label={`${label}: más`} onClick={() => setV(Math.min(opts.max, value + opts.step))}><Icon name="plus" size={20} /></button>
       </div>
     </div>
@@ -203,14 +203,14 @@ export function Timer() {
       <div className="screen" data-screen-label="08 Cronómetro" style={{ paddingBottom: 'calc(40px + var(--bottom))' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button className="round-btn" onClick={leave} aria-label="Volver"><Icon name="chevronLeft" size={20} /></button>
-          <h1 className="title" style={{ fontSize: 30 }}>Cronómetro</h1>
+          <h1 className="title" style={{ fontSize: 'var(--display-lg)' }}>Cronómetro</h1>
         </div>
         {wod && (
           <div className="surface" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
             <span className="icon-badge" aria-hidden="true"><Icon name="board" size={20} /></span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="label-600" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{wod.title}</div>
-              <span className="muted-13">WOD de hoy · {wod.score_type === 'time' ? 'por tiempo' : wod.score_type === 'reps' ? 'reps o rondas' : 'peso'}</span>
+              <span className="muted-sm">WOD de hoy · {wod.score_type === 'time' ? 'por tiempo' : wod.score_type === 'reps' ? 'reps o rondas' : 'peso'}</span>
             </div>
           </div>
         )}
@@ -236,7 +236,7 @@ export function Timer() {
           <span className="field-label">Avisos</span>
           <Segmented label="Avisos" value={sound} onChange={setSound} options={[['voice', 'Voz y pitidos'], ['beeps', 'Solo pitidos'], ['off', 'Silencio']]} />
         </div>
-        <button className="btn btn-primary btn-block" onClick={start} style={{ height: 60, fontSize: 19 }}>Empezar</button>
+        <button className="btn btn-primary btn-block" onClick={start} style={{ height: 60, fontSize: 'var(--text-lg)' }}>Empezar</button>
       </div>
     );
   }
@@ -252,13 +252,13 @@ export function Timer() {
             <span className="timer-sub">{laps === 1 ? 'ronda' : 'rondas'} completas</span>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}>
               + <input className="input" inputMode="numeric" value={extraReps} onChange={e => setExtraReps(e.target.value.replace(/\D/g, ''))} placeholder="0"
-                style={{ width: 84, height: 48, textAlign: 'center', fontSize: 20 }} aria-label="Reps extra de la última ronda" /> reps extra
+                style={{ width: 84, height: 48, textAlign: 'center', fontSize: 'var(--text-lg)' }} aria-label="Reps extra de la última ronda" /> reps extra
             </label>
           </>}
           {(mode === 'emom' || mode === 'tabata') && <span className="timer-sub">{mode === 'emom' ? `${minutes} minutos` : `${rounds} rondas`} completados. ¡Bien!</span>}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 10 }}>
-          {boardFits && <button className="btn btn-primary btn-block" disabled={saving} onClick={toBoard} style={{ height: 58, fontSize: 18 }}>{saving ? 'Anotando…' : 'Anotar en la pizarra'}</button>}
+          {boardFits && <button className="btn btn-primary btn-block" disabled={saving} onClick={toBoard} style={{ height: 58, fontSize: 'var(--text-lg)' }}>{saving ? 'Anotando…' : 'Anotar en la pizarra'}</button>}
           <button className="btn btn-block timer-ghost" onClick={() => setPhase('setup')} style={{ height: 52 }}>Otro cronómetro</button>
           <button className="btn btn-block timer-ghost" onClick={leave} style={{ height: 52 }}>Salir</button>
         </div>
@@ -281,12 +281,12 @@ export function Timer() {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 10 }}>
         {mode === 'amrap' && phase !== 'countdown' && (
           <div style={{ display: 'flex', gap: 10 }}>
-            <button className="btn timer-ghost" onClick={() => setLaps(l => Math.max(0, l - 1))} style={{ height: 72, width: 72, flex: 'none', fontSize: 22 }} aria-label="Quitar una ronda">−1</button>
-            <button className="btn btn-primary" onClick={() => { setLaps(l => l + 1); cues.beep(1100, 80); }} style={{ height: 72, flex: 1, fontSize: 22 }}>+1 ronda</button>
+            <button className="btn timer-ghost" onClick={() => setLaps(l => Math.max(0, l - 1))} style={{ height: 72, width: 72, flex: 'none', fontSize: 'var(--text-xl)' }} aria-label="Quitar una ronda">−1</button>
+            <button className="btn btn-primary" onClick={() => { setLaps(l => l + 1); cues.beep(1100, 80); }} style={{ height: 72, flex: 1, fontSize: 'var(--text-xl)' }}>+1 ronda</button>
           </div>
         )}
         {mode === 'fortime' && phase !== 'countdown' && (
-          <button className="btn btn-primary btn-block" onClick={() => finish({ time: elapsed })} style={{ height: 72, fontSize: 22 }}>¡Terminé!</button>
+          <button className="btn btn-primary btn-block" onClick={() => finish({ time: elapsed })} style={{ height: 72, fontSize: 'var(--text-xl)' }}>¡Terminé!</button>
         )}
         {phase !== 'countdown' && (
           <button className="btn btn-block timer-ghost" onClick={phase === 'paused' ? resume : pause} style={{ height: 52 }}>{phase === 'paused' ? 'Seguir' : 'Pausa'}</button>

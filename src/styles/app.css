@@ -23,11 +23,11 @@ button { font-family: inherit; }
 .btn-primary:active { background: var(--color-accent-400); }
 
 /* Fields are 16px or more: iOS zooms into anything smaller on focus and never zooms back out. */
-.input { font-size: 16px; }
+.input { font-size: var(--text-md); }
 
 /* — empty states — */
-.empty { padding: 22px; border-radius: var(--radius-lg); border: 2px dashed var(--color-neutral-400); font-size: 15px; color: var(--color-neutral-800); }
-.note { margin: 0; font-size: 14px; color: var(--color-neutral-800); }
+.empty { padding: 22px; border-radius: var(--radius-lg); border: 2px dashed var(--color-neutral-400); font-size: var(--text-md); color: var(--color-neutral-800); }
+.note { margin: 0; font-size: var(--text-sm); color: var(--color-neutral-800); }
 
 /* Keeps a control's visual size while giving it a 44px touch target. */
 .hit { position: relative; }
@@ -50,7 +50,7 @@ button { font-family: inherit; }
   }
   .status-bar {
     position: absolute; top: 0; left: 0; right: 0; height: 48px; display: flex; align-items: center;
-    justify-content: space-between; padding: 0 30px; font-weight: 600; font-size: 15px; z-index: 5; pointer-events: none;
+    justify-content: space-between; padding: 0 30px; font-weight: 600; font-size: var(--text-md); z-index: 5; pointer-events: none;
   }
 }
 .status-notch { width: 110px; height: 30px; border-radius: 999px; background: var(--color-text); position: absolute; left: 50%; top: 8px; transform: translateX(-50%); }
@@ -65,16 +65,16 @@ button { font-family: inherit; }
   display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: max-content; align-content: start; gap: var(--space-6);
 }
 .screen-head { display: flex; flex-direction: column; gap: 6px; }
-.title { font-family: var(--font-heading); font-weight: 400; font-size: 32px; margin: 0; line-height: 1.1; }
-.lede { margin: 0; font-size: 16px; color: var(--color-neutral-800); }
-.section-title { font-family: var(--font-heading); font-weight: 400; font-size: 24px; margin: 0; }
+.title { font-family: var(--font-heading); font-weight: 400; font-size: var(--display-xl); margin: 0; line-height: 1.1; }
+.lede { margin: 0; font-size: var(--text-md); color: var(--color-neutral-800); }
+.section-title { font-family: var(--font-heading); font-weight: 400; font-size: var(--display-md); margin: 0; }
 .stack-3 { display: flex; flex-direction: column; gap: var(--space-3); }
-.kicker { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-.muted-13 { font-size: 13px; color: var(--color-neutral-700); }
+.kicker { font-size: var(--text-xs); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.muted-sm { font-size: var(--text-sm); color: var(--color-neutral-700); }
 .surface { border-radius: var(--radius-lg); background: var(--color-surface); }
 .dashed { display: flex; flex-direction: column; gap: var(--space-3); padding: 20px; border-radius: var(--radius-lg); border: 2px dashed var(--color-neutral-400); }
-.label-600 { font-weight: 600; font-size: 16px; }
-.field-label { font-size: 14px; font-weight: 600; color: var(--color-neutral-800); }
+.label-600 { font-weight: 600; font-size: var(--text-md); }
+.field-label { font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-800); }
 .flex-center { display: flex; align-items: center; justify-content: center; }
 
 /* — chips & pills — */
@@ -82,18 +82,18 @@ button { font-family: inherit; }
 .chip-row::-webkit-scrollbar { display: none; }
 .pill {
   position: relative; flex: none; height: 40px; padding: 0 16px; border-radius: 999px; border: 2px solid;
-  font-weight: 600; font-size: 14px; cursor: pointer; transition: background-color .15s, color .15s, border-color .15s;
+  font-weight: 600; font-size: var(--text-sm); cursor: pointer; transition: background-color .15s, color .15s, border-color .15s;
 }
 /* 44px touch target without changing the pill's look; horizontal gaps stay untouched. */
 .pill::after { content: ''; position: absolute; inset: -4px -2px; }
-.chip { height: 40px; padding: 0 16px; border-radius: 999px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: background-color .15s, color .15s; }
+.chip { height: 40px; padding: 0 16px; border-radius: 999px; border: none; font-weight: 600; font-size: var(--text-sm); cursor: pointer; transition: background-color .15s, color .15s; }
 .chip[aria-pressed='true'] { background: var(--color-text); color: var(--color-bg); }
 .chip[aria-pressed='false'] { background: var(--color-surface); color: var(--color-text); }
 .pill:hover { filter: brightness(0.96); }
 
 /* — quiet text action (sign-in alternatives): a real button with a 44px target, underlined like a link — */
 .link-btn {
-  min-height: 44px; padding: 0 4px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 14px;
+  min-height: 44px; padding: 0 4px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: var(--text-sm);
   color: var(--color-accent-700); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px;
 }
 .link-btn:hover { color: var(--color-accent-800); }
@@ -103,34 +103,34 @@ button { font-family: inherit; }
 .seg[data-fit] { display: inline-flex; align-self: flex-start; }
 .seg-btn {
   flex: 1 1 auto; min-width: 0; min-height: 40px; padding: 0 12px; border-radius: 999px; border: none; background: transparent;
-  color: var(--color-text); font-weight: 700; font-size: 14px; white-space: nowrap; cursor: pointer; transition: background-color .15s, color .15s;
+  color: var(--color-text); font-weight: 700; font-size: var(--text-sm); white-space: nowrap; cursor: pointer; transition: background-color .15s, color .15s;
 }
 .seg[data-fit] .seg-btn { flex: none; padding: 0 16px; }
-.seg[data-size='lg'] .seg-btn { min-height: 44px; font-size: 15px; }
+.seg[data-size='lg'] .seg-btn { min-height: 44px; font-size: var(--text-md); }
 .seg-btn:hover { background: var(--color-accent-200); }
 .seg-btn[aria-pressed='true'] { background: var(--color-text); color: var(--color-bg); }
 
 /* two-line segment: a name over its value (the bar picker) */
 .seg-two { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 52px; line-height: 1.15; }
-.seg-sub { font-size: 12px; font-weight: 600; opacity: .8; }
+.seg-sub { font-size: var(--text-xs); font-weight: 600; opacity: .8; }
 
 /* — plate counter: one row per plate, two columns; a small disc between − and + — */
 .plate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .plate-row { display: flex; align-items: center; gap: 6px; padding: 4px; border-radius: 999px; background: var(--color-bg); transition: background-color .15s; }
 .plate-row[data-on] { background: var(--color-accent-2-200); }
 .plate-step {
-  width: 36px; height: 36px; flex: none; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; font-weight: 700; line-height: 1;
+  width: 36px; height: 36px; flex: none; border-radius: 50%; border: none; cursor: pointer; font-size: var(--text-lg); font-weight: 700; line-height: 1;
   background: var(--color-surface); color: var(--color-text); position: relative;
 }
 .plate-step::after { content: ''; position: absolute; inset: -4px; }
 .plate-step:disabled { opacity: .35; cursor: default; }
 .plate-chip {
   width: 40px; height: 40px; flex: none; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  line-height: 1; font-family: var(--font-heading); font-size: 14px; background: var(--color-accent-2-300); color: var(--color-accent-2-900);
+  line-height: 1; font-family: var(--font-heading); font-size: var(--display-xs); background: var(--color-accent-2-300); color: var(--color-accent-2-900);
 }
-.plate-chip[data-big] { background: var(--color-text); color: var(--color-bg); font-size: 15px; }
-.plate-chip small { font-family: var(--font-body); font-size: 9px; font-weight: 700; margin-top: 1px; }
-.plate-count { flex: 1; min-width: 0; text-align: center; font-weight: 700; font-size: 15px; }
+.plate-chip[data-big] { background: var(--color-text); color: var(--color-bg); font-size: var(--display-xs); }
+.plate-chip small { font-family: var(--font-body); font-size: var(--text-xs); font-weight: 700; margin-top: 1px; }
+.plate-count { flex: 1; min-width: 0; text-align: center; font-weight: 700; font-size: var(--text-md); }
 
 /* — round icon button (back, close) — */
 .round-btn {
@@ -142,7 +142,7 @@ button { font-family: inherit; }
 /* — profile avatar on Home — */
 .avatar-btn {
   width: 48px; height: 48px; border-radius: 50%; border: none; flex: none; cursor: pointer;
-  background: var(--color-accent-2-700); color: var(--color-bg); font-family: var(--font-heading); font-size: 20px;
+  background: var(--color-accent-2-700); color: var(--color-bg); font-family: var(--font-heading); font-size: var(--display-sm);
   transition: background-color .15s;
 }
 .avatar-btn:hover { background: var(--color-accent-2-800); }
@@ -151,7 +151,7 @@ button { font-family: inherit; }
 /* Your goal, as a small pastel badge under the greeting. */
 .aim-pill {
   display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; max-width: 100%; padding: 5px 12px 5px 10px; border-radius: 999px;
-  background: var(--color-accent-200); color: var(--color-accent-800); font-size: 13px; font-weight: 700;
+  background: var(--color-accent-200); color: var(--color-accent-800); font-size: var(--text-sm); font-weight: 700;
 }
 .aim-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* A section's icon in a pastel disc (an icon alone in the accent goes faint on light themes). */
@@ -177,14 +177,14 @@ button { font-family: inherit; }
 .pr-tile:active { transform: scale(.97); }
 .pr-tile::after { content: ''; position: absolute; width: 90px; height: 90px; border-radius: 50%; right: -34px; bottom: -40px; background: currentColor; opacity: .07; }
 .pr-tile-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--color-bg); margin-bottom: 4px; }
-.pr-tile-name { font-weight: 700; font-size: 14px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.pr-tile-value { font-family: var(--font-heading); font-size: 32px; line-height: 1; margin-top: auto; }
-.pr-tile-value small { font-family: var(--font-body); font-size: 13px; font-weight: 700; margin-left: 3px; }
-.pr-tile-gain { font-size: 12px; font-weight: 700; opacity: .85; }
+.pr-tile-name { font-weight: 700; font-size: var(--text-sm); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pr-tile-value { font-family: var(--font-heading); font-size: var(--display-xl); line-height: 1; margin-top: auto; }
+.pr-tile-value small { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; margin-left: 3px; }
+.pr-tile-gain { font-size: var(--text-xs); font-weight: 700; opacity: .85; }
 
 /* — class check-in: one tap on a face, in the theme's second pastel — */
 .checkin { display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: var(--radius-lg); background: var(--color-accent-2-200); color: var(--color-accent-2-900); }
-.checkin-title { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 22px; line-height: 1.2; }
+.checkin-title { margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: var(--display-md); line-height: 1.2; }
 .checkin .field-label, .checkin .link-btn { color: var(--color-accent-2-900); }
 .checkin-time { width: 104px; height: 40px; padding: 0 10px; border-radius: 999px; background: var(--color-bg); }
 .mood-row { display: flex; justify-content: space-between; gap: 4px; }
@@ -192,10 +192,11 @@ button { font-family: inherit; }
 .mood-btn:hover { background: var(--color-accent-2-300); }
 .mood-btn:active { transform: scale(.94); }
 .mood-btn[aria-checked='true'] { background: var(--color-bg); }
-.mood-face { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--color-bg); font-size: 28px; line-height: 1; }
-.mood-word { font-size: 11px; font-weight: 700; white-space: nowrap; }
-.came-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px 4px 4px; border-radius: 999px; background: var(--color-surface); font-size: 14px; font-weight: 600; }
-.came-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-bg); font-family: var(--font-heading); font-size: 13px; }
+.mood-face { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--color-bg); font-size: var(--display-lg); line-height: 1; }
+/* Two-word moods ("Sin pilas") break onto two lines on a 320px phone instead of running into the next one. */
+.mood-word { font-size: var(--text-xs); font-weight: 700; line-height: 1.15; text-align: center; }
+.came-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px 4px 4px; border-radius: 999px; background: var(--color-surface); font-size: var(--text-sm); font-weight: 600; }
+.came-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-bg); font-family: var(--font-heading); font-size: var(--display-xs); }
 
 /* — list cards — */
 .pr-card {
@@ -221,7 +222,7 @@ button { font-family: inherit; }
 }
 .tab {
   display: flex; flex-direction: column; align-items: center; gap: 2px; border: none; cursor: pointer; border-radius: 999px;
-  font-size: 12px; font-weight: 700; width: 64px; height: 54px; justify-content: center; background: transparent;
+  font-size: var(--text-xs); font-weight: 700; width: 64px; height: 54px; justify-content: center; background: transparent;
   color: var(--color-accent-2-900); transition: background-color .15s, color .15s;
 }
 .tab[aria-current='page'] { background: var(--color-accent-2-700); color: var(--color-bg); }
@@ -258,10 +259,10 @@ button { font-family: inherit; }
 .stepper-plus:hover { background: var(--color-accent-500); }
 .draft-input {
   flex: 1; min-width: 0; width: 100%; border: none; border-bottom: 3px dashed var(--color-neutral-400); background: transparent;
-  font-family: var(--font-heading); font-size: 38px; line-height: 1.1; text-align: center; color: var(--color-text); padding: 0; outline: none;
+  font-family: var(--font-heading); font-size: var(--display-2xl); line-height: 1.1; text-align: center; color: var(--color-text); padding: 0; outline: none;
 }
 .draft-input:focus { border-bottom-color: var(--color-accent); }
-.new-mov { height: 40px; padding: 0 16px; border-radius: 999px; border: 2px dashed var(--color-neutral-600); background: transparent; color: var(--color-text); font-weight: 700; font-size: 14px; cursor: pointer; }
+.new-mov { height: 40px; padding: 0 16px; border-radius: 999px; border: 2px dashed var(--color-neutral-600); background: transparent; color: var(--color-text); font-weight: 700; font-size: var(--text-sm); cursor: pointer; }
 .new-mov:hover { background: var(--color-accent-100); }
 /* In a sideways chip row the add button keeps its own width and its one line. */
 .chip-row .new-mov { flex: none; white-space: nowrap; }
@@ -269,13 +270,13 @@ button { font-family: inherit; }
 /* — "Más detalles" disclosure in the record sheet: the summary shows the defaults that will be saved — */
 .more-toggle {
   display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 16px; border-radius: 999px; border: none;
-  background: var(--color-surface); color: var(--color-text); font-weight: 600; font-size: 14px; cursor: pointer; text-align: left;
+  background: var(--color-surface); color: var(--color-text); font-weight: 600; font-size: var(--text-sm); cursor: pointer; text-align: left;
 }
 .more-toggle:hover { background: var(--color-accent-200); }
 .more-sum { flex: 1; min-width: 0; text-align: right; color: var(--color-neutral-700); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* — two-step delete: first tap arms, second confirms — */
-.del-btn { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid transparent; background: transparent; color: var(--color-neutral-700); font-weight: 600; font-size: 13px; cursor: pointer; position: relative; }
+.del-btn { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid transparent; background: transparent; color: var(--color-neutral-700); font-weight: 600; font-size: var(--text-sm); cursor: pointer; position: relative; }
 .del-btn::after { content: ''; position: absolute; inset: -4px; }
 .del-btn:hover { color: var(--color-accent-800); }
 .del-btn[data-armed='true'] { border-color: var(--color-accent-700); color: var(--color-accent-800); background: var(--color-accent-100); }
@@ -283,10 +284,10 @@ button { font-family: inherit; }
 /* — group: invite link — */
 .invite-btn {
   display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 20px; border-radius: 999px; border: none; cursor: pointer;
-  background: var(--color-accent-200); color: var(--color-accent-900); font-weight: 700; font-size: 15px; transition: background-color .15s;
+  background: var(--color-accent-200); color: var(--color-accent-900); font-weight: 700; font-size: var(--text-md); transition: background-color .15s;
 }
 .invite-btn:hover { background: var(--color-accent-300); }
-.invite-btn .muted-13 { color: var(--color-accent-800); }
+.invite-btn .muted-sm { color: var(--color-accent-800); }
 
 /* — group: upcoming birthdays and events — */
 .upcoming-card { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -297,30 +298,30 @@ button { font-family: inherit; }
   align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-text);
 }
 .date-chip[data-soon='true'] { background: var(--color-accent-700); color: var(--color-bg); }
-.date-chip-day { font-family: var(--font-heading); font-size: 24px; line-height: 1; }
-.date-chip-month { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-.field-date { height: 48px; font-size: 16px; flex: 1; min-width: 0; }
+.date-chip-day { font-family: var(--font-heading); font-size: var(--display-md); line-height: 1; }
+.date-chip-month { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.field-date { height: 48px; font-size: var(--text-md); flex: 1; min-width: 0; }
 
 /* — WOD board: the box's chalkboard. Ink surface, chalk-cream type, the ranking in the display face. — */
 .board {
   display: flex; flex-direction: column; gap: 18px; padding: 22px; border-radius: var(--radius-lg);
   background: var(--color-text); color: var(--color-bg); position: relative; overflow: hidden;
 }
-.board-title { font-family: var(--font-heading); font-weight: 400; font-size: 32px; line-height: 1.05; margin: 0; text-wrap: balance; }
-.board-meta { font-size: 14px; color: var(--color-neutral-400); }
-.board-desc { margin: 0; white-space: pre-wrap; font-size: 16px; line-height: 1.5; }
-.board-more { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--color-neutral-600); background: transparent; color: var(--color-bg); font-weight: 700; font-size: 13px; cursor: pointer; }
+.board-title { font-family: var(--font-heading); font-weight: 400; font-size: var(--display-xl); line-height: 1.05; margin: 0; text-wrap: balance; }
+.board-meta { font-size: var(--text-sm); color: var(--color-neutral-400); }
+.board-desc { margin: 0; white-space: pre-wrap; font-size: var(--text-md); line-height: 1.5; }
+.board-more { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--color-neutral-600); background: transparent; color: var(--color-bg); font-weight: 700; font-size: var(--text-sm); cursor: pointer; }
 .board-rows { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 14px 0 0; list-style: none; border-top: 1px solid var(--color-neutral-700); }
 .board-row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; margin: 0 -12px; border-radius: var(--radius-md); }
 .board-row[data-me='true'] { background: var(--color-accent-500); color: var(--color-text); }
 .board-row[data-scaled='true']:not([data-me='true']) { color: var(--color-neutral-400); }
-.board-rank { width: 28px; flex: none; text-align: center; font-family: var(--font-heading); font-size: 22px; line-height: 1; }
+.board-rank { width: 28px; flex: none; text-align: center; font-family: var(--font-heading); font-size: var(--display-md); line-height: 1; }
 .board-row:first-child:not([data-me='true']) .board-rank { color: var(--color-accent-400); }
-.board-name { flex: 1; min-width: 0; font-weight: 600; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.board-tag { flex: none; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid currentColor; }
-.board-score { flex: none; font-family: var(--font-heading); font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
-.board-unit { font-family: var(--font-body); font-size: 12px; font-weight: 600; margin-left: 3px; }
-.board-empty { margin: 0; padding-top: 14px; border-top: 1px solid var(--color-neutral-700); color: var(--color-neutral-400); font-size: 15px; }
+.board-name { flex: 1; min-width: 0; font-weight: 600; font-size: var(--text-md); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-tag { flex: none; font-size: var(--text-xs); font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid currentColor; }
+.board-score { flex: none; font-family: var(--font-heading); font-size: var(--display-md); line-height: 1; font-variant-numeric: tabular-nums; }
+.board-unit { font-family: var(--font-body); font-size: var(--text-xs); font-weight: 600; margin-left: 3px; }
+.board-empty { margin: 0; padding-top: 14px; border-top: 1px solid var(--color-neutral-700); color: var(--color-neutral-400); font-size: var(--text-md); }
 
 /* — WOD timer: the running clock takes the whole phone, ink like the box's clock, pastel accents — */
 .timer-field { display: flex; flex-direction: column; gap: 8px; }
@@ -330,8 +331,8 @@ button { font-family: inherit; }
 }
 .timer-run[data-rest] { background: var(--color-accent-2-900); }
 .timer-big { font-family: var(--font-heading); font-size: clamp(88px, 30vw, 132px); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.timer-top { font-family: var(--font-heading); font-size: 28px; color: var(--color-accent-300); }
-.timer-sub { font-size: 16px; font-weight: 600; color: var(--color-neutral-300); }
+.timer-top { font-family: var(--font-heading); font-size: var(--display-lg); color: var(--color-accent-300); }
+.timer-sub { font-size: var(--text-md); font-weight: 600; color: var(--color-neutral-300); }
 .timer-ghost { background: transparent; color: var(--color-bg); border: 2px solid var(--color-neutral-600); }
 .timer-round { background: var(--color-neutral-800); color: var(--color-bg); }
 .timer-track { position: absolute; left: 0; right: 0; top: 0; height: 6px; background: var(--color-neutral-800); }

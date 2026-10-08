@@ -46,11 +46,11 @@ export function Skills() {
       </div>
       {mine.length > 0 && <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 20, borderRadius: 'var(--radius-lg)', background: 'var(--color-accent-2-200)' }}>
         <div className="flex-center" style={{ width: 72, height: 72, borderRadius: '50%', background: `conic-gradient(var(--color-accent-2-700) ${pct}%, var(--color-accent-2-300) 0)`, flex: 'none' }}>
-          <div className="flex-center" style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--color-accent-2-200)', fontFamily: 'var(--font-heading)', fontSize: 20, color: 'var(--color-accent-2-900)' }}>{done}</div>
+          <div className="flex-center" style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--color-accent-2-200)', fontFamily: 'var(--font-heading)', fontSize: 'var(--display-sm)', color: 'var(--color-accent-2-900)' }}>{done}</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
-          <span style={{ fontFamily: 'var(--font-heading)', fontSize: 20, lineHeight: 1.15, color: 'var(--color-accent-2-900)' }}>{done} de {mine.length} logradas</span>
-          <span style={{ fontSize: 14, color: 'var(--color-accent-2-800)' }}>{next ? `La que viene: ${next.name}` : '¡Vas por todas!'}</span>
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--display-sm)', lineHeight: 1.15, color: 'var(--color-accent-2-900)' }}>{done} de {mine.length} logradas</span>
+          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-accent-2-800)' }}>{next ? `La que viene: ${next.name}` : '¡Vas por todas!'}</span>
         </div>
       </div>}
       <div className="chip-row">
@@ -71,7 +71,7 @@ export function Skills() {
                   {filter === 'all' && <span className="kicker" style={{ color: d.color }}>{d.label}</span>}
                   <span className="label-600">{k.name}</span>
                 </div>
-                <span style={{ flex: 'none', padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700,
+                <span style={{ flex: 'none', padding: '5px 12px', borderRadius: 999, fontSize: 'var(--text-sm)', fontWeight: 700,
                   background: got ? 'var(--color-accent-2-700)' : k.stage > 0 ? 'var(--color-accent-200)' : 'var(--color-bg)',
                   color: got ? 'var(--color-bg)' : k.stage > 0 ? 'var(--color-accent-800)' : 'var(--color-neutral-800)' }}>{STAGES[k.stage]}</span>
               </div>
@@ -105,7 +105,7 @@ export function Skills() {
         )}
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
         <input className="input" aria-label="Nueva skill" placeholder="Nueva skill, p. ej. Pistol squat" value={newSkill} onChange={e => setNewSkill(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && add()} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 16 }} />
+          onKeyDown={e => e.key === 'Enter' && add()} style={{ flex: 1, minWidth: 0, height: 48, fontSize: 'var(--text-md)' }} />
         <button onClick={add} className="btn btn-primary" style={{ height: 48, flex: 'none' }}>Agregar</button>
         </div>
       </div>

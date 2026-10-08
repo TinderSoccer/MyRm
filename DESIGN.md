@@ -15,41 +15,71 @@ colors:
   dust-line-strong: "#82796a"
   pencil-gray: "#645c50"
 typography:
-  display:
-    fontFamily: "Caprasimo, system-ui, sans-serif"
-    fontSize: "48px"
-    fontWeight: 400
-    lineHeight: 1.02
-  headline:
-    fontFamily: "Caprasimo, system-ui, sans-serif"
-    fontSize: "32px"
-    fontWeight: 400
-    lineHeight: 1.1
-  title:
-    fontFamily: "Caprasimo, system-ui, sans-serif"
-    fontSize: "24px"
-    fontWeight: 400
-    lineHeight: 1.12
-  numeral:
+  display-num:
     fontFamily: "Caprasimo, system-ui, sans-serif"
     fontSize: "56px"
     fontWeight: 400
     lineHeight: 1
-  body:
+  display-2xl:
+    fontFamily: "Caprasimo, system-ui, sans-serif"
+    fontSize: "44px"
+    fontWeight: 400
+    lineHeight: 1.02
+  display-xl:
+    fontFamily: "Caprasimo, system-ui, sans-serif"
+    fontSize: "34px"
+    fontWeight: 400
+    lineHeight: 1.08
+  display-lg:
+    fontFamily: "Caprasimo, system-ui, sans-serif"
+    fontSize: "28px"
+    fontWeight: 400
+    lineHeight: 1.1
+  display-md:
+    fontFamily: "Caprasimo, system-ui, sans-serif"
+    fontSize: "24px"
+    fontWeight: 400
+    lineHeight: 1.12
+  display-sm:
+    fontFamily: "Caprasimo, system-ui, sans-serif"
+    fontSize: "20px"
+    fontWeight: 400
+    lineHeight: 1.1
+  display-xs:
+    fontFamily: "Caprasimo, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 400
+    lineHeight: 1
+  timer:
+    fontFamily: "Caprasimo, system-ui, sans-serif"
+    fontSize: "clamp(88px, 30vw, 132px)"
+    fontWeight: 400
+    lineHeight: 1
+  text-xl:
     fontFamily: "Figtree, system-ui, sans-serif"
-    fontSize: "15px"
+    fontSize: "22px"
+    fontWeight: 700
+    lineHeight: 1.2
+  text-lg:
+    fontFamily: "Figtree, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 600
+    lineHeight: 1.3
+  text-md:
+    fontFamily: "Figtree, system-ui, sans-serif"
+    fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.55
-  label:
+  text-sm:
     fontFamily: "Figtree, system-ui, sans-serif"
     fontSize: "14px"
     fontWeight: 600
     lineHeight: 1.3
-  kicker:
+  text-xs:
     fontFamily: "Figtree, system-ui, sans-serif"
-    fontSize: "11px"
+    fontSize: "12px"
     fontWeight: 700
-    letterSpacing: "0.04em"
+    lineHeight: 1.3
 rounded:
   sm: "8px"
   md: "16px"
@@ -172,13 +202,25 @@ Una paleta terrosa de cuatro roles sobre rampas tonales OKLCH que comparten la m
 **Character:** Caprasimo es gorda, redondeada y con algo de rótulo de tiza; le da voz a los títulos y peso a los números. Figtree es una sans geométrica y cálida que se mantiene legible en tamaños chicos.
 
 ### Hierarchy
-- **Display** (400, 48px, 1.02): solo en la bienvenida ("Cada marca cuenta.").
-- **Headline** (400, 32px, 1.1): el título de cada pantalla.
-- **Title** (400, 22–26px, 1.12): los títulos de sección ("Mis marcas", "Historial") y de la hoja.
-- **Numeral** (400, 24–56px, 1): las marcas. 56px en el Detalle, 38px en el campo editable y 24px en las tarjetas de la lista. La unidad va en Figtree 600, a un tercio del tamaño.
-- **Body** (400, 15–17px, 1.55): textos de entrada y estados vacíos.
-- **Label** (600, 14–16px): nombres de movimientos, etiquetas de campos y botones de píldora (700).
-- **Kicker** (700, 11px, 0.04em, mayúsculas): el nombre de la disciplina, en el color de la disciplina.
+Cada tamaño de la app es un token de `organic.css`; no hay tamaños sueltos. Caprasimo y Figtree tienen escalas separadas, porque Caprasimo se ve más grande al mismo tamaño. Nada baja de 12px.
+
+| Token | Tamaño | Uso |
+|---|---|---|
+| `--display-num` | 56px | la marca sola en su Detalle |
+| `--display-2xl` | 44px | la bienvenida ("Cada marca cuenta.") y el número que se está anotando en la hoja |
+| `--display-xl` | 34px | el saludo, el título del perfil, la marca en las tarjetas de récords |
+| `--display-lg` | 28px | el título de una pantalla o de la pizarra |
+| `--display-md` | 24px | títulos de sección ("Mis marcas", "Historial"), el título de la hoja y los resultados |
+| `--display-sm` | 20px | números en una lista, el check-in ya hecho |
+| `--display-xs` | 14px | iniciales y números dentro de círculos chicos (avatares, discos) |
+| `--text-xl` | 22px | los botones grandes del cronómetro, que se leen desde el suelo |
+| `--text-lg` | 18px | botones principales e inputs grandes |
+| `--text-md` | 16px | cuerpo, inputs (16px evita que iOS haga zoom al tocar un campo) |
+| `--text-sm` | 14px | etiquetas, líneas secundarias, botones de píldora |
+| `--text-xs` | 12px | tags, etiquetas de la tabbar, la unidad bajo un número |
+
+El cronómetro es la única excepción: su número es fluido, `clamp(88px, 30vw, 132px)`, para llenar la pantalla en cualquier teléfono. La unidad de una marca va en Figtree 600, un par de pasos bajo el número.
+- **Kicker** (`--text-xs`, 700, 0.04em, mayúsculas): el nombre de la disciplina, en el color de la disciplina.
 
 ### Named Rules
 **The Number-Is-the-Hero Rule.** Toda marca se muestra en Caprasimo, con la unidad más chica y en Figtree. Un número de marca nunca va en el cuerpo de texto.
@@ -206,7 +248,7 @@ Todo es redondo. Las tarjetas usan 28px de radio. La hoja inferior usa 36px en l
 
 ### Buttons
 - **Shape:** píldora completa (999px).
-- **Primary:** terracota con texto en tinta, Caprasimo de 14–17px y 44–56px de alto. El CTA de pantalla ocupa todo el ancho y mide 56px.
+- **Primary:** terracota con texto en tinta, Caprasimo de 14–18px (`--display-xs` a `--text-lg`) y 44–56px de alto. El CTA de pantalla ocupa todo el ancho y mide 56px.
 - **Hover / Active:** se aclara a `accent-500` y luego a `accent-400`. El foco es un anillo terracota de 2px separado 2px.
 - **Secondary:** fondo transparente con un borde fino de divisor; se oscurece apenas al pasar el cursor.
 - **Round icon:** un círculo de madera de 44px para volver o cerrar; al pasar el cursor toma `accent-200`.
@@ -225,9 +267,9 @@ Todo es redondo. Las tarjetas usan 28px de radio. La hoja inferior usa 36px en l
 - **Empty state** (`.empty`): una caja punteada de 2px con texto en `neutral-800` que dice qué hacer a continuación.
 
 ### Inputs / Fields
-- **Style:** píldora de madera de 44–52px, texto de 15–17px y cursor terracota.
+- **Style:** píldora de madera de 44–52px, texto de 16–18px y cursor terracota.
 - **Focus:** el borde pasa a terracota.
-- **Valor editable de la marca:** número en Caprasimo de 38px sobre una línea punteada de 3px que se vuelve terracota al enfocarse, flanqueado por steppers de 56px (− en crema, + en terracota).
+- **Valor editable de la marca:** número en Caprasimo de 44px (`--display-2xl`) sobre una línea punteada de 3px que se vuelve terracota al enfocarse, flanqueado por steppers de 56px (− en crema, + en terracota).
 
 ### Navigation
 - **Tabbar:** una píldora flotante de tinta de 72px con cuatro pestañas y el FAB en el centro. La pestaña activa va en crema y las inactivas en `neutral-500`, con etiqueta de 12px/600 bajo un ícono Lucide de 24px.

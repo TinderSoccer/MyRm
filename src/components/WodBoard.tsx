@@ -91,7 +91,7 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
       <label htmlFor="wod-title" className="label-600">{edit ? 'Corregir el WOD' : cloud.wods.length ? 'WOD de otra clase' : 'Nadie ha subido el WOD de hoy'}</label>
       <p className="note">{edit ? 'Los resultados que ya anotaron se mantienen.' : 'Súbelo tú y los de tu clase anotan sus resultados en la misma pizarra.'}</p>
       {!edit && (
-        <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, fontSize: 14 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, fontSize: 'var(--text-sm)' }}>
           ¿De qué clase es?
           <input className="input" type="time" value={classTime} onChange={e => setClassTime(e.target.value)} style={{ width: 150, height: 44, borderRadius: 999 }} />
         </label>
@@ -102,9 +102,9 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
           style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
       </label>
       {fromPhoto && <p className="note" role="status" style={{ color: 'var(--color-accent-2-700)', fontWeight: 600 }}>Lo leímos de la foto. Revisa que esté bien antes de {edit ? 'guardar' : 'subirlo'}.</p>}
-      <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 16 }} />
+      <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 'var(--text-md)' }} />
       <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'21-15-9\nThrusters 95/65 lb\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
-        style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 16, resize: 'vertical', height: 'auto', minHeight: edit ? 180 : 96 }} />
+        style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 'var(--text-md)', resize: 'vertical', height: 'auto', minHeight: edit ? 180 : 96 }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <span className="field-label">¿Cómo anota cada uno su resultado?</span>
         {!typeLocked && <Segmented label="¿Cómo anota cada uno su resultado?" value={type} onChange={setType} options={TYPES} />}
@@ -178,12 +178,12 @@ function Board({ nameOf }: Props) {
       <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
         <input id="wod-score" className="input" inputMode={w.score_type === 'time' ? 'numeric' : isReps ? 'numeric' : 'decimal'} value={text} onChange={e => setText(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && save()} placeholder={w.score_type === 'time' ? 'm:ss' : isReps ? 'Rondas o reps' : 'Peso'}
-          style={{ flex: 1, minWidth: 0, height: 48, fontSize: 17 }} />
+          style={{ flex: 1, minWidth: 0, height: 48, fontSize: 'var(--text-lg)' }} />
         {isReps ? (
           <>
-            <span aria-hidden="true" style={{ fontFamily: 'var(--font-heading)', fontSize: 22 }}>+</span>
+            <span aria-hidden="true" style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--display-md)' }}>+</span>
             <input className="input" inputMode="numeric" aria-label="Reps extra (opcional)" placeholder="reps" value={extraText} onChange={e => setExtraText(e.target.value.replace(/\D/g, ''))}
-              onKeyDown={e => e.key === 'Enter' && save()} style={{ width: 88, flex: 'none', height: 48, fontSize: 17 }} />
+              onKeyDown={e => e.key === 'Enter' && save()} style={{ width: 88, flex: 'none', height: 48, fontSize: 'var(--text-lg)' }} />
           </>
         ) : unit && <span style={{ fontWeight: 600 }}>{unit}</span>}
       </div>

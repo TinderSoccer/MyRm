@@ -21,17 +21,17 @@ export function Welcome() {
       <div style={{ flex: 1 }} />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <span className="tag tag-accent-2" style={{ alignSelf: 'flex-start' }}>MyRm · tu diario de box</span>
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 48, lineHeight: 1.02, margin: 0, textWrap: 'pretty' }}>Cada marca<br />cuenta.</h1>
-        <p style={{ margin: 0, fontSize: 17, lineHeight: 1.5, maxWidth: 290, color: 'var(--color-neutral-800)' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 'var(--display-2xl)', lineHeight: 1.02, margin: 0, textWrap: 'pretty' }}>Cada marca<br />cuenta.</h1>
+        <p style={{ margin: 0, fontSize: 'var(--text-lg)', lineHeight: 1.5, maxWidth: 290, color: 'var(--color-neutral-800)' }}>
           CrossFit, Halterofilia, Hyrox o GAP: anota tus marcas, mira cómo creces y mide tu WOD con el resto del box.
         </p>
-        <button className="btn btn-primary btn-block" onClick={() => set(() => ({ screen: 'w2' }))} style={{ height: 56, fontSize: 17 }}>Empezar</button>
+        <button className="btn btn-primary btn-block" onClick={() => set(() => ({ screen: 'w2' }))} style={{ height: 56, fontSize: 'var(--text-lg)' }}>Empezar</button>
       </div>
     </div>
   );
 }
 
-const label = { fontWeight: 600, fontSize: 14 } as const;
+const label = { fontWeight: 600, fontSize: 'var(--text-sm)' } as const;
 const group = { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' } as const;
 
 export function Profile() {
@@ -60,13 +60,13 @@ export function Profile() {
   const about = <>
     <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
       <label htmlFor="name" style={{ ...label, color: 'var(--color-text)', marginBottom: 0 }}>¿Cómo te llamamos?</label>
-      <input id="name" className="input" placeholder="Tu nombre" value={data.name} onChange={e => set(() => ({ name: e.target.value }))} style={{ height: 52, fontSize: 17 }} />
+      <input id="name" className="input" placeholder="Tu nombre" value={data.name} onChange={e => set(() => ({ name: e.target.value }))} style={{ height: 52, fontSize: 'var(--text-lg)' }} />
     </div>
     {cloud.userId && (
       <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
         <label htmlFor="bday" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>¿Cuándo es tu cumpleaños?</label>
-        <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 16 }} />
-        <span className="muted-13">Tu grupo lo ve en Próximos para saludarte ese día. El año no se muestra.</span>
+        <input id="bday" className="input" type="date" value={shownBday} onChange={e => setBday(e.target.value)} style={{ height: 48, fontSize: 'var(--text-md)' }} />
+        <span className="muted-sm">Tu grupo lo ve en Próximos para saludarte ese día. El año no se muestra.</span>
       </div>
     )}
     <div style={group} role="group" aria-labelledby="theme-l">
@@ -80,7 +80,7 @@ export function Profile() {
       <span id="goals-l" style={label}>¿Qué entrenas?</span>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
         {DISCS.map(d => (
-          <button key={d.id} className="pill" onClick={() => toggleGoal(d.id)} aria-pressed={data.goals.includes(d.id)} style={{ height: 44, padding: '0 18px', fontSize: 15, ...pillStyle(data.goals.includes(d.id)) }}>{d.label}</button>
+          <button key={d.id} className="pill" onClick={() => toggleGoal(d.id)} aria-pressed={data.goals.includes(d.id)} style={{ height: 44, padding: '0 18px', fontSize: 'var(--text-md)', ...pillStyle(data.goals.includes(d.id)) }}>{d.label}</button>
         ))}
       </div>
     </div>
@@ -88,24 +88,24 @@ export function Profile() {
       <span id="freq-l" style={label}>Días de box por semana</span>
       <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
         {[2, 3, 4, 5, 6].map(n => (
-          <button key={n} className="chip" aria-pressed={data.freq === n} onClick={() => set(() => ({ freq: n }))} style={{ width: 52, height: 52, padding: 0, borderRadius: '50%', fontFamily: 'var(--font-heading)', fontSize: 20 }}>{n}</button>
+          <button key={n} className="chip" aria-pressed={data.freq === n} onClick={() => set(() => ({ freq: n }))} style={{ width: 52, height: 52, padding: 0, borderRadius: '50%', fontFamily: 'var(--font-heading)', fontSize: 'var(--display-sm)' }}>{n}</button>
         ))}
       </div>
     </div>
     <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
       <label htmlFor="classtime" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>¿A qué hora entrenas normalmente?</label>
       <input id="classtime" className="input" type="time" value={data.classTime ?? ''} onChange={e => set(() => ({ classTime: e.target.value }))} style={{ height: 48, width: 150, borderRadius: 999 }} />
-      <span className="muted-13">La usamos para tu check-in y para el WOD de tu clase. Si un día vas a otra hora, la cambias ahí mismo.</span>
+      <span className="muted-sm">La usamos para tu check-in y para el WOD de tu clase. Si un día vas a otra hora, la cambias ahí mismo.</span>
     </div>
     <div style={group} role="group" aria-labelledby="level-l">
       <span id="level-l" style={label}>¿Cómo haces los WODs hoy?</span>
       <Segmented label="¿Cómo haces los WODs hoy?" fit size="lg" value={data.level || 'RX'} onChange={v => set(() => ({ level: v }))} options={[['RX', 'RX'], ['Escalado', 'Escalado']]} />
-      <span className="muted-13">{(data.level || 'RX') === 'RX' ? 'RX: con el peso y los movimientos como están escritos.' : 'Escalado: bajas el peso o cambias movimientos. Todos empezamos así.'} Lo usamos por defecto al anotar; siempre lo puedes cambiar.</span>
+      <span className="muted-sm">{(data.level || 'RX') === 'RX' ? 'RX: con el peso y los movimientos como están escritos.' : 'Escalado: bajas el peso o cambias movimientos. Todos empezamos así.'} Lo usamos por defecto al anotar; siempre lo puedes cambiar.</span>
     </div>
     <div style={group} role="group" aria-labelledby="units-l">
       <span id="units-l" style={label}>¿Los discos grandes de tu box son en libras o kilos?</span>
       <UnitPicker />
-      <span className="muted-13">Los discos chicos, kettlebells y mancuernas van siempre en kilos.</span>
+      <span className="muted-sm">Los discos chicos, kettlebells y mancuernas van siempre en kilos.</span>
     </div>
     <div style={group} role="group" aria-label="Tu barra">
       <span style={label}>¿Con qué barra entrenas?</span>
@@ -117,14 +117,14 @@ export function Profile() {
     <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
       <label htmlFor="aim" style={{ ...label, marginBottom: 0, color: 'var(--color-text)' }}>¿Cuál es tu meta? <span style={{ fontWeight: 400, color: 'var(--color-neutral-700)' }}>(opcional)</span></label>
       <input id="aim" className="input" maxLength={60} placeholder="P. ej. mi primer muscle-up, o Fran bajo 5 minutos" value={data.aim ?? ''}
-        onChange={e => set(() => ({ aim: e.target.value }))} style={{ height: 48, fontSize: 16 }} />
-      <span className="muted-13">La verás en Inicio, para no olvidar por qué entrenas.</span>
+        onChange={e => set(() => ({ aim: e.target.value }))} style={{ height: 48, fontSize: 'var(--text-md)' }} />
+      <span className="muted-sm">La verás en Inicio, para no olvidar por qué entrenas.</span>
     </div>
   );
 
   const account = cloud.userId && (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-      <span className="muted-13" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}<br />
+      <span className="muted-sm" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>Conectado como {cloud.email}<br />{cloud.backedUp ? 'Tus marcas están respaldadas.' : 'Respaldando tus marcas…'}<br />
         <button className="btn btn-ghost" onClick={() => { saveCloudProfile(); cloud.changePassword(true); }} style={{ minHeight: 44, padding: 0 }}>Cambiar mi clave</button>
       </span>
       <button className="btn btn-secondary" onClick={async () => { const err = await cloud.signOut(); if (err) flash('No se cerró la sesión', err); }} style={{ minHeight: 44, flex: 'none' }}>Cerrar sesión</button>
@@ -151,7 +151,7 @@ export function Profile() {
           </div>
         )}
       </div>
-      <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 34, lineHeight: 1.08, margin: 0 }}>{settings ? 'Tu perfil' : steps[step].title}</h1>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 'var(--display-xl)', lineHeight: 1.08, margin: 0 }}>{settings ? 'Tu perfil' : steps[step].title}</h1>
       {settings ? <>
         {/* Same parts as the first run, under headings, so everything chosen then can be changed here the same way. */}
         <Section title="Sobre ti">{about}</Section>
@@ -161,7 +161,7 @@ export function Profile() {
         {account && <Section title="Tu cuenta">{account}</Section>}
       </> : steps[step].body}
       <div style={{ flex: 1 }} />
-      <button className="btn btn-primary btn-block" onClick={next} style={{ height: 56, fontSize: 17, flex: 'none' }}>{settings ? 'Listo' : last ? '¡Vamos al box!' : 'Siguiente'}</button>
+      <button className="btn btn-primary btn-block" onClick={next} style={{ height: 56, fontSize: 'var(--text-lg)', flex: 'none' }}>{settings ? 'Listo' : last ? '¡Vamos al box!' : 'Siguiente'}</button>
     </div>
   );
 }
@@ -169,7 +169,7 @@ export function Profile() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-divider)' }}>
-      <h2 className="section-title" style={{ fontSize: 22 }}>{title}</h2>
+      <h2 className="section-title" style={{ fontSize: 'var(--display-md)' }}>{title}</h2>
       {children}
     </section>
   );
@@ -186,7 +186,7 @@ function SkillsSetup() {
     set(d => ({ skills: d.skills.map(x => x.id !== k.id ? x : v === 'no' ? { ...x, tracked: false, stage: 0 } : { ...x, tracked: true, stage: v === 'yes' ? Math.max(3, x.stage) : Math.max(1, Math.min(x.stage, 2)) }) }));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <p className="note" style={{ fontSize: 15 }}>
+      <p className="note" style={{ fontSize: 'var(--text-md)' }}>
         {list.length ? 'Marca las que ya te salen y las que estás practicando. En Skills las vas subiendo de nivel paso a paso.'
           : 'Para lo que entrenas no hay skills de gimnasia en la lista. Si quieres seguir alguna, la agregas después en Skills.'}
       </p>

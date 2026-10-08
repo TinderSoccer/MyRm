@@ -15,8 +15,8 @@ function Frame({ title, lede, children }: { title: string; lede: string; childre
       <div style={{ flex: 1, minHeight: 150 }} />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 40, lineHeight: 1.04, margin: 0, textWrap: 'balance' }}>{title}</h1>
-          <p style={{ margin: 0, fontSize: 16, lineHeight: 1.5, maxWidth: 320, color: 'var(--color-neutral-800)' }}>{lede}</p>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 'var(--display-2xl)', lineHeight: 1.04, margin: 0, textWrap: 'balance' }}>{title}</h1>
+          <p style={{ margin: 0, fontSize: 'var(--text-md)', lineHeight: 1.5, maxWidth: 320, color: 'var(--color-neutral-800)' }}>{lede}</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>{children}</div>
       </div>
@@ -75,7 +75,7 @@ export function Login() {
 
   const emailField = (
     <input id="email" className="input" type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com" value={email}
-      onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && mode !== 'password' && send()} style={{ height: 52, fontSize: 16 }} />
+      onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && mode !== 'password' && send()} style={{ height: 52, fontSize: 'var(--text-md)' }} />
   );
 
   if (mode === 'password') {
@@ -88,9 +88,9 @@ export function Login() {
           <button className="link-btn" onClick={() => switchTo('forgot')}>¿Olvidaste tu clave?</button>
         </div>
         <input id="password" className="input" type="password" autoComplete="current-password" value={password}
-          onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && enter()} style={{ height: 52, fontSize: 16 }} />
+          onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && enter()} style={{ height: 52, fontSize: 'var(--text-md)' }} />
         <Err error={error} />
-        <button className="btn btn-primary btn-block" onClick={enter} disabled={busy} style={{ height: 56, fontSize: 17, marginTop: 'var(--space-2)' }}>{busy ? 'Entrando…' : 'Entrar'}</button>
+        <button className="btn btn-primary btn-block" onClick={enter} disabled={busy} style={{ height: 56, fontSize: 'var(--text-lg)', marginTop: 'var(--space-2)' }}>{busy ? 'Entrando…' : 'Entrar'}</button>
         <button className="btn btn-secondary btn-block" onClick={() => switchTo('new')} style={{ height: 52 }}>¿Primera vez? Crear mi cuenta</button>
       </Frame>
     );
@@ -108,16 +108,16 @@ export function Login() {
           <label htmlFor="email" className="field-label">Correo</label>
           {emailField}
           <Err error={error} />
-          <button className="btn btn-primary btn-block" onClick={send} disabled={busy} style={{ height: 56, fontSize: 17, marginTop: 'var(--space-2)' }}>{busy ? 'Enviando…' : 'Enviarme el código'}</button>
+          <button className="btn btn-primary btn-block" onClick={send} disabled={busy} style={{ height: 56, fontSize: 'var(--text-lg)', marginTop: 'var(--space-2)' }}>{busy ? 'Enviando…' : 'Enviarme el código'}</button>
         </>
       ) : (
         <>
           <label htmlFor="otp" className="field-label">Código</label>
           <input id="otp" className="input" inputMode="numeric" autoComplete="one-time-code" placeholder="000000" value={code} maxLength={8}
             onChange={e => setCode(e.target.value.replace(/\D/g, ''))} onKeyDown={e => e.key === 'Enter' && verify()}
-            style={{ height: 60, fontSize: 28, letterSpacing: '0.3em', textAlign: 'center', fontFamily: 'var(--font-heading)' }} />
+            style={{ height: 60, fontSize: 'var(--display-lg)', letterSpacing: '0.3em', textAlign: 'center', fontFamily: 'var(--font-heading)' }} />
           <Err error={error} />
-          <button className="btn btn-primary btn-block" onClick={verify} disabled={busy || code.length < 6} style={{ height: 56, fontSize: 17, marginTop: 'var(--space-2)' }}>{busy ? 'Entrando…' : 'Entrar'}</button>
+          <button className="btn btn-primary btn-block" onClick={verify} disabled={busy || code.length < 6} style={{ height: 56, fontSize: 'var(--text-lg)', marginTop: 'var(--space-2)' }}>{busy ? 'Entrando…' : 'Entrar'}</button>
           <button className="link-btn" onClick={() => { setSentTo(null); setCode(''); setError(null); }} style={{ alignSelf: 'center' }}>Usar otro correo</button>
         </>
       )}
@@ -142,13 +142,13 @@ export function SetPassword() {
   return (
     <Frame title={hasPassword ? 'Cambia tu clave' : 'Crea tu clave'} lede="La próxima vez entras con tu correo y esta clave, sin esperar correos.">
       <label htmlFor="new-pw" className="field-label">Clave nueva</label>
-      <input id="new-pw" className="input" type="password" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} style={{ height: 52, fontSize: 16 }} />
-      <span className="muted-13">Mínimo {MIN_PASSWORD} caracteres.</span>
+      <input id="new-pw" className="input" type="password" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} style={{ height: 52, fontSize: 'var(--text-md)' }} />
+      <span className="muted-sm">Mínimo {MIN_PASSWORD} caracteres.</span>
       <label htmlFor="again-pw" className="field-label">Repite la clave</label>
       <input id="again-pw" className="input" type="password" autoComplete="new-password" value={again} onChange={e => setAgain(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && save()} style={{ height: 52, fontSize: 16 }} />
+        onKeyDown={e => e.key === 'Enter' && save()} style={{ height: 52, fontSize: 'var(--text-md)' }} />
       <Err error={error} />
-      <button className="btn btn-primary btn-block" onClick={save} disabled={busy} style={{ height: 56, fontSize: 17, marginTop: 'var(--space-2)' }}>{busy ? 'Guardando…' : 'Guardar clave'}</button>
+      <button className="btn btn-primary btn-block" onClick={save} disabled={busy} style={{ height: 56, fontSize: 'var(--text-lg)', marginTop: 'var(--space-2)' }}>{busy ? 'Guardando…' : 'Guardar clave'}</button>
       {/* Never a dead end: offline at the box, or just not now, the app stays usable. */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-6)' }}>
         <button className="link-btn" onClick={() => changePassword(false)}>{hasPassword ? 'Dejar la que tenía' : 'Ahora no'}</button>

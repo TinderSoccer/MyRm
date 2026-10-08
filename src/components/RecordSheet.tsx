@@ -185,7 +185,7 @@ export function RecordSheet() {
       <div className="sheet" data-open={open} data-screen-label="05 Registrar marca" role="dialog" aria-modal="true" aria-labelledby="sheet-title" inert={!open}>
         <span style={{ width: 44, height: 5, borderRadius: 999, background: 'var(--color-neutral-400)', justifySelf: 'center' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 id="sheet-title" ref={titleRef} tabIndex={-1} style={{ outline: 'none', fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 26, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h2 id="sheet-title" ref={titleRef} tabIndex={-1} style={{ outline: 'none', fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 'var(--display-md)', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
             <span className="flex-center" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-accent)', color: 'var(--color-on-accent)' }}><Icon name="barbell" size={22} /></span>
             {editingEntry ? 'Editar registro' : 'Registrar marca'}
           </h2>
@@ -193,7 +193,7 @@ export function RecordSheet() {
         </div>
 
         {editingEntry ? (
-          <p className="note" style={{ fontSize: 15 }}><strong>{selRaw.name}</strong> · registro del {editingEntry.date}</p>
+          <p className="note" style={{ fontSize: 'var(--text-md)' }}><strong>{selRaw.name}</strong> · registro del {editingEntry.date}</p>
         ) : <>
         <div className="chip-row">
           {shown.map(d => (
@@ -213,7 +213,7 @@ export function RecordSheet() {
 
         {showNewMov && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--color-surface)' }}>
-            <input className="input" aria-label="Nombre del movimiento" placeholder="Nombre, p. ej. Thruster" value={newMovName} onChange={e => setNewMovName(e.target.value)} style={{ height: 46, fontSize: 16 }} />
+            <input className="input" aria-label="Nombre del movimiento" placeholder="Nombre, p. ej. Thruster" value={newMovName} onChange={e => setNewMovName(e.target.value)} style={{ height: 46, fontSize: 'var(--text-md)' }} />
             <Segmented label="Cómo se mide" value={newMovType} onChange={setNewMovType} options={NEW_TYPES} />
             <button onClick={createMov} className="btn btn-primary" style={{ height: 44 }}>Crear en {sheetDiscLabel}</button>
           </div>
@@ -223,13 +223,13 @@ export function RecordSheet() {
         {plateMode ? (
           <div className="surface" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '16px 18px' }}>
             <div aria-live="polite" style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 44, lineHeight: 1 }}>{fmt.val(selP, value)}</span>
-              <span style={{ fontSize: 18, fontWeight: 600 }}>{unit}</span>
+              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--display-2xl)', lineHeight: 1 }}>{fmt.val(selP, value)}</span>
+              <span style={{ fontSize: 'var(--text-lg)', fontWeight: 600 }}>{unit}</span>
             </div>
-            <span style={{ fontSize: 13, color: 'var(--color-neutral-700)', textAlign: 'center' }}>
+            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-neutral-700)', textAlign: 'center', textWrap: 'balance' }}>
               Barra {barWeight(lb, data.bar)} {lb ? 'lb' : 'kg'} + 2 lados de {countsWords(counts)}
             </span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: g > EPS ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
+            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: g > EPS ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
           </div>
         ) : (
         <div className="surface" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 18 }}>
@@ -244,20 +244,20 @@ export function RecordSheet() {
                 }}
                 onFocus={e => { const el = e.target; setTimeout(() => el.select(), 0); }}
                 onBlur={() => setDraftText(null)} />
-              {unit && <span style={{ fontSize: 18, fontWeight: 600 }}>{unit}</span>}
+              {unit && <span style={{ fontSize: 'var(--text-lg)', fontWeight: 600 }}>{unit}</span>}
             </div>
-            {selP.type === 'time' && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Formato m:ss</span>}
-            {onBar(selP) && <span style={{ fontSize: 12, color: 'var(--color-neutral-700)' }}>Peso total, con la barra</span>}
+            {selP.type === 'time' && <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-700)' }}>Formato m:ss</span>}
+            {onBar(selP) && <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-neutral-700)' }}>Peso total, con la barra</span>}
             {byRounds && (
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-sm)', fontWeight: 600 }}>
                 +
                 <input className="input" inputMode="numeric" value={extraReps || ''} placeholder="0" aria-label="Reps extra de la última ronda"
                   onChange={e => { const n = Number(e.target.value.replace(/\D/g, '') || 0); setDraft(joinRounds(rounds, Math.min(n, 999))); }}
-                  style={{ width: 72, height: 44, padding: '0 10px', fontSize: 16, textAlign: 'center' }} />
+                  style={{ width: 72, height: 44, padding: '0 10px', fontSize: 'var(--text-md)', textAlign: 'center' }} />
                 reps
               </label>
             )}
-            <span style={{ fontSize: 13, fontWeight: 600, color: g > EPS ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
+            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: g > EPS ? 'var(--color-accent-2-700)' : 'var(--color-neutral-700)', textAlign: 'center' }}>{hint}</span>
           </div>
           <button className="stepper-btn stepper-plus" aria-label="Más" onClick={() => { setDraftText(null); setDraft(v => fmt.nudge(selP, v, 1)); }}><Icon name="plus" size={22} /></button>
         </div>
@@ -300,7 +300,7 @@ export function RecordSheet() {
             <Segmented label="Día" fit value={dateISO === todayISO() || dateISO === yesterdayISO() ? dateISO : null} onChange={setDateISO}
               options={[[todayISO(), 'Hoy'], [yesterdayISO(), 'Ayer']]} />
             <input type="date" aria-label="Otra fecha" value={dateISO} max={todayISO()} onChange={e => e.target.value && setDateISO(e.target.value)}
-              style={{ height: 44, padding: '0 12px', borderRadius: 999, border: '2px solid var(--color-neutral-600)', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 16, fontWeight: 600, color: 'var(--color-text)' }} />
+              style={{ height: 44, padding: '0 12px', borderRadius: 999, border: '2px solid var(--color-neutral-600)', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 'var(--text-md)', fontWeight: 600, color: 'var(--color-text)' }} />
           </div>
         </div>
 
@@ -312,10 +312,10 @@ export function RecordSheet() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <label htmlFor="sheet-note" className="field-label">Nota (opcional)</label>
           <textarea id="sheet-note" className="input" rows={2} placeholder="¿Cómo te sentiste? Técnica, cinturón, rodilleras…" value={note} onChange={e => setNote(e.target.value)}
-            style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 16, resize: 'none', height: 'auto', minHeight: 64 }} />
+            style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 'var(--text-md)', resize: 'none', height: 'auto', minHeight: 64 }} />
         </div>
         </div>}
-        <button className="btn btn-primary btn-block" onClick={save} style={{ height: 56, fontSize: 17 }}>{editingEntry ? 'Guardar cambios' : 'Guardar'}</button>
+        <button className="btn btn-primary btn-block" onClick={save} style={{ height: 56, fontSize: 'var(--text-lg)' }}>{editingEntry ? 'Guardar cambios' : 'Guardar'}</button>
       </div>
     </>
   );

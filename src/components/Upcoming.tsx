@@ -112,8 +112,8 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
                 <span className="label-600" style={{ overflowWrap: 'anywhere' }}>{head}</span>
-                {sub && <span className="muted-13">{sub}</span>}
-                <span style={{ fontSize: 13, fontWeight: 700, color: soon ? 'var(--color-accent-800)' : 'var(--color-neutral-800)' }}>{countdown(it.iso)}</span>
+                {sub && <span className="muted-sm">{sub}</span>}
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: soon ? 'var(--color-accent-800)' : 'var(--color-neutral-800)' }}>{countdown(it.iso)}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flex: 'none' }}>
                 {it.kind === 'event' && (
@@ -132,7 +132,7 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
               <div className="rsvp">
                 <Segmented label={`¿Vas a ${it.ev.title}?`} fit value={rsvp.mine} onChange={v => onRsvp(it.ev.id, v)}
                   options={[[true, `Voy${rsvp.goingNames.length ? ` · ${rsvp.goingNames.length}` : ''}`], [false, 'No voy']]} />
-                <span className="muted-13">{rsvp.goingNames.length ? `Van: ${namesLine(rsvp.goingNames)}` : 'Nadie confirmó todavía'}</span>
+                <span className="muted-sm">{rsvp.goingNames.length ? `Van: ${namesLine(rsvp.goingNames)}` : 'Nadie confirmó todavía'}</span>
               </div>
             )}
           </div>
@@ -155,16 +155,16 @@ export function Upcoming({ events, birthdays, people, onAddEvent, onDeleteEvent,
           {adding === 'event' ? (
             <>
               <Segmented label="Tipo de evento" value={kind} onChange={setKind} options={KINDS} />
-              <input className="input" aria-label="Nombre del evento" placeholder="Nombre, p. ej. Carrete post Open" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 16 }} />
+              <input className="input" aria-label="Nombre del evento" placeholder="Nombre, p. ej. Carrete post Open" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 'var(--text-md)' }} />
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <input className="input field-date" type="date" aria-label="Fecha" min={todayISO()} value={iso} onChange={e => setIso(e.target.value)} />
                 <input className="input field-date" type="time" aria-label="Hora (opcional)" value={time} onChange={e => setTime(e.target.value)} style={{ flex: '0 0 120px' }} />
               </div>
-              <input className="input" aria-label="Lugar (opcional)" placeholder="Lugar (opcional)" value={place} onChange={e => setPlace(e.target.value)} style={{ height: 48, fontSize: 16 }} />
+              <input className="input" aria-label="Lugar (opcional)" placeholder="Lugar (opcional)" value={place} onChange={e => setPlace(e.target.value)} style={{ height: 48, fontSize: 'var(--text-md)' }} />
             </>
           ) : (
             <>
-              <input className="input" aria-label="Nombre" placeholder="¿De quién?" list="group-people" value={name} onChange={e => setName(e.target.value)} style={{ height: 48, fontSize: 16 }} />
+              <input className="input" aria-label="Nombre" placeholder="¿De quién?" list="group-people" value={name} onChange={e => setName(e.target.value)} style={{ height: 48, fontSize: 'var(--text-md)' }} />
               <datalist id="group-people">{people.map(p => <option key={p} value={p} />)}</datalist>
               <label className="field-label" htmlFor="bd-date">Fecha (el año no importa)</label>
               <input id="bd-date" className="input field-date" type="date" value={iso} onChange={e => setIso(e.target.value)} />

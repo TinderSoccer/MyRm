@@ -18,7 +18,7 @@ export function ThemePicker() {
               {/* The theme's two accents, half and half: the whole palette, not just the paper. */}
               <span style={{ width: 26, height: 26, borderRadius: '50%', background: `conic-gradient(${t.accent} 0 50%, ${t.accent2} 0 100%)` }} />
             </span>
-            <span style={{ fontSize: 12, fontWeight: on ? 700 : 600 }}>{t.name}</span>
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: on ? 700 : 600 }}>{t.name}</span>
           </button>
         );
       })}

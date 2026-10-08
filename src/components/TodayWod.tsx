@@ -17,7 +17,7 @@ export function TodayWod() {
       <div className="surface" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <span className="label-600" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="board" size={18} />WOD de hoy</span>
-          <span className="muted-13">Nadie lo ha subido a la pizarra.</span>
+          <span className="muted-sm">Nadie lo ha subido a la pizarra.</span>
         </div>
         <button className="btn btn-secondary" onClick={goBoard} style={{ minHeight: 44, flex: 'none' }}>Súbelo tú</button>
       </div>
@@ -35,15 +35,15 @@ export function TodayWod() {
     <div className="surface" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '18px 18px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
         <h2 className="section-title" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.title}</h2>
-        <span className="muted-13" style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 5 }}><Icon name="board" size={16} />{w.class_time ? `Clase ${w.class_time.replace(/^0/, '')}` : 'WOD de hoy'}{cloud.wods.length > 1 ? ` · +${cloud.wods.length - 1}` : ''}</span>
+        <span className="muted-sm" style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 5 }}><Icon name="board" size={16} />{w.class_time ? `Clase ${w.class_time.replace(/^0/, '')}` : 'WOD de hoy'}{cloud.wods.length > 1 ? ` · +${cloud.wods.length - 1}` : ''}</span>
       </div>
       {mine ? (
         <button className="pr-card" onClick={goBoard} style={{ background: 'var(--color-bg)', padding: '12px 16px' }}
           aria-label={`Tu resultado: ${fmt.val(measure, mine.value)} ${unit}, puesto ${at + 1} de ${ranked.length}. Ver pizarra`}>
-          <span style={{ fontFamily: 'var(--font-heading)', fontSize: 28, lineHeight: 1, flex: 'none' }} aria-hidden="true">{at + 1}.º</span>
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--display-lg)', lineHeight: 1, flex: 'none' }} aria-hidden="true">{at + 1}.º</span>
           <span style={{ flex: 1, minWidth: 0 }} aria-hidden="true">de {ranked.length} en la pizarra{mine.scaled ? ' · escalado' : ''}</span>
-          <span style={{ fontFamily: 'var(--font-heading)', fontSize: 22, flex: 'none' }} aria-hidden="true">
-            {fmt.val(measure, mine.value)}{unit && <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, marginLeft: 3 }}>{unit}</span>}
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--display-md)', flex: 'none' }} aria-hidden="true">
+            {fmt.val(measure, mine.value)}{unit && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', fontWeight: 600, marginLeft: 3 }}>{unit}</span>}
           </span>
         </button>
       ) : (

@@ -63,9 +63,9 @@ export function CheckinCard({ where }: { where: 'home' | 'group' }) {
   if (!mine) {
     return (
       <section className="checkin" aria-labelledby={`ci-${where}`}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px 10px' }}>
           <h2 id={`ci-${where}`} className="checkin-title">¿Cómo llegas hoy?</h2>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-sm)', fontWeight: 600 }}>
             Clase
             <input className="input checkin-time" type="time" value={time} onChange={e => setTime(e.target.value)} aria-label="Hora de tu clase" />
           </label>
@@ -80,7 +80,7 @@ export function CheckinCard({ where }: { where: 'home' | 'group' }) {
   const asking = mine.mood_out == null || changing;
   return (
     <section className="checkin" aria-labelledby={`ci-${where}`}>
-      <p id={`ci-${where}`} className="checkin-title" style={{ fontSize: 18 }}>
+      <p id={`ci-${where}`} className="checkin-title" style={{ fontSize: 'var(--display-sm)' }}>
         Llegaste <span aria-hidden="true">{inFace}</span> {inWord.toLowerCase()}{mine.class_time ? ` a la de las ${shortTime(mine.class_time)}` : ''}
         {mine.mood_out != null && !changing && <> · terminaste <span aria-hidden="true">{MOOD_OUT[mine.mood_out - 1][0]}</span> {MOOD_OUT[mine.mood_out - 1][1].toLowerCase()}</>}
       </p>
@@ -112,7 +112,7 @@ export function TodayAttendance({ nameOf, colorOf }: { nameOf: (id: string) => s
       <h3 id="came-h" className="label-600" style={{ margin: 0 }}>Hoy vinieron {cloud.checkins.length}</h3>
       {[...byClass.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([time, list]) => (
         <div key={time} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {time && <span className="muted-13">Clase de las {shortTime(time)}</span>}
+          {time && <span className="muted-sm">Clase de las {shortTime(time)}</span>}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {list.map(c => {
               const name = c.user_id === cloud.userId ? 'Tú' : nameOf(c.user_id);
