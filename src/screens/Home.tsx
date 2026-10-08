@@ -72,14 +72,15 @@ export function Home() {
               </span>
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+          {/* Seven equal columns that share the card's width: a 44px minimum each was 308px, wider than the card on a 360px phone (Sunday cut off). */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 2, position: 'relative' }}>
             {DAY_L.map((l, i) => {
               const on = data.done[i];
               return (
                 <button key={i} aria-label={`${DAY_LONG[i]}${i === today ? ' (hoy)' : ''}: entrené`} aria-pressed={on} onClick={() => set(d => ({ done: d.done.map((x, j) => j === i ? !x : x) }))}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, minWidth: 44 }}>
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, minWidth: 0, minHeight: 44 }}>
                   <span aria-hidden="true" style={{ fontSize: 12, fontWeight: 600, color: i === today ? 'var(--color-bg)' : 'var(--color-neutral-400)' }}>{l}</span>
-                  <span className="flex-center" style={{ width: 36, height: 36, borderRadius: '50%', background: on ? 'var(--color-accent-2-300)' : 'transparent', border: `2px solid ${on ? 'var(--color-accent-2-300)' : i === today ? 'var(--color-bg)' : 'var(--color-neutral-500)'}`, boxSizing: 'border-box', color: 'var(--color-text)', transition: 'background-color .2s, border-color .2s' }}>{on && <Icon name="check" size={18} />}</span>
+                  <span className="flex-center" style={{ width: '100%', maxWidth: 36, aspectRatio: '1', borderRadius: '50%', background: on ? 'var(--color-accent-2-300)' : 'transparent', border: `2px solid ${on ? 'var(--color-accent-2-300)' : i === today ? 'var(--color-bg)' : 'var(--color-neutral-500)'}`, boxSizing: 'border-box', color: 'var(--color-text)', transition: 'background-color .2s, border-color .2s' }}>{on && <Icon name="check" size={18} />}</span>
                 </button>
               );
             })}

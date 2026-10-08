@@ -161,6 +161,8 @@ button { font-family: inherit; }
   position: absolute; width: 120px; height: 120px; right: -34px; top: -46px; border-radius: 50%;
   background: radial-gradient(circle, var(--color-text) 0 7px, var(--color-neutral-300) 8px 15px, var(--color-accent) 16px 40px, var(--color-accent-600) 41px 43px, var(--color-accent) 44px);
 }
+/* On a 320px phone the plate would sit on "entrenos esta semana": pushed further into the corner. */
+@media (max-width: 359px) { .deco-plate { right: -58px; top: -62px; } }
 
 /* Recent records: a sideways reel of pastel cards, three tones in turn, snapping card by card. */
 .pr-reel { display: flex; gap: 12px; overflow-x: auto; margin: 0 -22px; padding: 2px 22px 6px; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
