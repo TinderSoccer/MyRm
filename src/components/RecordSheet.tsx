@@ -251,9 +251,9 @@ export function RecordSheet() {
             {byRounds && (
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600 }}>
                 +
-                <input className="input" inputMode="numeric" value={extraReps || ''} placeholder="0"
+                <input className="input" inputMode="numeric" value={extraReps || ''} placeholder="0" aria-label="Reps extra de la última ronda"
                   onChange={e => { const n = Number(e.target.value.replace(/\D/g, '') || 0); setDraft(joinRounds(rounds, Math.min(n, 999))); }}
-                  style={{ width: 64, height: 36, padding: '0 10px', fontSize: 16, textAlign: 'center' }} />
+                  style={{ width: 72, height: 44, padding: '0 10px', fontSize: 16, textAlign: 'center' }} />
                 reps
               </label>
             )}

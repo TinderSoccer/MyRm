@@ -1,6 +1,6 @@
 // MyRm offline shell. Pages: network first, falling back to the cached copy.
-// Everything else (hashed Vite assets, icons, Google Fonts): cache first, filled as it is fetched.
-const CACHE = 'myrm-v1';
+// Everything else (hashed Vite assets with the fonts, icons): cache first, filled as it is fetched.
+const CACHE = 'myrm-v2';
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './manifest.webmanifest', './icon.svg', './icon-192.png'])));
@@ -15,8 +15,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  const cacheable = url.origin === self.location.origin || url.hostname.endsWith('fonts.googleapis.com') || url.hostname.endsWith('fonts.gstatic.com');
-  if (!cacheable) return;
+  if (url.origin !== self.location.origin) return;
 
   if (req.mode === 'navigate') {
     e.respondWith(

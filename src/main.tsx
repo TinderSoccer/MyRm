@@ -1,5 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+// Fonts ship with the app (no wait on Google on a slow box wifi, and they work offline from the first visit).
+import '@fontsource/caprasimo/400.css';
+import '@fontsource/figtree/400.css';
+import '@fontsource/figtree/500.css';
+import '@fontsource/figtree/600.css';
+import '@fontsource/figtree/700.css';
 import './styles/organic.css';
 import './styles/app.css';
 import { App } from './App';
