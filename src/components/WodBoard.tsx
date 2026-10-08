@@ -220,20 +220,6 @@ function Board({ nameOf }: Props) {
 
   return (
     <div className="stack-3">
-      {/* Not scored yet: the action comes first, where the thumb is. */}
-      {/* Already scored this in another of your groups (same kind of score): bring it here in one tap. */}
-      {!mine && copyFrom && (
-        <div className="checkin" style={{ gap: 10 }}>
-          <span style={{ fontWeight: 600 }}>Ya anotaste <strong>{fmt.val(measure, copyFrom.value)}{unit && !(isReps && splitRounds(copyFrom.value)[1]) ? ` ${unit}` : ''}</strong> en {copyFrom.group} ({copyFrom.title}).</span>
-          <button className="btn btn-primary" disabled={busy} onClick={async () => {
-            setBusy(true);
-            const err = await cloud.saveScore({ value: copyFrom.value, scaled: copyFrom.scaled, note: '' });
-            setBusy(false);
-            if (err) flash('No se anotó', err); else { setEditing(false); flash('Resultado anotado', `Lo copiamos de ${copyFrom.group}.`); }
-          }} style={{ minHeight: 48 }}>Agregarlo aquí también</button>
-        </div>
-      )}
-      {editing && !mine && form}
 
       {/* The fix form opens above the board: bring it into view instead of leaving it off-screen. */}
       {fixing && <div ref={el => el?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><WodForm edit={w} onDone={() => setFixing(false)} /></div>}
@@ -265,6 +251,20 @@ function Board({ nameOf }: Props) {
           )}
       </section>
 
+      {/* Read the WOD first, then score it: the action sits right under the board. */}
+      {/* Already scored this in another of your groups (same kind of score): bring it here in one tap. */}
+      {!mine && copyFrom && (
+        <div className="checkin" style={{ gap: 10 }}>
+          <span style={{ fontWeight: 600 }}>Ya anotaste <strong>{fmt.val(measure, copyFrom.value)}{unit && !(isReps && splitRounds(copyFrom.value)[1]) ? ` ${unit}` : ''}</strong> en {copyFrom.group} ({copyFrom.title}).</span>
+          <button className="btn btn-primary" disabled={busy} onClick={async () => {
+            setBusy(true);
+            const err = await cloud.saveScore({ value: copyFrom.value, scaled: copyFrom.scaled, note: '' });
+            setBusy(false);
+            if (err) flash('No se anotó', err); else { setEditing(false); flash('Resultado anotado', `Lo copiamos de ${copyFrom.group}.`); }
+          }} style={{ minHeight: 48 }}>Agregarlo aquí también</button>
+        </div>
+      )}
+      {editing && !mine && form}
       {editing && mine && form}
       <button className="btn btn-primary btn-block" onClick={() => setStory(true)} style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
         <Icon name="share" size={20} />Historia para Instagram

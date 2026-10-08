@@ -11,17 +11,39 @@ const SHOWN = 3;
 interface Props { nameOf: (id: string) => string; colorOf: (id: string) => string }
 
 /** Messages to the group: a word of encouragement or a joke, for everyone or for one person. Not a chat: no replies,
- *  only emoji reactions. The latest sit on top of "Hoy", the rest one tap away. */
+ *  only emoji reactions. On "Hoy" they're one line (the newest, or one dedicated to you) that opens into the latest
+ *  three, the rest one more tap away; the WOD stays the first thing on screen. */
 export function Messages({ nameOf, colorOf }: Props) {
   const cloud = useCloud();
+  const [open, setOpen] = useState(false);
   const [all, setAll] = useState(false);
   if (!cloud.messagesOn) return null;
   const list = all ? cloud.messages : cloud.messages.slice(0, SHOWN);
   const older = cloud.messages.length - SHOWN;
 
+  if (!open) {
+    // Nothing yet: just the field, one line. Otherwise the line to peek: a message for you from the last day wins.
+    if (!cloud.messages.length) return <Compose nameOf={nameOf} />;
+    const day = Date.now() - 86400000;
+    const peek = cloud.messages.find(m => m.to_user === cloud.userId && Date.parse(m.created_at) > day) ?? cloud.messages[0];
+    const forMe = peek.to_user === cloud.userId;
+    const who = nameOf(peek.user_id).split(' ')[0];
+    return (
+      <button className="msg-peek" data-for-me={forMe || undefined} onClick={() => setOpen(true)} aria-expanded={false}
+        aria-label={`Mensajes del grupo: ${who}${forMe ? ' para ti' : ''}, ${peek.body}. ${cloud.messages.length} en total. Abrir`}>
+        <span className="msg-dot" style={{ background: colorOf(peek.user_id) }} aria-hidden="true">{peek.user_id === cloud.userId ? 'Tú' : initialOf(who)}</span>
+        <span className="msg-peek-text" aria-hidden="true"><strong>{who}{forMe ? ' → ti' : ''}:</strong> {peek.body}</span>
+        <span className="msg-peek-count" aria-hidden="true">{cloud.messages.length}</span>
+      </button>
+    );
+  }
+
   return (
     <section className="stack-3" aria-labelledby="msgs-h">
-      <h2 id="msgs-h" className="label-600" style={{ margin: 0 }}>Mensajes del grupo</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <h2 id="msgs-h" className="label-600" style={{ margin: 0 }}>Mensajes del grupo</h2>
+        <button className="link-btn" onClick={() => { setOpen(false); setAll(false); }} aria-expanded={true}>Cerrar</button>
+      </div>
       {list.length > 0 && (
         <ul className="msg-list">
           {list.map(m => <Message key={m.id} m={m} nameOf={nameOf} colorOf={colorOf} />)}

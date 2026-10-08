@@ -132,3 +132,19 @@ export function TodayAttendance({ nameOf, colorOf }: { nameOf: (id: string) => s
     </section>
   );
 }
+
+/** Today at the box, in the group: who came, with your own check-in folded into it. The full card shows only when it
+ *  has a question for you (how did it end?) or when you tap "Yo también vine"; the rest of the time it's the chips. */
+export function TodayInBox({ nameOf, colorOf }: { nameOf: (id: string) => string; colorOf: (id: string) => string }) {
+  const cloud = useCloud();
+  const [join, setJoin] = useState(false);
+  if (!cloud.group || !cloud.checkinsOn) return null;
+  const mine = cloud.checkins.find(c => c.user_id === cloud.userId);
+  return (
+    <div className="stack-3">
+      {((mine && mine.mood_out == null) || (join && !mine)) && <CheckinCard where="group" />}
+      {cloud.checkins.length > 0 ? <TodayAttendance nameOf={nameOf} colorOf={colorOf} /> : !join && <h3 className="label-600" style={{ margin: 0 }}>Nadie ha marcado que vino hoy</h3>}
+      {!mine && !join && <button className="link-btn" style={{ alignSelf: 'flex-start' }} onClick={() => setJoin(true)}>{cloud.checkins.length ? 'Yo también vine' : 'Marcar que vine'}</button>}
+    </div>
+  );
+}

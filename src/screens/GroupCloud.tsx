@@ -4,7 +4,7 @@ import { FeedCard, GroupTabs, MemberCircles, type GroupView } from '../component
 import { Icon } from '../components/Icon';
 import { Upcoming, type UpBirthday } from '../components/Upcoming';
 import { WodBoard } from '../components/WodBoard';
-import { CheckinCard, TodayAttendance } from '../components/Checkin';
+import { TodayInBox } from '../components/Checkin';
 import { Messages } from '../components/Messages';
 import { useCloud } from '../cloud';
 import { MEMBER_COLORS } from '../data';
@@ -85,6 +85,7 @@ function Setup({ onCancel }: { onCancel?: () => void }) {
 function SharedGroup() {
   const cloud = useCloud();
   const [another, setAnother] = useState(false);
+  const [menu, setMenu] = useState(false);
   const { fmt, flash } = useStore();
   const local = useLocalBirthdays();
   const [filter, setFilter] = useState('all');
@@ -118,28 +119,43 @@ function SharedGroup() {
 
   return (
     <div className="screen" data-screen-label="06 Grupo">
-      {/* Your groups, to switch between; and the way into another one. */}
-      <div className="chip-row" role="group" aria-label="Mis grupos">
-        {cloud.groups.length > 1 && cloud.groups.map(g => (
-          <button key={g.id} className="pill" aria-pressed={g.id === group.id} style={pillStyle(g.id === group.id)} onClick={() => cloud.selectGroup(g.id)}>{g.name}</button>
-        ))}
-        <button className="new-mov hit" onClick={() => setAnother(true)}>+ Otro grupo</button>
+      {/* Your groups, to switch between (only when there's more than one). */}
+      {cloud.groups.length > 1 && (
+        <div className="chip-row" role="group" aria-label="Mis grupos">
+          {cloud.groups.map(g => (
+            <button key={g.id} className="pill" aria-pressed={g.id === group.id} style={pillStyle(g.id === group.id)} onClick={() => cloud.selectGroup(g.id)}>{g.name}</button>
+          ))}
+        </div>
+      )}
+      {/* The name, with inviting and the rest (another group, leaving) one tap away instead of on screen every day. */}
+      <div className="group-head">
+        <h1 className="title">{group.name}</h1>
+        <button className="round-btn" onClick={invite} aria-label="Invitar al grupo"><Icon name="share" size={20} /></button>
+        <button className="round-btn" onClick={() => setMenu(m => !m)} aria-expanded={menu} aria-controls="group-menu" aria-label="Más opciones del grupo"><Icon name="more" size={20} /></button>
       </div>
-      <Head title={group.name} lede={`${cloud.members.length} ${cloud.members.length === 1 ? 'persona' : 'personas'}. Lo que publicas aquí lo ve solo este grupo.`} />
-
-      <button className="invite-btn" onClick={invite}>
-        <Icon name="share" size={20} />
-        <span style={{ flex: 1, textAlign: 'left' }}>Invitar a tu gente</span>
-        <span className="muted-sm">Link del grupo</span>
-      </button>
+      {menu && (
+        <div id="group-menu" className="group-menu">
+          <span className="muted-sm">{cloud.members.length} {cloud.members.length === 1 ? 'persona' : 'personas'}. Lo que publicas aquí lo ve solo este grupo.</span>
+          <button className="btn btn-secondary" style={{ minHeight: 48 }} onClick={() => { setMenu(false); setAnother(true); }}>Crear o unirme a otro grupo</button>
+          <DeleteButton label="Salir del grupo" what={`del grupo ${group.name}`} onDelete={cloud.leaveGroup} />
+        </div>
+      )}
+      {/* A new group needs people: until there are three, the invite stays big and explained. */}
+      {cloud.members.length < 3 && (
+        <button className="invite-btn" onClick={invite}>
+          <Icon name="share" size={20} />
+          <span style={{ flex: 1, textAlign: 'left' }}>Invitar a tu gente</span>
+          <span className="muted-sm">Solo este grupo lo ve</span>
+        </button>
+      )}
 
       <GroupTabs view={view} setView={setView} />
 
+      {/* Today: the WOD leads; messages are one line above it, who came below it. */}
       {view === 'today' && <>
         <Messages nameOf={nameOf} colorOf={colorOf} />
-        <CheckinCard where="group" />
-        <TodayAttendance nameOf={nameOf} colorOf={colorOf} />
         <WodBoard nameOf={nameOf} />
+        <TodayInBox nameOf={nameOf} colorOf={colorOf} />
       </>}
 
       {view === 'next' && <Upcoming
@@ -186,9 +202,6 @@ function SharedGroup() {
       </div>
       </>}
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <DeleteButton label="Salir del grupo" what={`del grupo ${group.name}`} onDelete={cloud.leaveGroup} />
-      </div>
     </div>
   );
 }

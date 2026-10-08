@@ -76,6 +76,13 @@ const PATHS = {
       <circle cx="12" cy="13" r="3" />
     </>
   ),
+  more: (
+    <>
+      <circle cx="5" cy="12" r="1.5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="19" cy="12" r="1.5" />
+    </>
+  ),
   chevronLeft: <path d="m15 18-6-6 6-6" />,
   minus: <path d="M5 12h14" />,
   plus: (
