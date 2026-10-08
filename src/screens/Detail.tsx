@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { DeleteButton } from '../components/DeleteButton';
+import { StoryComposer } from '../components/StoryComposer';
 import { Icon } from '../components/Icon';
 import { BarPicker, UnitPicker, countsWords } from '../components/BarSetup';
 import { discOf, type LogEntry, type Pr } from '../data';
@@ -12,6 +14,7 @@ const PCTS = [50, 60, 65, 70, 75, 80, 85, 90, 95];
 export function Detail() {
   const { data, set, fmt, detId, openSheet, flash } = useStore();
   const cloud = useCloud();
+  const [story, setStory] = useState(false);
   const p = data.prs.find(x => x.id === detId);
   const goHome = () => set(() => ({ screen: 'home' }));
   if (!p) return null;
@@ -77,6 +80,20 @@ export function Detail() {
           {mainEntries.length <= 1 ? 'Tu primer registro' : delta > 0 ? `${fmt.gainTxt(p, first.v, best!)} desde ${first.date}` : `Sin mejora desde ${first.date}`}
         </span>
       </div>
+
+      {best != null && (() => {
+        // "Nuevo" only while it's fresh (this week); an old record is just "Mi récord".
+        const when = [...mainEntries].reverse().find(e => e.v === best)?.iso;
+        const fresh = when != null && Date.now() - Date.parse(when) < 7 * 86400000;
+        return <>
+          <button className="btn btn-secondary btn-block" onClick={() => setStory(true)} style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Icon name="share" size={20} />Compartir en historia
+          </button>
+          {story && <StoryComposer kind="record" what={postedName(p, main)} value={fmt.val(p, best)} unit={unit}
+            label={`${fresh ? '¡Nuevo récord!' : 'Mi récord'}${scaled ? ' · escalado' : ''}`}
+            line={mainEntries.length > 1 && delta > 0 ? `${fmt.gainTxt(p, first.v, best)} desde ${first.date}` : ''} onClose={() => setStory(false)} />}
+        </>;
+      })()}
 
       {p.type === 'kg' && log.length > 0 && (
         // Every rep scheme's best at a glance, so a 5-rep best never hides in the history.

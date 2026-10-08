@@ -3,7 +3,10 @@ import { DeleteButton } from './DeleteButton';
 import { Segmented } from './Segmented';
 import { Icon } from './Icon';
 import { openTimerFrom } from '../screens/Timer';
-import type { Pr, PrType } from '../data';
+import { MEMBER_COLORS, type Pr, type PrType } from '../data';
+import { MOOD_IN, MOOD_OUT } from './Checkin';
+import { StoryComposer } from './StoryComposer';
+import { resolveColor, type StoryPerson } from '../story';
 import { useCloud, type CloudWod, type WodScore } from '../cloud';
 import { joinRounds, logOf, shortDate, splitRounds, withLog } from '../format';
 import { pillStyle, useStore } from '../store';
@@ -128,6 +131,7 @@ function Board({ nameOf }: Props) {
   const mine = w.scores.find(s => s.user_id === cloud.userId);
   const [editing, setEditing] = useState(!mine);
   const [fixing, setFixing] = useState(false);  // the author correcting the WOD itself
+  const [story, setStory] = useState(false);
   const isReps = w.score_type === 'reps';
   // Reps WODs take rounds and extra reps in two number fields: a phone's number pad has no "+" key.
   const [text, setText] = useState(mine ? (isReps ? String(splitRounds(mine.value)[0]) : fmt.val(measure, mine.value)) : '');
@@ -240,6 +244,10 @@ function Board({ nameOf }: Props) {
       </section>
 
       {editing && mine && form}
+      <button className="btn btn-primary btn-block" onClick={() => setStory(true)} style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <Icon name="share" size={20} />Historia para Instagram
+      </button>
+      {story && <StoryComposer kind="wod" wod={w} {...storyCrew(cloud, w)} onClose={() => setStory(false)} />}
       <button className="btn btn-secondary btn-block" onClick={() => { openTimerFrom('gr'); set(() => ({ screen: 'tm' })); }} style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
         <Icon name="timer" size={20} />Cronometrar este WOD
       </button>
@@ -251,6 +259,19 @@ function Board({ nameOf }: Props) {
       </div>
     </div>
   );
+}
+
+/** Who came to this WOD's class and how they finished (or arrived, if they haven't said), for the story. */
+function storyCrew(cloud: ReturnType<typeof useCloud>, w: CloudWod): { people: StoryPerson[]; moods: string[] } {
+  const came = cloud.checkins.filter(c => !w.class_time || c.class_time === w.class_time);
+  const people = came.map(c => {
+    const i = cloud.members.findIndex(m => m.id === c.user_id);
+    const emoji = c.mood_out ? MOOD_OUT[c.mood_out - 1][0] : MOOD_IN[c.mood_in - 1][0];
+    // Same colours as in the group: yours is the ink, everyone else's from the member palette.
+    const color = resolveColor(c.user_id === cloud.userId ? 'var(--color-text)' : MEMBER_COLORS[Math.max(0, i) % MEMBER_COLORS.length]);
+    return { name: cloud.members[i]?.name || 'Alguien', color, emoji, me: c.user_id === cloud.userId };
+  }).sort((a, b) => Number(b.me) - Number(a.me) || a.name.localeCompare(b.name));
+  return { people: people.map(({ me: _, ...p }) => p), moods: came.filter(c => c.mood_out).map(c => MOOD_OUT[c.mood_out! - 1][0]) };
 }
 
 /** A long board (11 lines from a photo) shows its first lines and opens on request, so the ranking stays in reach. */

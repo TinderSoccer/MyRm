@@ -376,3 +376,19 @@ textarea.compose-input { border-radius: var(--radius-md); min-height: 48px; padd
   .toast, .toast[data-show='true'] { transform: none; transition: opacity .2s; }
   .step-dot:hover, .fab:active { transform: none; }
 }
+
+/* — Instagram story composer: full screen over the app, the 9:16 preview first — */
+.story {
+  position: absolute; inset: 0; z-index: 8; overflow-y: auto; overscroll-behavior: contain; background: var(--color-bg);
+  display: flex; flex-direction: column; gap: var(--space-4); padding: calc(var(--top) + 8px) 22px calc(28px + var(--bottom));
+}
+.story-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.story-preview {
+  /* Small enough that the name choices and "Compartir" fit under it on a phone. */
+  align-self: center; height: min(44dvh, 440px); aspect-ratio: 9 / 16; flex: none; border-radius: var(--radius-md); overflow: hidden;
+  background: var(--color-surface); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg);
+}
+.story-preview img { width: 100%; height: 100%; object-fit: cover; }
+.story-share { position: sticky; bottom: calc(-28px - var(--bottom)); margin: auto -22px calc(-28px - var(--bottom)); padding: 12px 22px calc(16px + var(--bottom)); background: var(--color-bg); display: flex; flex-direction: column; gap: 6px; }
+.story-names { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.story-names .pill { height: auto; min-height: 40px; padding-block: 8px; white-space: normal; text-align: left; }

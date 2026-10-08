@@ -121,6 +121,8 @@ interface Cloud {
   postWod: (w: NewWod, classTime: string) => Promise<string | null>;
   /** A photo of the box's whiteboard read into a WOD (server-side AI); a string is an error to show. */
   readBoardPhoto: (photo: Blob) => Promise<NewWod | string>;
+  /** Three funny names for the WOD's story, from the AI (a string is an error to show). `avoid`: names already offered. */
+  nameWod: (w: Pick<CloudWod, 'title' | 'description'>, moods: string[], avoid: string[]) => Promise<string[] | string>;
   deleteWod: () => void;
   /** Fixes the WOD you posted (a misread line from a photo) without touching anyone's scores. */
   updateWod: (w: NewWod) => Promise<string | null>;
@@ -529,6 +531,17 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         const out = await res.json().catch(() => ({})) as Partial<NewWod> & { error?: string };
         if (!res.ok || !out.title) return out.error ?? 'No pudimos leer esta foto. Escribe el WOD a mano.';
         return { title: out.title, description: out.description ?? '', score_type: out.score_type ?? 'time' };
+      } catch { return 'Sin conexión. Revisa tu internet e intenta de nuevo.'; }
+    },
+    nameWod: async (w, moods, avoid) => {
+      if (!sb) return 'Los nombres necesitan conexión.';
+      const { data: s } = await sb.auth.getSession();
+      if (!s.session) return 'Entra a MyRm para usar los nombres.';
+      try {
+        const res = await fetch('/api/wod-name', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${s.session.access_token}` },
+          body: JSON.stringify({ title: w.title, description: w.description, moods, avoid }) });
+        const out = await res.json().catch(() => ({})) as { names?: string[]; error?: string };
+        return res.ok && out.names?.length ? out.names : out.error ?? 'No se nos ocurrió nada. Prueba otra vez.';
       } catch { return 'Sin conexión. Revisa tu internet e intenta de nuevo.'; }
     },
     // One trip to the box is one check-in: it goes to every group you're in, so each crew sees you came.
