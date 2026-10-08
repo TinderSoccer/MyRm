@@ -65,7 +65,7 @@ function fitSize(ctx: CanvasRenderingContext2D, text: string, family: string, st
   return { size: min, lines: wrap(ctx, text, TEXT_W).slice(0, maxLines).map(l => fit(ctx, l, TEXT_W)) };
 }
 
-/** The photo, cropped to fill the story, darkened where the text sits. */
+/** The photo, cropped to fill the story. It leads: only the strip at the bottom where the text sits is darkened. */
 function drawPhoto(ctx: CanvasRenderingContext2D, photo: CanvasImageSource & { width: number; height: number }) {
   const s = Math.max(W / photo.width, H / photo.height);
   const w = photo.width * s, h = photo.height * s;
@@ -73,10 +73,10 @@ function drawPhoto(ctx: CanvasRenderingContext2D, photo: CanvasImageSource & { w
   const top = ctx.createLinearGradient(0, 0, 0, 360);
   top.addColorStop(0, 'rgba(0,0,0,.35)'); top.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = top; ctx.fillRect(0, 0, W, 360);
-  // Dark enough under the title (which can climb to a third of the way down) for white text on any photo.
-  const bottom = ctx.createLinearGradient(0, H * 0.2, 0, H);
-  bottom.addColorStop(0, 'rgba(0,0,0,0)'); bottom.addColorStop(0.22, 'rgba(0,0,0,.5)'); bottom.addColorStop(0.6, 'rgba(0,0,0,.7)'); bottom.addColorStop(1, 'rgba(0,0,0,.85)');
-  ctx.fillStyle = bottom; ctx.fillRect(0, H * 0.2, W, H * 0.8);
+  const from = H * 0.52;
+  const bottom = ctx.createLinearGradient(0, from, 0, H);
+  bottom.addColorStop(0, 'rgba(0,0,0,0)'); bottom.addColorStop(0.35, 'rgba(0,0,0,.55)'); bottom.addColorStop(1, 'rgba(0,0,0,.8)');
+  ctx.fillStyle = bottom; ctx.fillRect(0, from, W, H - from);
 }
 
 /** No photo: the theme's paper with the app's bumper plate peeking in from the corner. */
@@ -147,6 +147,52 @@ function peopleBlock(people: StoryPerson[]) {
   return { height, draw };
 }
 
+/** Over a photo: just a caption at the bottom. The nickname, the WOD's real name, and a row of circles with each
+ *  person's emoji (no names: their faces are in the photo). */
+function wodOnPhoto(ctx: CanvasRenderingContext2D, story: WodStory, p: ReturnType<typeof palette>) {
+  const d = 84, gap = 16, perRow = Math.floor((TEXT_W + gap) / (d + gap));
+  const shown = story.people.length > perRow ? story.people.slice(0, perRow - 1) : story.people;
+  const extra = story.people.length - shown.length;
+  const showReal = story.realName && story.realName.trim().toLowerCase() !== story.name.trim().toLowerCase();
+  const title = fitSize(ctx, showReal ? `«${story.name}»` : story.name, CAPRASIMO, 84, 56, 2);
+  const rowH = story.people.length ? d + 34 : 0;
+  const titleH = title.lines.length * title.size * 1.02;
+  let y = CONTENT_END + 20 - rowH - (showReal ? 52 : 0) - titleH;
+  ctx.fillStyle = '#ffffff'; ctx.font = font(title.size, CAPRASIMO);
+  title.lines.forEach((l, i) => ctx.fillText(l, PAD, y + (i + 1) * title.size * 0.96));
+  y += titleH;
+  if (showReal) { ctx.font = font(36, FIGTREE, 700); ctx.fillStyle = 'rgba(255,255,255,.9)'; y += 46; ctx.fillText(fit(ctx, story.realName, TEXT_W), PAD, y); y += 6; }
+  if (!story.people.length) return;
+  y += 30;
+  ctx.shadowColor = 'transparent';
+  [...shown, ...(extra ? [null] : [])].forEach((person, i) => {
+    const cx = PAD + d / 2 + i * (d + gap), cy = y + d / 2;
+    ctx.beginPath(); ctx.arc(cx, cy, d / 2, 0, Math.PI * 2); ctx.fillStyle = person ? person.color : 'rgba(255,255,255,.9)'; ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.stroke();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (!person) { ctx.fillStyle = p.text; ctx.font = font(34, CAPRASIMO); ctx.fillText(`+${extra}`, cx, cy + 2); return; }
+    ctx.font = font(48, EMOJI); ctx.fillText(person.emoji, cx, cy + 3);
+  });
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+/** Over a photo: the record as a caption at the bottom, smaller than on paper so the photo stays the picture. */
+function recordOnPhoto(ctx: CanvasRenderingContext2D, story: RecordStory) {
+  let valueSize = 190;
+  ctx.font = font(64, FIGTREE, 700);
+  const unitW = story.unit ? ctx.measureText(story.unit).width + 18 : 0;
+  for (; valueSize > 110; valueSize -= 10) { ctx.font = font(valueSize, CAPRASIMO); if (ctx.measureText(story.value).width + unitW <= TEXT_W) break; }
+  ctx.font = font(60, CAPRASIMO);
+  const what = fit(ctx, story.what, TEXT_W);
+  const total = 52 + 72 + valueSize * 0.85 + (story.line ? 58 : 0);
+  let y = CONTENT_END + 20 - total;
+  ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.font = font(40, FIGTREE, 700); ctx.fillText(story.label, PAD, y + 40); y += 52;
+  ctx.fillStyle = '#ffffff'; ctx.font = font(60, CAPRASIMO); ctx.fillText(what, PAD, y + 60); y += 72 + valueSize * 0.85;
+  ctx.font = font(valueSize, CAPRASIMO); ctx.fillText(story.value, PAD, y);
+  if (story.unit) { const vw = ctx.measureText(story.value).width; ctx.font = font(64, FIGTREE, 700); ctx.fillText(story.unit, PAD + vw + 18, y); }
+  if (story.line) { ctx.fillStyle = 'rgba(255,255,255,.88)'; ctx.font = font(36, FIGTREE, 600); ctx.fillText(fit(ctx, story.line, TEXT_W), PAD, y + 58); }
+}
+
 async function fontsReady() {
   await Promise.all([font(100, CAPRASIMO), font(40, FIGTREE, 600), font(40, FIGTREE, 700)].map(f => document.fonts.load(f).catch(() => null)));
 }
@@ -165,7 +211,9 @@ export async function renderStory(story: Story, photo: ImageBitmap | null): Prom
   const lead = photo ? '#ffffff' : p.accent2_700;
   if (photo) { ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 18; }
 
-  if (story.kind === 'wod') {
+  if (photo) {
+    if (story.kind === 'wod') wodOnPhoto(ctx, story, p); else recordOnPhoto(ctx, story);
+  } else if (story.kind === 'wod') {
     // From the bottom up: the people, the WOD's lines, its real name, then the funny name on top.
     const people = peopleBlock(story.people);
     ctx.font = font(38, FIGTREE, 600);
