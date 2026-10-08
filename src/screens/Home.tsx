@@ -1,10 +1,11 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Icon, type IconName } from '../components/Icon';
 import { TodayWod } from '../components/TodayWod';
 import { CheckinCard } from '../components/Checkin';
+import { StoryComposer } from '../components/StoryComposer';
 import { openTimerFrom } from './Timer';
 import { discOf, type Pr } from '../data';
-import { bestOf, bestWord, entriesOf, fixedKg, initialOf, logOf, longToday, mainSchemeOf, recordIsScaled, todayIndex } from '../format';
+import { bestOf, bestWord, entriesOf, fixedKg, initialOf, logOf, longToday, mainSchemeOf, recordIsScaled, todayIndex, recordStep } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 
 const DAY_L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -19,6 +20,7 @@ export function Home() {
   const { data, set, fmt, openDetail, homeFilter, setHomeFilter } = useStore();
   const shown = useShownDiscs();
   const weekDone = data.done.filter(Boolean).length;
+  const [weekStory, setWeekStory] = useState(false);
   const name = (data.name || '').trim();
   const today = todayIndex();
   // Only marks with at least one attempt show up; the rest is just the catalog the record sheet offers.
@@ -85,7 +87,14 @@ export function Home() {
               );
             })}
           </div>
+          {/* The week at its goal is worth a story. */}
+          {weekDone >= data.freq && (
+            <button type="button" className="board-more" onClick={() => setWeekStory(true)} style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 6, position: 'relative' }}>
+              <Icon name="share" size={16} />Compartir mi semana
+            </button>
+          )}
         </div>
+        {weekStory && <StoryComposer kind="week" done={weekDone} goal={data.freq} days={data.done} onClose={() => setWeekStory(false)} />}
         <TodayWod />
       </div>
 
@@ -99,7 +108,7 @@ export function Home() {
           <div className="pr-reel">
             {recent.map((r, i) => (
               <button key={r.p.id + r.iso + i} className="pr-tile" data-tone={i % 3} onClick={() => openDetail(r.p.id)}
-                aria-label={`${r.p.name}: ${fmt.val(r.p, r.v)} ${fmt.unitOf(r.p)}, ${r.gain}, ${r.date}`}>
+                aria-label={`${r.p.name}: ${fmt.val(r.p, r.v)} ${fmt.unitOf(r.p)}, ${r.gain} vs tu récord anterior, ${r.date}`}>
                 <span className="pr-tile-icon" aria-hidden="true"><Icon name={iconOf(r.p)} size={20} /></span>
                 <span className="pr-tile-name" aria-hidden="true">{r.p.name}</span>
                 <span className="pr-tile-value" aria-hidden="true">{fmt.val(r.p, r.v)}<small>{fmt.unitOf(r.p)}</small></span>
@@ -137,8 +146,9 @@ export function Home() {
           const entries = entriesOf(p, scheme, scaled);
           const best = bestOf(p, scheme, scaled) ?? 0;
           const recordAt = [...entries].reverse().find(e => e.v === best) ?? entries[entries.length - 1];
-          const delta = fmt.gain(p, entries[0].v, best);
-          const badge = entries.length === 1 ? 'Primera' : delta > 0 ? fmt.gainTxt(p, entries[0].v, best) : `${entries.length} intentos`;
+          // Same measure as everywhere: how much this record beat the one before it.
+          const prev = recordStep(p, scheme, scaled)?.prev;
+          const badge = entries.length === 1 ? 'Primera' : prev ? fmt.gainTxt(p, prev.v, best) : `${entries.length} intentos`;
           const tint = p.type === 'kg' ? 'accent' : p.type === 'time' ? 'accent-2' : 'neutral';
           return (
             <button key={p.id} className="pr-card" onClick={() => openDetail(p.id)}>

@@ -210,6 +210,18 @@ export function oneRepMaxOf(p: Pr): { kg: number; estimated: boolean } | null {
 export const entriesOf = (p: Pr, scheme: string | null, scaled = false) =>
   logOf(p).filter(e => (e.scheme || null) === (scheme || null) && isScaled(e) === scaled);
 
+/** The record and the record it beat: walking the attempts in order, the best so far before the current best was set.
+ *  `prev` is null when the first attempt is still the record. Every "how much did I improve" in the app is this step. */
+export function recordStep(p: Pr, scheme: string | null, scaled = false): { best: LogEntry; prev: LogEntry | null } | null {
+  const better = (a: number, b: number) => p.better === 'down' ? a < b : a > b;
+  let best: LogEntry | null = null, prev: LogEntry | null = null;
+  for (const e of entriesOf(p, scheme, scaled)) {
+    if (!best) best = e;
+    else if (better(e.v, best.v)) { prev = best; best = e; }
+  }
+  return best ? { best, prev } : null;
+}
+
 /** Which record a mark shows: the RX one, or the scaled one while there are only scaled attempts. */
 export const recordIsScaled = (p: Pr, scheme: string | null) => !entriesOf(p, scheme).length && entriesOf(p, scheme, true).length > 0;
 

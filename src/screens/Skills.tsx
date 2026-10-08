@@ -4,6 +4,8 @@ import { Rename } from '../components/Rename';
 import { STAGES, discOf, type DiscId, type Skill } from '../data';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
+import { Icon } from '../components/Icon';
+import { StoryComposer } from '../components/StoryComposer';
 
 export function Skills() {
   const { data, set, flash } = useStore();
@@ -11,6 +13,7 @@ export function Skills() {
   const cloud = useCloud();
   const [filter, setFilter] = useState<DiscId | 'all'>('all');
   const [newSkill, setNewSkill] = useState('');
+  const [story, setStory] = useState<Skill | null>(null);
 
   // Saves from before `tracked` existed: a skill counts as yours once you moved it past "Por empezar".
   const isTracked = (k: Skill) => k.tracked ?? k.stage > 0;
@@ -89,6 +92,7 @@ export function Skills() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 4, marginTop: -4, flexWrap: 'wrap' }}>
                 {/* Skills you wrote yourself can be renamed; catalog ones keep their standard names. */}
+                {got && <button className="del-btn" onClick={() => setStory(k)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name="share" size={16} />Compartir</button>}
                 {k.id.startsWith('k') && <Rename name={k.name} what={`la skill ${k.name}`} onSave={name => set(d => ({ skills: d.skills.map(x => x.id === k.id ? { ...x, name } : x) }))} />}
                 <DeleteButton label="Quitar" what={`la skill ${k.name}`} onDelete={() => remove(k)} />
               </div>
@@ -96,6 +100,7 @@ export function Skills() {
           );
         })}
       </div>
+      {story && <StoryComposer kind="skill" name={story.name} label={story.stage >= 4 ? '¡Skill dominada!' : '¡Skill desbloqueada!'} onClose={() => setStory(null)} />}
       <div className="dashed">
         <span className="label-600">Sumar una skill</span>
         {catalog.length > 0 && (

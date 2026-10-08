@@ -4,7 +4,7 @@ import { StoryComposer } from '../components/StoryComposer';
 import { Icon } from '../components/Icon';
 import { BarPicker, UnitPicker, countsWords } from '../components/BarSetup';
 import { discOf, type LogEntry, type Pr } from '../data';
-import { SCHEMES, postedName, barLoad, barWeight, bestOf, bestWord, estimatedMaxOf, repsWord, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog } from '../format';
+import { SCHEMES, postedName, barLoad, barWeight, bestOf, bestWord, estimatedMaxOf, repsWord, entriesOf, fixedKg, isScaled, logOf, mainSchemeOf, oneRepMaxOf, recordIsScaled, withLog, recordStep } from '../format';
 import { useStore } from '../store';
 import { useCloud } from '../cloud';
 import { Rename } from '../components/Rename';
@@ -25,8 +25,10 @@ export function Detail() {
   const scaled = recordIsScaled(p, main);
   const best = bestOf(p, main, scaled);
   const mainEntries = entriesOf(p, main, scaled);
-  const first = mainEntries[0];
-  const delta = best != null && first ? fmt.gain(p, first.v, best) : 0;
+  // How much the record beat the one before it: the same measure as Home's cards and the recent-records reel.
+  const step = recordStep(p, main, scaled);
+  const gainLine = mainEntries.length <= 1 || !step ? 'Tu primer registro'
+    : step.prev ? `${fmt.gainTxt(p, step.prev.v, step.best.v)} vs tu récord anterior` : `Tu récord sigue siendo el del ${step.best.date}`;
   const mainLog = mainEntries.slice(-6);
   const custom = p.id.startsWith('u');
 
@@ -77,7 +79,7 @@ export function Detail() {
           {best == null ? '—' : fmt.val(p, best)}<span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-lg)', fontWeight: 600, marginLeft: 6 }}>{unit}</span>
         </span>
         <span style={{ fontSize: 'var(--text-md)', fontWeight: 600, color: 'var(--color-accent-2-300)', position: 'relative' }}>
-          {mainEntries.length <= 1 ? 'Tu primer registro' : delta > 0 ? `${fmt.gainTxt(p, first.v, best!)} desde ${first.date}` : `Sin mejora desde ${first.date}`}
+          {gainLine}
         </span>
       </div>
 
@@ -91,7 +93,7 @@ export function Detail() {
           </button>
           {story && <StoryComposer kind="record" what={postedName(p, main)} value={fmt.val(p, best)} unit={unit}
             label={`${fresh ? '¡Nuevo récord!' : 'Mi récord'}${scaled ? ' · escalado' : ''}`}
-            line={mainEntries.length > 1 && delta > 0 ? `${fmt.gainTxt(p, first.v, best)} desde ${first.date}` : ''} onClose={() => setStory(false)} />}
+            line={step?.prev ? gainLine : ''} onClose={() => setStory(false)} />}
         </>;
       })()}
 

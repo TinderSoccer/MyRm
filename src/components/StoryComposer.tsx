@@ -9,6 +9,8 @@ import { Icon } from './Icon';
 type Props = { onClose: () => void } & (
   | { kind: 'wod'; wod: CloudWod; people: StoryPerson[]; moods: string[] }
   | { kind: 'record'; what: string; value: string; unit: string; label: string; line: string }
+  | { kind: 'skill'; name: string; label: string }
+  | { kind: 'week'; done: number; goal: number; days: boolean[] }
 );
 
 /** Full-screen preview of an Instagram story: optional photo behind, for a WOD a funny name from the AI, then the
@@ -40,7 +42,9 @@ export function StoryComposer(props: Props) {
 
   const story: Story = props.kind === 'wod'
     ? { kind: 'wod', name: name.trim() || props.wod.title, realName: props.wod.title, lines: storyLines(props.wod.description, props.wod.title), people: props.people }
-    : { kind: 'record', what: props.what, value: props.value, unit: props.unit, label: props.label, line: props.line };
+    : props.kind === 'record' ? { kind: 'record', what: props.what, value: props.value, unit: props.unit, label: props.label, line: props.line }
+    : props.kind === 'skill' ? { kind: 'skill', name: props.name, label: props.label }
+    : { kind: 'week', done: props.done, goal: props.goal, days: props.days };
   const storyKey = JSON.stringify(story);
 
   // Redraw on every change; the newest drawing wins.

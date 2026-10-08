@@ -16,7 +16,10 @@ const EMOJI = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-s
 export interface StoryPerson { name: string; color: string; emoji: string }
 export interface WodStory { kind: 'wod'; name: string; realName: string; lines: string[]; people: StoryPerson[] }
 export interface RecordStory { kind: 'record'; what: string; value: string; unit: string; label: string; line: string }
-export type Story = WodStory | RecordStory;
+export interface SkillStory { kind: 'skill'; name: string; label: string }
+export interface WeekStory { kind: 'week'; done: number; goal: number; days: boolean[] }
+export type Story = WodStory | RecordStory | SkillStory | WeekStory;
+const DAY_LETTERS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
 /** The current theme's colours, read from the page so a story looks like the app it came from. */
 function palette() {
@@ -193,6 +196,54 @@ function recordOnPhoto(ctx: CanvasRenderingContext2D, story: RecordStory) {
   if (story.line) { ctx.fillStyle = 'rgba(255,255,255,.88)'; ctx.font = font(36, FIGTREE, 600); ctx.fillText(fit(ctx, story.line, TEXT_W), PAD, y + 58); }
 }
 
+/** The medal, drawn as the emoji at whatever size the story needs. */
+function medal(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  ctx.save(); ctx.shadowColor = 'transparent'; ctx.font = font(size, EMOJI); ctx.textBaseline = 'alphabetic'; ctx.fillText('🏅', x, y); ctx.restore();
+}
+
+/** A skill: the medal, "¡Skill desbloqueada!" and its name big. Over a photo, a caption with a small medal. */
+function skillStory(ctx: CanvasRenderingContext2D, story: SkillStory, ink: string, lead: string, onPhoto: boolean) {
+  const name = fitSize(ctx, story.name, CAPRASIMO, onPhoto ? 84 : 140, onPhoto ? 56 : 80, onPhoto ? 2 : 3);
+  const nameH = name.lines.length * name.size * 1.02;
+  const medalSize = onPhoto ? 96 : 220;
+  let y = CONTENT_END + (onPhoto ? 20 : 0) - nameH - 64 - (medalSize + 24);
+  medal(ctx, PAD - 6, y + medalSize, medalSize); y += medalSize + 24;
+  ctx.fillStyle = lead; ctx.font = font(onPhoto ? 40 : 48, FIGTREE, 700); ctx.fillText(story.label, PAD, y + 46); y += 64;
+  ctx.fillStyle = ink; ctx.font = font(name.size, CAPRASIMO);
+  name.lines.forEach((l, i) => ctx.fillText(l, PAD, y + (i + 1) * name.size * 0.98));
+}
+
+/** A week at its goal: "4/4" big and the seven days, ticked. Over a photo, the same smaller. */
+function weekStory(ctx: CanvasRenderingContext2D, story: WeekStory, ink: string, lead: string, p: ReturnType<typeof palette>, onPhoto: boolean) {
+  const big = onPhoto ? 150 : 300, d = onPhoto ? 72 : 112, step = (TEXT_W - d) / 6;
+  const rowH = d + (onPhoto ? 44 : 60);
+  const gapBelow = onPhoto ? 36 : 72;
+  let y = CONTENT_END + (onPhoto ? 20 : 0) - rowH - gapBelow - big * 0.85 - 64;
+  ctx.fillStyle = lead; ctx.font = font(onPhoto ? 40 : 48, FIGTREE, 700); ctx.fillText('¡Semana cumplida!', PAD, y + 46); y += 64 + big * 0.85;
+  ctx.fillStyle = ink; ctx.font = font(big, CAPRASIMO);
+  const n = `${story.done}/${story.goal}`; ctx.fillText(n, PAD, y);
+  const nw = ctx.measureText(n).width;
+  ctx.font = font(onPhoto ? 44 : 64, FIGTREE, 700); ctx.fillText('entrenos', PAD + nw + 24, y);
+  y += gapBelow;
+  ctx.save(); ctx.shadowColor = 'transparent';
+  story.days.forEach((on, i) => {
+    const cx = PAD + d / 2 + i * step, top = y;
+    ctx.fillStyle = onPhoto ? 'rgba(255,255,255,.9)' : p.neutral700; ctx.font = font(onPhoto ? 28 : 36, FIGTREE, 700); ctx.textAlign = 'center';
+    ctx.fillText(DAY_LETTERS[i], cx, top + (onPhoto ? 28 : 36));
+    const cy = top + (onPhoto ? 44 : 60) + d / 2;
+    ctx.beginPath(); ctx.arc(cx, cy, d / 2 - 3, 0, Math.PI * 2);
+    if (on) { ctx.fillStyle = onPhoto ? '#ffffff' : p.accent2; ctx.fill(); }
+    else { ctx.lineWidth = 5; ctx.strokeStyle = onPhoto ? 'rgba(255,255,255,.7)' : p.neutral700; ctx.globalAlpha = onPhoto ? 1 : 0.45; ctx.stroke(); ctx.globalAlpha = 1; }
+    if (on) {
+      // The app's check, drawn: the same tick as the week row on Home.
+      const k = d / 40;
+      ctx.beginPath(); ctx.moveTo(cx - 9 * k, cy); ctx.lineTo(cx - 3 * k, cy + 6 * k); ctx.lineTo(cx + 9 * k, cy - 6 * k);
+      ctx.lineWidth = 3.4 * k; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = p.text; ctx.stroke();
+    }
+  });
+  ctx.textAlign = 'left'; ctx.restore();
+}
+
 async function fontsReady() {
   await Promise.all([font(100, CAPRASIMO), font(40, FIGTREE, 600), font(40, FIGTREE, 700)].map(f => document.fonts.load(f).catch(() => null)));
 }
@@ -211,7 +262,9 @@ export async function renderStory(story: Story, photo: ImageBitmap | null): Prom
   const lead = photo ? '#ffffff' : p.accent2_700;
   if (photo) { ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 18; }
 
-  if (photo) {
+  if (story.kind === 'skill') skillStory(ctx, story, ink, lead, !!photo);
+  else if (story.kind === 'week') weekStory(ctx, story, ink, lead, p, !!photo);
+  else if (photo) {
     if (story.kind === 'wod') wodOnPhoto(ctx, story, p); else recordOnPhoto(ctx, story);
   } else if (story.kind === 'wod') {
     // From the bottom up: the people, the WOD's lines, its real name, then the funny name on top.
