@@ -107,6 +107,9 @@ button { font-family: inherit; }
 }
 .seg[data-fit] .seg-btn { flex: none; padding: 0 16px; }
 .seg[data-size='lg'] .seg-btn { min-height: 44px; font-size: var(--text-md); }
+/* 40px to look at, 44px to touch: the target reaches into the track's 4px padding. */
+.seg-btn { position: relative; }
+.seg-btn::after { content: ''; position: absolute; inset: -4px -2px; }
 .seg-btn:hover { background: var(--color-accent-200); }
 .seg-btn[aria-pressed='true'] { background: var(--color-text); color: var(--color-bg); }
 
@@ -310,7 +313,8 @@ button { font-family: inherit; }
 .board-title { font-family: var(--font-heading); font-weight: 400; font-size: var(--display-xl); line-height: 1.05; margin: 0; text-wrap: balance; }
 .board-meta { font-size: var(--text-sm); color: var(--color-neutral-400); }
 .board-desc { margin: 0; white-space: pre-wrap; font-size: var(--text-md); line-height: 1.5; }
-.board-more { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--color-neutral-600); background: transparent; color: var(--color-bg); font-weight: 700; font-size: var(--text-sm); cursor: pointer; }
+.board-more { position: relative; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--color-neutral-600); background: transparent; color: var(--color-bg); font-weight: 700; font-size: var(--text-sm); cursor: pointer; }
+.board-more::after { content: ''; position: absolute; inset: -2px 0; }
 .board-rows { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 14px 0 0; list-style: none; border-top: 1px solid var(--color-neutral-700); }
 .board-row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; margin: 0 -12px; border-radius: var(--radius-md); }
 .board-row[data-me='true'] { background: var(--color-accent-500); color: var(--color-text); }

@@ -336,7 +336,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     if (!sb || !userId) return;
     const onVis = () => { if (document.visibilityState === 'visible') refresh(); };
     document.addEventListener('visibilitychange', onVis);
-    const id = window.setInterval(refresh, REFRESH_MS);
+    // Only while it's on screen: a phone in the pocket shouldn't spend battery and data on a board no one is looking at.
+    const id = window.setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, REFRESH_MS);
     return () => { document.removeEventListener('visibilitychange', onVis); clearInterval(id); };
   }, [userId, refresh]);
 

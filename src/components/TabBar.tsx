@@ -19,7 +19,7 @@ export function TabBar() {
     );
   };
   return (
-    <nav className="tabbar">
+    <nav className="tabbar" aria-label="Secciones">
       {tab(TABS[0])}
       {tab(TABS[1])}
       <button className="fab" aria-label="Registrar marca" onClick={() => openSheet(homeFilter !== 'all' ? { disc: homeFilter } : {})}><Icon name="plus" size={28} /></button>

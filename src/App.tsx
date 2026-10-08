@@ -35,6 +35,8 @@ export function App() {
           <span style={{ display: 'flex', gap: 5, alignItems: 'center' }}><span className="status-batt" /></span>
         </div>
         <div className="app-layer" inert={sheet != null}>
+        {/* The screen is the page's main landmark; the tab bar stays outside it. .screen positions against .app-layer. */}
+        <main>
         {s === 'login' && <Login />}
         {s === 'password' && <SetPassword />}
         {s === 'w1' && <Welcome />}
@@ -44,6 +46,7 @@ export function App() {
         {s === 'gr' && <GroupCloud />}
         {s === 'det' && <Detail />}
         {s === 'tm' && <Timer />}
+        </main>
         {!gate && s !== 'w1' && s !== 'w2' && s !== 'tm' && <TabBar />}
         </div>
         <RecordSheet />
