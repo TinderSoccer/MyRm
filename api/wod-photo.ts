@@ -18,15 +18,16 @@ const SCHEMA = {
   properties: {
     found: { type: 'boolean', description: 'false when the photo shows no readable workout' },
     title: { type: 'string', description: 'Short name of the WOD: its benchmark name (Fran, Cindy…) or its format (AMRAP 12′, For Time, EMOM 10′, 5x5 Back squat)' },
-    description: { type: 'string', description: 'The workout as written on the board, one line per line on the board, separated by \\n' },
+    description: { type: 'string', description: 'The whole board, part by part: each part starts with its header line ending in a colon, then its lines as written, separated by \\n' },
     score_type: { type: 'string', enum: ['time', 'reps', 'kg'], description: 'time for For Time; reps for AMRAP / max reps / rounds; kg for a heavy lift or max-weight day' },
     nickname: { type: 'string', description: 'A funny nickname for this workout in Chilean Spanish, at most 34 characters (empty when found is false)' }
   }
 } as const;
 
 const SYSTEM = `You transcribe photos of a CrossFit box whiteboard into the day's workout for the gym's app.
-Boards often hold several parts (warm-up, skill, strength, WOD/metcon). Return the main scored workout: the WOD/metcon.
-If the board only has a strength piece (e.g. 5x5 back squat, find a 1RM), that is the workout.
+Boards often hold several parts (warm-up, skill, strength, WOD/metcon, accessories). Transcribe all of them, in the board's order.
+Start each part with a header line ending in a colon: the part's name as the board writes it ("Calentamiento:", "Fuerza:", "WOD:", "A) Back squat:"); when the board doesn't name a part, give it a short one in Spanish (Calentamiento, Skill, Fuerza, WOD, Accesorios). The scheme ("AMRAP 12'", "3 rondas", "EMOM 10'") goes on the line right after its header.
+The title, the score type and the nickname are about the main scored workout: the WOD/metcon, or the strength piece when that is all there is.
 Copy what is written: keep numbers, rep schemes (21-15-9), weights and units (95/65 lb, 24/16 kg), distances and calories exactly, in the board's language.
 Write movement names as CrossFitters write them. Put each line of the board on its own line. Mark an unreadable word with (?) instead of guessing.
 Do not add coaching notes, scaling suggestions or anything that is not on the board.
@@ -100,7 +101,7 @@ export async function POST(request: Request): Promise<Response> {
     if (stop === 'max_tokens') return json({ error: 'La pizarra traía demasiado. Prueba con una foto solo del WOD.' }, 422);
     if (!result) return json({ error: 'No pudimos leer esta foto. Escribe el WOD a mano.' }, 502);
     if (!result.found) return json({ error: 'No encontramos un WOD en la foto. Prueba más de cerca y con luz.' }, 422);
-    return json({ title: result.title.slice(0, 80), description: result.description.slice(0, 600), score_type: result.score_type, nickname: (result.nickname ?? '').replace(/^["«“]|["»”]$/g, '').trim().slice(0, 40) });
+    return json({ title: result.title.slice(0, 80), description: result.description.slice(0, 1500), score_type: result.score_type, nickname: (result.nickname ?? '').replace(/^["«“]|["»”]$/g, '').trim().slice(0, 40) });
   } catch (error) {
     console.error('wod-photo failed', error instanceof Anthropic.APIError ? `${error.status} ${error.message}` : String(error));
     if (error instanceof Anthropic.RateLimitError) return json({ error: 'Hay mucha gente leyendo fotos. Prueba en un minuto.' }, 429);

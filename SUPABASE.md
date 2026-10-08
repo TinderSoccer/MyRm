@@ -27,6 +27,7 @@ Supabase → *SQL Editor* → pega y ejecuta, en orden:
 7. [`supabase/migrations/0007_wod_per_class.sql`](supabase/migrations/0007_wod_per_class.sql): un WOD por clase (7:00, 19:00…) en vez de uno por día.
 8. [`supabase/migrations/0008_messages.sql`](supabase/migrations/0008_messages.sql): mensajes al grupo (ánimo, bromas), dedicados o para todos, con reacciones 👏 💪 😂 🔥.
 9. [`supabase/migrations/0009_wod_nickname.sql`](supabase/migrations/0009_wod_nickname.sql): el apodo chistoso del WOD que inventa la IA al leer la pizarra.
+10. [`supabase/migrations/0010_wod_longer.sql`](supabase/migrations/0010_wod_longer.sql): la descripción del WOD pasa de 600 a 1500 caracteres, para la pizarra completa (calentamiento, fuerza y WOD).
 
 ## 3. Login por correo
 

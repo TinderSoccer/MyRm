@@ -7,6 +7,7 @@ import { MEMBER_COLORS, type Pr, type PrType } from '../data';
 import { MOOD_IN, MOOD_OUT } from './Checkin';
 import { StoryComposer } from './StoryComposer';
 import { resolveColor, type StoryPerson } from '../story';
+import { hasParts, mainPart, parseBoard, type BoardPart, type PartKind } from '../wodText';
 import { useCloud, type CloudWod, type WodScore } from '../cloud';
 import { joinRounds, logOf, shortDate, splitRounds, withLog } from '../format';
 import { pillStyle, useStore } from '../store';
@@ -117,7 +118,7 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
       </label>
       {fromPhoto && <p className="note" role="status" style={{ color: 'var(--color-accent-2-700)', fontWeight: 600 }}>Lo leímos de la foto. Revisa que esté bien antes de {edit ? 'guardar' : 'subirlo'}.</p>}
       <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 'var(--text-md)' }} />
-      <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'21-15-9\nThrusters 95/65 lb\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
+      <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'Calentamiento:\n2 rondas: 10 air squats, 200 m run\nWOD:\n21-15-9\nThrusters 43/30 kg\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
         style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 'var(--text-md)', resize: 'vertical', height: 'auto', minHeight: edit ? 180 : 96 }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -295,8 +296,49 @@ function storyCrew(cloud: ReturnType<typeof useCloud>, w: CloudWod): { people: S
   return { people: people.map(({ me: _, ...p }) => p), moods: came.filter(c => c.mood_out).map(c => MOOD_OUT[c.mood_out! - 1][0]) };
 }
 
-/** A long board (11 lines from a photo) shows its first lines and opens on request, so the ranking stays in reach. */
+/** The board's text as the coach wrote it: each part (warm-up, strength, the WOD…) under its own header with a coloured
+ *  dot, rests and notes quieter. A long board keeps the main WOD open and folds the other parts, so the ranking stays
+ *  in reach. Text without parts (a single WOD) shows its first lines and opens on request. */
 function BoardText({ text }: { text: string }) {
+  const parts = parseBoard(text);
+  if (!hasParts(parts)) return <PlainText text={text} />;
+  const main = mainPart(parts);
+  const fold = parts.reduce((n, p) => n + p.lines.length + 1, 0) > 10;
+  return (
+    <div className="board-parts">
+      {parts.map((p, i) => <Part key={i} part={p} main={p === main} folded={fold && p !== main} />)}
+    </div>
+  );
+}
+
+const PART_WORD: Record<PartKind, string> = { warmup: 'Calentamiento', skill: 'Skill', strength: 'Fuerza', wod: 'WOD', extra: 'Accesorios', cooldown: 'Vuelta a la calma' };
+
+function Part({ part, main, folded }: { part: BoardPart; main: boolean; folded: boolean }) {
+  const [open, setOpen] = useState(!folded);
+  const lines = (
+    <ul className="part-lines">
+      {part.lines.map((l, i) => <li key={i} className="part-line" data-kind={l.kind}>{l.text}</li>)}
+    </ul>
+  );
+  if (part.title === null) return <div className="board-part">{lines}</div>;
+  const head = <>
+    <span className="part-dot" data-kind={part.kind} aria-hidden="true" />
+    <span className="part-title">{part.title}</span>
+  </>;
+  return (
+    <div className="board-part" data-main={main || undefined}>
+      {folded
+        ? <button type="button" className="part-head" aria-expanded={open} onClick={() => setOpen(o => !o)}
+            aria-label={`${part.title} (${PART_WORD[part.kind]}), ${part.lines.length} ${part.lines.length === 1 ? 'línea' : 'líneas'}`}>
+            {head}<span className="part-more" aria-hidden="true">{open ? 'Cerrar' : `${part.lines.length} ${part.lines.length === 1 ? 'línea' : 'líneas'}`}</span>
+          </button>
+        : <h3 className="part-head">{head}</h3>}
+      {(!folded || open) && part.lines.length > 0 && lines}
+    </div>
+  );
+}
+
+function PlainText({ text }: { text: string }) {
   const SHOWN = 6;
   const lines = text.split('\n');
   const [open, setOpen] = useState(false);

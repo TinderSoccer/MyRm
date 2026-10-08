@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCloud, type CloudWod } from '../cloud';
 import { loadPhoto, renderStory, type Story, type StoryPerson } from '../story';
+import { storyLines } from '../wodText';
 import { pillStyle, useStore } from '../store';
 import { Icon } from './Icon';
 
@@ -38,7 +39,7 @@ export function StoryComposer(props: Props) {
   useEffect(() => { if (!nick) askNames(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const story: Story = props.kind === 'wod'
-    ? { kind: 'wod', name: name.trim() || props.wod.title, realName: props.wod.title, lines: props.wod.description.split('\n').map(l => l.trim()).filter(Boolean), people: props.people }
+    ? { kind: 'wod', name: name.trim() || props.wod.title, realName: props.wod.title, lines: storyLines(props.wod.description, props.wod.title), people: props.people }
     : { kind: 'record', what: props.what, value: props.value, unit: props.unit, label: props.label, line: props.line };
   const storyKey = JSON.stringify(story);
 

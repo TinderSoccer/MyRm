@@ -39,7 +39,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const body = await request.json() as { title?: unknown; description?: unknown; moods?: unknown; avoid?: unknown };
     title = clean(body.title, 80);
-    description = typeof body.description === 'string' ? body.description.slice(0, 600) : '';
+    description = typeof body.description === 'string' ? body.description.slice(0, 1500) : '';
     moods = Array.isArray(body.moods) ? body.moods.filter((m): m is string => typeof m === 'string').slice(0, 40).map(m => m.slice(0, 8)) : [];
     avoid = Array.isArray(body.avoid) ? body.avoid.map(a => clean(a, MAX_NAME)).filter(Boolean).slice(0, 12) : [];
     if (!title && !description) throw new Error('empty');

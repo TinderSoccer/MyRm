@@ -332,6 +332,23 @@ textarea.compose-input { border-radius: var(--radius-md); min-height: 48px; padd
 .board-title { font-family: var(--font-heading); font-weight: 400; font-size: var(--display-xl); line-height: 1.05; margin: 0; text-wrap: balance; }
 .board-nick { font-family: var(--font-heading); font-size: var(--display-sm); line-height: 1.15; color: var(--color-accent-300); text-wrap: balance; }
 .board-meta { font-size: var(--text-sm); color: var(--color-neutral-400); }
+.board-parts { display: flex; flex-direction: column; }
+.board-part + .board-part { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--color-neutral-700); }
+.part-head { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; margin: 0; padding: 0; border: none; background: none; color: inherit; text-align: left;
+  font-family: var(--font-heading); font-weight: 400; font-size: var(--display-sm); line-height: 1.15; cursor: default; }
+button.part-head { position: relative; min-height: 44px; cursor: pointer; }
+.board-part[data-main] .part-head { font-size: var(--display-md); }
+.part-title { flex: 1; min-width: 0; text-wrap: balance; }
+/* One colour per kind of part, from the theme's chalk: the WOD in the accent, the warm-up in the second colour. */
+.part-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; background: var(--color-neutral-400); }
+.part-dot[data-kind='wod'] { background: var(--color-accent-300); }
+.part-dot[data-kind='warmup'], .part-dot[data-kind='cooldown'] { background: var(--color-accent-2-300); }
+.part-dot[data-kind='strength'], .part-dot[data-kind='skill'] { background: var(--color-bg); }
+.part-more { flex: none; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; color: var(--color-neutral-400); }
+.part-lines { list-style: none; margin: 6px 0 0; padding: 0 0 0 22px; display: flex; flex-direction: column; gap: 2px; font-size: var(--text-md); line-height: 1.45; overflow-wrap: anywhere; }
+.part-line[data-kind='format'] { font-weight: 700; }
+.part-line[data-kind='rest'] { color: var(--color-neutral-400); font-style: italic; }
+.part-line[data-kind='note'] { color: var(--color-neutral-400); font-size: var(--text-sm); }
 .board-desc { margin: 0; white-space: pre-wrap; font-size: var(--text-md); line-height: 1.5; }
 .board-more { position: relative; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--color-neutral-600); background: transparent; color: var(--color-bg); font-weight: 700; font-size: var(--text-sm); cursor: pointer; }
 .board-more::after { content: ''; position: absolute; inset: -2px 0; }

@@ -517,6 +517,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       const row = { ...base, ...(nickname ? { nickname } : {}), group_id: group.id, day: todayISO(), created_by: userId };
       let { error } = await sb.from('wods').insert({ ...row, class_time: classTime });
       if (error && /nickname/.test(error.message)) { delete (row as { nickname?: string }).nickname; ({ error } = await sb.from('wods').insert({ ...row, class_time: classTime })); }
+      // Before migration 0010 the description holds 600 characters: a whole board is cut to fit rather than lost.
+      if (error?.code === '23514' && row.description.length > 600) { row.description = row.description.slice(0, 600); ({ error } = await sb.from('wods').insert({ ...row, class_time: classTime })); }
       // Before migration 0007 there is no class_time column: post as the day's single WOD, as before.
       if (error && /class_time/.test(error.message)) ({ error } = await sb.from('wods').insert(row));
       if (!error) setPickedClass(classTime);
@@ -574,6 +576,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       if (!sb || !wod) return null;
       let { error } = await sb.from('wods').update(w).eq('id', wod.id);
       if (error && /nickname/.test(error.message)) { const { nickname: _, ...base } = w; ({ error } = await sb.from('wods').update(base).eq('id', wod.id)); }
+      if (error?.code === '23514' && w.description.length > 600) ({ error } = await sb.from('wods').update({ ...w, description: w.description.slice(0, 600) }).eq('id', wod.id));
       await refresh();
       return explain(error);
     },
