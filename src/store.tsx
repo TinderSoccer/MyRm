@@ -123,9 +123,12 @@ export function useStore() {
 export function useShownDiscs() {
   const { data } = useStore();
   return useMemo(() => {
-    const mine = DISCS.filter(d => data.goals.includes(d.id));
+    // What you chose in the profile, plus anywhere you already have marks or skills: moving the snatch from CrossFit to
+    // Halterofilia must never hide your snatch history just because the profile only says CrossFit.
+    const used = new Set<string>([...data.prs.filter(p => logOf(p).length).map(p => p.disc), ...data.skills.filter(k => k.tracked ?? k.stage > 0).map(k => k.disc)]);
+    const mine = DISCS.filter(d => data.goals.includes(d.id) || used.has(d.id));
     return mine.length ? mine : DISCS;
-  }, [data.goals]);
+  }, [data.goals, data.prs, data.skills]);
 }
 
 /** Selected/unselected outline pill colors used across every chip row. */

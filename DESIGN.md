@@ -1,6 +1,6 @@
 ---
 name: MyRm
-description: Tu diario de box: marcas, skills, grupo y pizarra del WOD para CrossFit, Hyrox y GAP.
+description: Tu diario de box: marcas, skills, grupo y pizarra del WOD para CrossFit, Halterofilia, Hyrox y GAP.
 colors:
   chalk-cream: "#f5ead8"
   worn-plywood: "#ebddc5"

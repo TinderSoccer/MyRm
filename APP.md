@@ -12,7 +12,7 @@ npm run build    # genera dist/ (estático; sirve en cualquier hosting)
 - **Estilo:** `src/styles/organic.css` es la hoja del sistema Organic sin cambios; `src/styles/app.css` agrega las clases de la app.
 - **Pantallas:** Bienvenida y perfil, Inicio (racha semanal + marcas), Detalle de marca (con calculadora de discos), Skills, Grupo (Hoy: pizarra del WOD · Logros · Próximos) y la hoja "Registrar marca".
 - En el teléfono ocupa toda la pantalla (respeta notch y barra inferior); en pantallas anchas se muestra dentro del marco de teléfono del diseño.
-- Empieza en cero: sin marcas ni grupo; solo un catálogo de movimientos y skills de CrossFit, Hyrox y GAP para elegir.
+- Empieza en cero: sin marcas ni grupo; solo un catálogo de movimientos y skills de CrossFit, Halterofilia, Hyrox y GAP para elegir.
 - La racha semanal se reinicia cada lunes y la fecha de Inicio es la real.
 
 Sin recordatorios ni notificaciones: sin un servidor de push no llegaban, así que se quitaron.

@@ -1,4 +1,4 @@
-export type DiscId = 'cf' | 'hx' | 'gap';
+export type DiscId = 'cf' | 'ha' | 'hx' | 'gap';
 export type PrType = 'kg' | 'time' | 'reps';
 export type Screen = 'w1' | 'w2' | 'home' | 'sk' | 'gr' | 'det' | 'tm';
 export type Units = 'kg' | 'lb';
@@ -63,11 +63,13 @@ export interface AppData {
 
 export const DISCS: Disc[] = [
   { id: 'cf', label: 'CrossFit', color: 'var(--color-accent-700)' },
+  { id: 'ha', label: 'Halterofilia', color: 'var(--color-accent-800)' },
   { id: 'hx', label: 'Hyrox', color: 'var(--color-accent-2-700)' },
   { id: 'gap', label: 'GAP', color: 'var(--color-neutral-800)' }
 ];
 
-/** Disciplines that were folded into CrossFit: Metcon is a kind of WOD and Bar Mastery is CrossFit gymnastics. */
+/** Disciplines folded into CrossFit: Metcon is a kind of WOD, and bar gymnastics is part of CrossFit at the box.
+ *  Halterofilia is its own class (the lifting-only day), so it stands alone. */
 export const MERGED_DISCS: Record<string, DiscId> = { mc: 'cf', bm: 'cf' };
 
 export const discOf = (id: DiscId) => DISCS.find(d => d.id === id) ?? DISCS[0];
@@ -83,16 +85,9 @@ const mov = (id: string, disc: DiscId, name: string, type: PrType, extra: Partia
 /** Common movements offered when logging. Lifts first (they drive the percentages), then benchmarks. */
 export const CATALOG_PRS: Pr[] = [
   mov('sq', 'cf', 'Back squat', 'kg'),
-  mov('fsq', 'cf', 'Front squat', 'kg'),
   mov('dl', 'cf', 'Peso muerto', 'kg'),
   mov('sp', 'cf', 'Strict press', 'kg'),
   mov('pp', 'cf', 'Push press', 'kg'),
-  mov('cl', 'cf', 'Clean', 'kg'),
-  mov('pc', 'cf', 'Power clean', 'kg'),
-  mov('cj', 'cf', 'Clean & jerk', 'kg'),
-  mov('sn', 'cf', 'Snatch', 'kg'),
-  mov('psn', 'cf', 'Power snatch', 'kg'),
-  mov('ohs', 'cf', 'Overhead squat', 'kg'),
   mov('fr', 'cf', 'Fran', 'time'),
   mov('gr', 'cf', 'Grace', 'time'),
   mov('he', 'cf', 'Helen', 'time'),
@@ -101,9 +96,25 @@ export const CATALOG_PRS: Pr[] = [
   mov('mur', 'cf', 'Murph', 'time'),
   mov('cin', 'cf', 'AMRAP 20′ Cindy', 'reps', { unitLabel: 'rondas' }),
   mov('bk', 'cf', 'Assault bike 50 cal', 'time'),
+  // Weightlifting class: the Olympic lifts, their variants and the squats that build them.
+  mov('sn', 'ha', 'Snatch', 'kg'),
+  mov('psn', 'ha', 'Power snatch', 'kg'),
+  mov('hsn', 'ha', 'Hang snatch', 'kg'),
+  mov('cl', 'ha', 'Clean', 'kg'),
+  mov('pc', 'ha', 'Power clean', 'kg'),
+  mov('hcl', 'ha', 'Hang clean', 'kg'),
+  mov('cj', 'ha', 'Clean & jerk', 'kg'),
+  mov('sjk', 'ha', 'Split jerk', 'kg'),
+  mov('pjk', 'ha', 'Push jerk', 'kg'),
+  mov('fsq', 'ha', 'Front squat', 'kg'),
+  mov('ohs', 'ha', 'Overhead squat', 'kg'),
+  mov('snb', 'ha', 'Snatch balance', 'kg'),
+  // Gymnastics on the bar, counted in unbroken reps or time.
   mov('pu', 'cf', 'Dominadas estrictas', 'reps'),
+  mov('c2b', 'cf', 'Chest to bar seguidos', 'reps'),
   mov('t2b', 'cf', 'Toes to bar seguidos', 'reps'),
   mov('mu', 'cf', 'Bar muscle-ups seguidos', 'reps'),
+  mov('dh', 'cf', 'Colgado de la barra', 'time', { better: 'up' }),
   mov('hxs', 'hx', 'Hyrox completo', 'time'),
   mov('run', 'hx', 'Trote 1 km', 'time'),
   mov('ski', 'hx', 'SkiErg 1000 m', 'time'),
