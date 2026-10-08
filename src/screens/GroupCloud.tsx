@@ -5,6 +5,7 @@ import { Icon } from '../components/Icon';
 import { Upcoming, type UpBirthday } from '../components/Upcoming';
 import { WodBoard } from '../components/WodBoard';
 import { CheckinCard, TodayAttendance } from '../components/Checkin';
+import { Messages } from '../components/Messages';
 import { useCloud } from '../cloud';
 import { MEMBER_COLORS } from '../data';
 import { countdown, timeAgo } from '../format';
@@ -135,6 +136,7 @@ function SharedGroup() {
       <GroupTabs view={view} setView={setView} />
 
       {view === 'today' && <>
+        <Messages nameOf={nameOf} colorOf={colorOf} />
         <CheckinCard where="group" />
         <TodayAttendance nameOf={nameOf} colorOf={colorOf} />
         <WodBoard nameOf={nameOf} />

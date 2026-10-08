@@ -40,6 +40,14 @@ export interface CloudWod {
 }
 /** "I came today": class time (HH:MM, or '' if not said), mood arriving and (later) leaving, 1 low – 5 high. */
 export interface Checkin { user_id: string; class_time: string; mood_in: number; mood_out: number | null }
+/** A message to the group (or to one person in it): encouragement or a joke, not a chat. */
+export const REACTIONS = ['👏', '💪', '😂', '🔥'] as const;
+export type Reaction = typeof REACTIONS[number];
+export interface CloudMessage {
+  id: string; user_id: string; to_user: string | null; body: string; created_at: string;
+  /** Who reacted with each emoji. */
+  reactions: Record<Reaction, string[]>;
+}
 export type NewWod = Pick<CloudWod, 'title' | 'description' | 'score_type'>;
 /** One of your own results today in another group, offered to copy over. */
 export interface OtherScore { group: string; title: string; class_time: string; score_type: PrType; value: number; scaled: boolean }
@@ -73,6 +81,13 @@ interface Cloud {
   checkIn: (classTime: string, moodIn: number) => Promise<string | null>;
   checkOut: (moodOut: number) => Promise<string | null>;
   undoCheckin: () => void;
+  /** The group's latest messages, newest first; `messagesOn` is false until their table exists (migration 0008). */
+  messages: CloudMessage[];
+  messagesOn: boolean;
+  /** `to`: someone in the group, or null for everyone. */
+  sendMessage: (body: string, to: string | null) => Promise<string | null>;
+  deleteMessage: (id: string) => void;
+  toggleReaction: (id: string, emoji: Reaction) => void;
   /** An invite code from a link, waiting for the user to sign in. */
   pendingJoin: string | null;
   /** Marks and settings are saved to the account (signed in and the first sync went through). */
@@ -155,6 +170,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const [wodBoard, setWodBoard] = useState(true);
   const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [checkinsOn, setCheckinsOn] = useState(true);
+  const [messages, setMessages] = useState<CloudMessage[]>([]);
+  const [messagesOn, setMessagesOn] = useState(true);
   const [pendingJoin, setPendingJoin] = useState<string | null>(() => {
     // An invite link looks like …/?join=CODE. Keep the code until the person signs in, and clean the address bar.
     const code = new URLSearchParams(location.search).get('join');
@@ -186,7 +203,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId]);
 
   const refresh = useCallback(async () => {
-    const clear = () => { setGroups([]); setGroup(null); setMembers([]); setFeed([]); setEvents([]); setWods([]); setCheckins([]); setOtherScores([]); };
+    const clear = () => { setGroups([]); setGroup(null); setMembers([]); setFeed([]); setEvents([]); setWods([]); setCheckins([]); setMessages([]); setOtherScores([]); };
     if (!sb || !userId) { clear(); return; }
     const { data: mine } = await sb.from('group_members').select('group_id, groups(id, name, invite_code, created_by)').eq('user_id', userId).order('joined_at');
     const all = (mine ?? []).map(r => r.groups as unknown as CloudGroup).filter(Boolean);
@@ -196,15 +213,23 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     const gid = (all.find(g => g.id === stored) ?? all[0])?.id;
     if (!gid) { clear(); return; }
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    const [g, mem, fd, ev, wd, ck] = await Promise.all([
+    const [g, mem, fd, ev, wd, ck, ms] = await Promise.all([
       sb.from('groups').select('id, name, invite_code, created_by').eq('id', gid).single(),
       sb.from('group_members').select('user_id').eq('group_id', gid),
       sb.from('feed_items').select('*, cheers(user_id)').eq('group_id', gid).order('created_at', { ascending: false }).limit(60),
       sb.from('events').select('*, rsvps(user_id, going)').eq('group_id', gid).gte('day', yesterday).order('day'),
       // The phone's own date: a 7 AM class in Chile is still "today", whatever the UTC date says.
       sb.from('wods').select('*, wod_scores(user_id, value, scaled, note)').eq('group_id', gid).eq('day', todayISO()),
-      sb.from('checkins').select('user_id, class_time, mood_in, mood_out').eq('group_id', gid).eq('day', todayISO()).order('class_time')
+      sb.from('checkins').select('user_id, class_time, mood_in, mood_out').eq('group_id', gid).eq('day', todayISO()).order('class_time'),
+      sb.from('messages').select('id, user_id, to_user, body, created_at, message_reactions(user_id, emoji)').eq('group_id', gid).order('created_at', { ascending: false }).limit(50)
     ]);
+    if (ms.error) { if (ms.error.code === '42P01' || ms.error.code === 'PGRST205') setMessagesOn(false); }
+    else {
+      setMessagesOn(true);
+      setMessages(((ms.data ?? []) as (Omit<CloudMessage, 'reactions'> & { message_reactions: { user_id: string; emoji: Reaction }[] })[]).map(({ message_reactions, ...m }) => ({
+        ...m, reactions: Object.fromEntries(REACTIONS.map(e => [e, message_reactions.filter(r => r.emoji === e).map(r => r.user_id)])) as Record<Reaction, string[]>
+      })));
+    }
     // Same rule as the board: only a missing table turns check-ins off; a dropped connection keeps what was there.
     if (ck.error) { if (ck.error.code === '42P01' || ck.error.code === 'PGRST205') setCheckinsOn(false); }
     else { setCheckinsOn(true); setCheckins(ck.data as Checkin[]); }
@@ -342,7 +367,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   }, [userId, refresh]);
 
   const value = useMemo<Cloud>(() => ({
-    enabled: !!sb, ready, userId, email, hasPassword, needsPassword: !!userId && (wantsPassword || (!hasPassword && !skippedPassword)), groups, group, members, feed, events, wods, wod, wodBoard, otherScores, checkins, checkinsOn, pendingJoin, backedUp,
+    enabled: !!sb, ready, userId, email, hasPassword, needsPassword: !!userId && (wantsPassword || (!hasPassword && !skippedPassword)), groups, group, members, feed, events, wods, wod, wodBoard, otherScores, checkins, checkinsOn, messages, messagesOn, pendingJoin, backedUp,
     selectGroup: id => {
       try { localStorage.setItem(groupKey, id); } catch { /* private mode */ }
       setPickedClass(null); setGroupPick(id);
@@ -436,6 +461,29 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       await refresh();
       return explain(error);
     },
+    sendMessage: async (body, to) => {
+      if (!sb || !group || !userId) return null;
+      const { error } = await sb.from('messages').insert({ group_id: group.id, user_id: userId, to_user: to, body: body.trim() });
+      if (!error) await refresh();
+      return explain(error);
+    },
+    deleteMessage: id => {
+      if (!sb) return;
+      setMessages(ms => ms.filter(m => m.id !== id));
+      sb.from('messages').delete().eq('id', id).then(() => refresh());
+    },
+    toggleReaction: (id, emoji) => {
+      if (!sb || !userId) return;
+      const msg = messages.find(m => m.id === id);
+      if (!msg) return;
+      const had = msg.reactions[emoji].includes(userId);
+      // Optimistic, like the cheers: the emoji answers at once, the server catches up.
+      setMessages(ms => ms.map(m => m.id !== id ? m : { ...m, reactions: { ...m.reactions, [emoji]: had ? m.reactions[emoji].filter(u => u !== userId) : [...m.reactions[emoji], userId] } }));
+      const q = had
+        ? sb.from('message_reactions').delete().eq('message_id', id).eq('user_id', userId).eq('emoji', emoji)
+        : sb.from('message_reactions').insert({ message_id: id, user_id: userId, emoji });
+      q.then(({ error }) => { if (error) refresh(); });
+    },
     deleteFeedItem: id => {
       if (!sb) return;
       setFeed(fs => fs.filter(f => f.id !== id));
@@ -527,7 +575,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       sb.from('wod_scores').delete().eq('wod_id', wod.id).eq('user_id', userId).then(() => refresh());
     },
     inviteLink: () => group ? `${location.origin}${location.pathname}?join=${group.invite_code}` : ''
-  }), [set, push, mine, mineIsSynced, data.owner, ready, userId, email, hasPassword, wantsPassword, skippedPassword, groups, group, members, feed, events, wods, wod, wodBoard, otherScores, groupKey, checkins, checkinsOn, pendingJoin, backedUp, refresh]);
+  }), [set, push, mine, mineIsSynced, data.owner, ready, userId, email, hasPassword, wantsPassword, skippedPassword, groups, group, members, feed, events, wods, wod, wodBoard, otherScores, groupKey, checkins, checkinsOn, messages, messagesOn, pendingJoin, backedUp, refresh]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -25,6 +25,7 @@ Supabase → *SQL Editor* → pega y ejecuta, en orden:
 5. [`supabase/migrations/0005_event_policies.sql`](supabase/migrations/0005_event_policies.sql): lo mismo para los eventos, ahora que se pueden editar.
 6. [`supabase/migrations/0006_checkins.sql`](supabase/migrations/0006_checkins.sql): el check-in de clase ("¿Cómo llegas hoy?" / "¿Cómo terminaste?"), que el grupo ve en "Hoy vinieron".
 7. [`supabase/migrations/0007_wod_per_class.sql`](supabase/migrations/0007_wod_per_class.sql): un WOD por clase (7:00, 19:00…) en vez de uno por día.
+8. [`supabase/migrations/0008_messages.sql`](supabase/migrations/0008_messages.sql): mensajes al grupo (ánimo, bromas), dedicados o para todos, con reacciones 👏 💪 😂 🔥.
 
 ## 3. Login por correo
 
