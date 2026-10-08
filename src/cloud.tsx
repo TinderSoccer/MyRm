@@ -108,6 +108,9 @@ interface Cloud {
   createGroup: (name: string) => Promise<string | null>;
   joinGroup: (code: string) => Promise<string | null>;
   leaveGroup: () => Promise<void>;
+  /** For whoever created the group: a new name, or someone taken out of it. */
+  renameGroup: (name: string) => Promise<string | null>;
+  removeMember: (userId: string) => Promise<string | null>;
   post: (item: NewFeedItem) => void;
   toggleCheer: (id: string) => void;
   /** Takes one of your own posts off the group's feed. */
@@ -432,6 +435,20 @@ export function CloudProvider({ children }: { children: ReactNode }) {
       if (!sb || !group || !userId) return;
       await sb.from('group_members').delete().eq('group_id', group.id).eq('user_id', userId);
       await refresh();
+    },
+    renameGroup: async name => {
+      if (!sb || !group) return null;
+      const { error } = await sb.from('groups').update({ name: name.trim().slice(0, 60) }).eq('id', group.id);
+      await refresh();
+      return explain(error);
+    },
+    removeMember: async id => {
+      if (!sb || !group) return null;
+      // Without migration 0011 the delete matches no row and says nothing: count it, so the person hears why.
+      const { data: gone, error } = await sb.from('group_members').delete().eq('group_id', group.id).eq('user_id', id).select('user_id');
+      await refresh();
+      if (error) return explain(error);
+      return gone?.length ? null : 'Todavía no se puede sacar a alguien: falta activar esa opción en el servidor.';
     },
     post: item => {
       if (!sb || !group || !userId) return;

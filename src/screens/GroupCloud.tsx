@@ -6,9 +6,10 @@ import { Upcoming, type UpBirthday } from '../components/Upcoming';
 import { WodBoard } from '../components/WodBoard';
 import { TodayInBox } from '../components/Checkin';
 import { Messages } from '../components/Messages';
+import { Rename } from '../components/Rename';
 import { useCloud } from '../cloud';
 import { MEMBER_COLORS } from '../data';
-import { countdown, timeAgo } from '../format';
+import { countdown, initialOf, timeAgo } from '../format';
 import { pillStyle, useStore } from '../store';
 
 /** Birthdays you add by hand (people outside the app); they travel with your account backup. */
@@ -136,8 +137,9 @@ function SharedGroup() {
       {menu && (
         <div id="group-menu" className="group-menu">
           <span className="muted-sm">{cloud.members.length} {cloud.members.length === 1 ? 'persona' : 'personas'}. Lo que publicas aquí lo ve solo este grupo.</span>
+          {group.created_by === cloud.userId && <GroupAdmin nameOf={nameOf} colorOf={colorOf} />}
           <button className="btn btn-secondary" style={{ minHeight: 48 }} onClick={() => { setMenu(false); setAnother(true); }}>Crear o unirme a otro grupo</button>
-          <DeleteButton label="Salir del grupo" what={`del grupo ${group.name}`} onDelete={cloud.leaveGroup} />
+          <DeleteButton label="Salir del grupo" verb="Salir" what={`del grupo ${group.name}`} onDelete={cloud.leaveGroup} />
         </div>
       )}
       {/* A new group needs people: until there are three, the invite stays big and explained. */}
@@ -202,6 +204,40 @@ function SharedGroup() {
       </div>
       </>}
 
+    </div>
+  );
+}
+
+/** For whoever created the group: rename it, and take someone out (with the usual "¿Seguro?"). */
+function GroupAdmin({ nameOf, colorOf }: { nameOf: (id: string) => string; colorOf: (id: string) => string }) {
+  const cloud = useCloud();
+  const { flash } = useStore();
+  const group = cloud.group!;
+  const others = cloud.members.filter(m => m.id !== cloud.userId).sort((a, b) => a.name.localeCompare(b.name));
+  return (
+    <div className="stack-3">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+        <span className="field-label">Nombre del grupo</span>
+        <Rename name={group.name} what="el grupo" onSave={async name => {
+          const err = await cloud.renameGroup(name);
+          if (err) flash('No se cambió el nombre', err); else flash('Nombre cambiado', `Ahora el grupo se llama ${name}.`);
+        }} />
+      </div>
+      {others.length > 0 && <>
+        <span className="field-label">Miembros</span>
+        <ul className="member-list">
+          {others.map(m => (
+            <li key={m.id} className="member-row">
+              <span className="came-dot" style={{ background: colorOf(m.id) }} aria-hidden="true">{initialOf(nameOf(m.id))}</span>
+              <span className="member-name">{m.name}</span>
+              <DeleteButton label="Sacar" verb="Sacar" what={`a ${m.name} del grupo`} onDelete={async () => {
+                const err = await cloud.removeMember(m.id);
+                if (err) flash('No se pudo sacar', err); else flash('Listo', `${m.name.split(' ')[0]} ya no está en ${group.name}. Sus marcas siguen siendo suyas.`);
+              }} />
+            </li>
+          ))}
+        </ul>
+      </>}
     </div>
   );
 }

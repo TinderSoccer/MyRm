@@ -423,3 +423,6 @@ button.part-head { position: relative; min-height: 44px; cursor: pointer; }
 .group-head .title { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--display-lg); }
 .group-menu { display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 16px 18px; border-radius: var(--radius-lg); background: var(--color-surface); }
 .group-menu .del-btn { align-self: center; }
+.member-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.member-row { display: flex; align-items: center; gap: 10px; min-height: 48px; }
+.member-name { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

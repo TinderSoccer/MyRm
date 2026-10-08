@@ -28,6 +28,7 @@ Supabase → *SQL Editor* → pega y ejecuta, en orden:
 8. [`supabase/migrations/0008_messages.sql`](supabase/migrations/0008_messages.sql): mensajes al grupo (ánimo, bromas), dedicados o para todos, con reacciones 👏 💪 😂 🔥.
 9. [`supabase/migrations/0009_wod_nickname.sql`](supabase/migrations/0009_wod_nickname.sql): el apodo chistoso del WOD que inventa la IA al leer la pizarra.
 10. [`supabase/migrations/0010_wod_longer.sql`](supabase/migrations/0010_wod_longer.sql): la descripción del WOD pasa de 600 a 1500 caracteres, para la pizarra completa (calentamiento, fuerza y WOD).
+11. [`supabase/migrations/0011_group_admin.sql`](supabase/migrations/0011_group_admin.sql): quien creó el grupo puede sacar a alguien (cambiarle el nombre ya podía).
 
 ## 3. Login por correo
 
