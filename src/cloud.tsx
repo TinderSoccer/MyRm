@@ -36,6 +36,8 @@ export interface WodScore { user_id: string; value: number; scaled: boolean; not
 export interface CloudWod {
   /** class_time: 'HH:MM' of the class this WOD is for ('' when posted without one). */
   id: string; day: string; class_time: string; title: string; description: string; score_type: PrType; created_by: string;
+  /** The funny name the AI gave it ('' if none, or before migration 0009). */
+  nickname: string;
   scores: WodScore[];
 }
 /** "I came today": class time (HH:MM, or '' if not said), mood arriving and (later) leaving, 1 low – 5 high. */
@@ -48,7 +50,7 @@ export interface CloudMessage {
   /** Who reacted with each emoji. */
   reactions: Record<Reaction, string[]>;
 }
-export type NewWod = Pick<CloudWod, 'title' | 'description' | 'score_type'>;
+export type NewWod = Pick<CloudWod, 'title' | 'description' | 'score_type'> & { nickname?: string };
 /** One of your own results today in another group, offered to copy over. */
 export interface OtherScore { group: string; title: string; class_time: string; score_type: PrType; value: number; scaled: boolean }
 export type NewFeedItem = Pick<CloudFeedItem, 'kind' | 'disc' | 'what'> & Partial<Pick<CloudFeedItem, 'type' | 'unit_label' | 'value' | 'stage'>>;
@@ -240,7 +242,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     else {
       setWodBoard(true);
       const ws = (wd.data ?? []) as (Omit<CloudWod, 'scores'> & { wod_scores: WodScore[] })[];
-      setWods(ws.map(w => ({ ...w, class_time: w.class_time ?? '', scores: w.wod_scores.map(s => ({ ...s, value: Number(s.value) })) }))
+      setWods(ws.map(w => ({ ...w, class_time: w.class_time ?? '', nickname: w.nickname ?? '', scores: w.wod_scores.map(s => ({ ...s, value: Number(s.value) })) }))
         .sort((a, b) => a.class_time.localeCompare(b.class_time)));
     }
     // Your own results today in your other groups (one tap to copy them here).
@@ -510,8 +512,11 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     },
     postWod: async (w, classTime) => {
       if (!sb || !group || !userId) return null;
-      const row = { ...w, group_id: group.id, day: todayISO(), created_by: userId };
+      // Before migration 0009 there is no nickname column: the WOD goes up without it.
+      const { nickname, ...base } = w;
+      const row = { ...base, ...(nickname ? { nickname } : {}), group_id: group.id, day: todayISO(), created_by: userId };
       let { error } = await sb.from('wods').insert({ ...row, class_time: classTime });
+      if (error && /nickname/.test(error.message)) { delete (row as { nickname?: string }).nickname; ({ error } = await sb.from('wods').insert({ ...row, class_time: classTime })); }
       // Before migration 0007 there is no class_time column: post as the day's single WOD, as before.
       if (error && /class_time/.test(error.message)) ({ error } = await sb.from('wods').insert(row));
       if (!error) setPickedClass(classTime);
@@ -530,7 +535,7 @@ export function CloudProvider({ children }: { children: ReactNode }) {
         const res = await fetch('/api/wod-photo', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${s.session.access_token}` }, body });
         const out = await res.json().catch(() => ({})) as Partial<NewWod> & { error?: string };
         if (!res.ok || !out.title) return out.error ?? 'No pudimos leer esta foto. Escribe el WOD a mano.';
-        return { title: out.title, description: out.description ?? '', score_type: out.score_type ?? 'time' };
+        return { title: out.title, description: out.description ?? '', score_type: out.score_type ?? 'time', nickname: out.nickname ?? '' };
       } catch { return 'Sin conexión. Revisa tu internet e intenta de nuevo.'; }
     },
     nameWod: async (w, moods, avoid) => {
@@ -567,7 +572,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     },
     updateWod: async w => {
       if (!sb || !wod) return null;
-      const { error } = await sb.from('wods').update(w).eq('id', wod.id);
+      let { error } = await sb.from('wods').update(w).eq('id', wod.id);
+      if (error && /nickname/.test(error.message)) { const { nickname: _, ...base } = w; ({ error } = await sb.from('wods').update(base).eq('id', wod.id)); }
       await refresh();
       return explain(error);
     },

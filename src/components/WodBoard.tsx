@@ -63,6 +63,8 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
   const [title, setTitle] = useState(edit?.title ?? '');
   const [description, setDescription] = useState(edit?.description ?? '');
   const [type, setType] = useState<PrType>(edit?.score_type ?? 'time');
+  const [nickname, setNickname] = useState(edit?.nickname ?? '');
+  const [naming, setNaming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reading, setReading] = useState(false);
@@ -77,11 +79,20 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
     setReading(false);
     if (typeof out === 'string') { setError(out); flash('No se leyó la foto', out); return; }
     setTitle(out.title); setDescription(out.description); if (!typeLocked) setType(out.score_type); setFromPhoto(true);
+    if (out.nickname) setNickname(out.nickname);
+  };
+  // Typed by hand (or the photo's nickname didn't land): one more from the AI, different from the one there.
+  const inventName = async () => {
+    if (naming || !(title.trim() || description.trim())) return;
+    setNaming(true);
+    const out = await cloud.nameWod({ title: title.trim(), description: description.trim() }, [], nickname ? [nickname] : []);
+    setNaming(false);
+    if (typeof out === 'string') flash('No salió el apodo', out); else setNickname(out[0]);
   };
   const save = async () => {
     if (!title.trim() || busy) return;
     setBusy(true); setError(null);
-    const w = { title: title.trim(), description: description.trim(), score_type: type };
+    const w = { title: title.trim(), description: description.trim(), score_type: type, nickname: nickname.trim() };
     const err = edit ? await cloud.updateWod(w) : await cloud.postWod(w, classTime);
     setBusy(false);
     // The board may already have replaced this form (someone posted first), so the message also goes in a toast.
@@ -108,6 +119,15 @@ function WodForm({ edit, onDone }: { edit?: CloudWod; onDone?: () => void }) {
       <input id="wod-title" className="input" placeholder="Nombre, p. ej. Fran o AMRAP 12′" value={title} onChange={e => setTitle(e.target.value)} style={{ height: 48, fontSize: 'var(--text-md)' }} />
       <textarea className="input" aria-label="Descripción del WOD" rows={4} placeholder={'21-15-9\nThrusters 95/65 lb\nPull-ups'} value={description} onChange={e => setDescription(e.target.value)}
         style={{ borderRadius: 'var(--radius-md)', padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 'var(--text-md)', resize: 'vertical', height: 'auto', minHeight: edit ? 180 : 96 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <label htmlFor="wod-nick" className="field-label">Apodo para el grupo</label>
+          <button type="button" className="link-btn" onClick={inventName} disabled={naming || !(title.trim() || description.trim())}>
+            {naming ? 'Inventando…' : nickname ? 'Otro apodo' : 'Inventar apodo'}
+          </button>
+        </div>
+        <input id="wod-nick" className="input" maxLength={40} placeholder="La IA le pone uno al leer la foto" value={nickname} onChange={e => setNickname(e.target.value)} style={{ height: 48, fontSize: 'var(--text-md)' }} />
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <span className="field-label">¿Cómo anota cada uno su resultado?</span>
         {!typeLocked && <Segmented label="¿Cómo anota cada uno su resultado?" value={type} onChange={setType} options={TYPES} />}
@@ -219,6 +239,7 @@ function Board({ nameOf }: Props) {
       <section className="board" aria-labelledby="board-title">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <h2 id="board-title" className="board-title">{w.title}</h2>
+          {w.nickname && <span className="board-nick">«{w.nickname}»</span>}
           <span className="board-meta">{{ time: 'Por tiempo', reps: 'Por rondas o reps', kg: 'Por peso' }[w.score_type]} · {w.created_by === cloud.userId ? 'lo subiste tú' : `lo subió ${nameOf(w.created_by)}`}</span>
         </div>
         {w.description && <BoardText text={w.description} />}

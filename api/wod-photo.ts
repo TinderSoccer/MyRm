@@ -14,12 +14,13 @@ const MAX_BASE64 = 4_000_000;
 const SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['found', 'title', 'description', 'score_type'],
+  required: ['found', 'title', 'description', 'score_type', 'nickname'],
   properties: {
     found: { type: 'boolean', description: 'false when the photo shows no readable workout' },
     title: { type: 'string', description: 'Short name of the WOD: its benchmark name (Fran, Cindy…) or its format (AMRAP 12′, For Time, EMOM 10′, 5x5 Back squat)' },
     description: { type: 'string', description: 'The workout as written on the board, one line per line on the board, separated by \\n' },
-    score_type: { type: 'string', enum: ['time', 'reps', 'kg'], description: 'time for For Time; reps for AMRAP / max reps / rounds; kg for a heavy lift or max-weight day' }
+    score_type: { type: 'string', enum: ['time', 'reps', 'kg'], description: 'time for For Time; reps for AMRAP / max reps / rounds; kg for a heavy lift or max-weight day' },
+    nickname: { type: 'string', description: 'A funny nickname for this workout in Chilean Spanish, at most 34 characters (empty when found is false)' }
   }
 } as const;
 
@@ -30,9 +31,13 @@ Copy what is written: keep numbers, rep schemes (21-15-9), weights and units (95
 Write movement names as CrossFitters write them. Put each line of the board on its own line. Mark an unreadable word with (?) instead of guessing.
 Do not add coaching notes, scaling suggestions or anything that is not on the board.
 Set found to false only when the photo has no workout at all (it isn't a whiteboard or a written workout, or nothing on it can be read).
-Glare, angles, messy handwriting or several sections are not reasons to give up: transcribe what you can read and mark the rest with (?).`;
+Glare, angles, messy handwriting or several sections are not reasons to give up: transcribe what you can read and mark the rest with (?).
 
-type Result = { found: boolean; title: string; description: string; score_type: 'time' | 'reps' | 'kg' };
+Then give the workout a nickname, the way people at a Chilean box joke about the day's WOD: in Chilean Spanish, light slang welcome (pega, cuático, la raja, me mató, chelas), crude words not.
+Joke about the workout itself, its movements, the pain, the burpees, the run, the excuses. Never about a person, a body or a group of people; nothing sexual.
+At most 34 characters and five words, like a movie or band title. No hashtags, emoji or quotes, and not the workout's real name.`;
+
+type Result = { found: boolean; title: string; description: string; score_type: 'time' | 'reps' | 'kg'; nickname: string };
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
@@ -95,7 +100,7 @@ export async function POST(request: Request): Promise<Response> {
     if (stop === 'max_tokens') return json({ error: 'La pizarra traía demasiado. Prueba con una foto solo del WOD.' }, 422);
     if (!result) return json({ error: 'No pudimos leer esta foto. Escribe el WOD a mano.' }, 502);
     if (!result.found) return json({ error: 'No encontramos un WOD en la foto. Prueba más de cerca y con luz.' }, 422);
-    return json({ title: result.title.slice(0, 80), description: result.description.slice(0, 600), score_type: result.score_type });
+    return json({ title: result.title.slice(0, 80), description: result.description.slice(0, 600), score_type: result.score_type, nickname: (result.nickname ?? '').replace(/^["«“]|["»”]$/g, '').trim().slice(0, 40) });
   } catch (error) {
     console.error('wod-photo failed', error instanceof Anthropic.APIError ? `${error.status} ${error.message}` : String(error));
     if (error instanceof Anthropic.RateLimitError) return json({ error: 'Hay mucha gente leyendo fotos. Prueba en un minuto.' }, 429);

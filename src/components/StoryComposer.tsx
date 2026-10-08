@@ -16,8 +16,10 @@ export function StoryComposer(props: Props) {
   const cloud = useCloud();
   const { flash } = useStore();
   const [photo, setPhoto] = useState<ImageBitmap | null>(null);
+  const nick = props.kind === 'wod' ? props.wod.nickname : '';
   const [names, setNames] = useState<string[]>([]);
-  const [name, setName] = useState(props.kind === 'wod' ? props.wod.title : '');
+  // The group's nickname from the board leads; without one, the real name until the AI's arrive.
+  const [name, setName] = useState(props.kind === 'wod' ? nick || props.wod.title : '');
   const [naming, setNaming] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [writing, setWriting] = useState(false);
@@ -27,13 +29,13 @@ export function StoryComposer(props: Props) {
   const askNames = async () => {
     if (props.kind !== 'wod') return;
     setNaming(true); setNameError(null);
-    const out = await cloud.nameWod(props.wod, props.moods, names);
+    const out = await cloud.nameWod(props.wod, props.moods, [...names, ...(nick ? [nick] : [])]);
     setNaming(false);
     if (typeof out === 'string') { setNameError(out); return; }
     setNames(out); setName(out[0]); setWriting(false);
   };
-  // A WOD story opens with names already on the way: the joke is the point.
-  useEffect(() => { askNames(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // A WOD story opens with names already on the way (the joke is the point), unless the board already has its nickname.
+  useEffect(() => { if (!nick) askNames(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const story: Story = props.kind === 'wod'
     ? { kind: 'wod', name: name.trim() || props.wod.title, realName: props.wod.title, lines: props.wod.description.split('\n').map(l => l.trim()).filter(Boolean), people: props.people }
@@ -100,7 +102,7 @@ export function StoryComposer(props: Props) {
           </div>
           {nameError && <p className="note" role="status">{nameError}</p>}
           <div className="story-names" role="radiogroup" aria-label="Nombre del WOD" aria-busy={naming}>
-            {[...names, props.wod.title].map(n => (
+            {[...new Set([...(nick ? [nick] : []), ...names, props.wod.title])].map(n => (
               <button key={n} type="button" role="radio" aria-checked={name === n && !writing} className="pill" style={pillStyle(name === n && !writing)}
                 onClick={() => { setName(n); setWriting(false); }}>{n}</button>
             ))}
