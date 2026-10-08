@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { Segmented } from './Segmented';
 import { PlateCounter, UnitPicker, countsFromLoad, countsWords, totalKgOf, type Counts } from './BarSetup';
-import { discOf, type DiscId, type Pr, type PrType } from '../data';
+import { DISCS, discOf, type DiscId, type Pr, type PrType } from '../data';
 import { SCHEMES, postedName, barLoad, barWeight, fixedKg, bestOf, bestWord, currentOf, joinRounds, lastOf, repsWord, logOf, shortDate, splitRounds, todayISO, weekIndexOf, withLog, yesterdayISO } from '../format';
 import { pillStyle, useShownDiscs, useStore } from '../store';
 import { useCloud } from '../cloud';
@@ -15,7 +15,9 @@ const NEW_TYPES: [NewType, string][] = [['kg', 'Barra'], ['kb', 'KB / manc.'], [
 
 export function RecordSheet() {
   const { data, set, fmt, sheet, closeSheet, flash } = useStore();
-  const shown = useShownDiscs();
+  // Every discipline, yours first: a CrossFit athlete's Thursday lifting class must not need a trip to the profile to log a snatch.
+  const mine = useShownDiscs();
+  const shown = [...mine, ...DISCS.filter(d => !mine.includes(d))];
   const cloud = useCloud();
   const open = sheet != null;
   const titleRef = useRef<HTMLHeadingElement>(null);
